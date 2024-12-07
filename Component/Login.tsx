@@ -1,0 +1,10 @@
+import React from "react";
+import { View, Text } from "react-native";
+
+const Login = () => {
+    return <View>
+        <Text>Login Screen loading</Text>
+    </View>
+}
+
+export default Login
