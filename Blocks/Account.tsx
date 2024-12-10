@@ -1,12 +1,17 @@
 //@ts-nocheck
 import React from 'react';
-import {View, Image, Text, StyleSheet, Button} from 'react-native';
+import {
+  View,
+  Image,
+  Text,
+  StyleSheet,
+  Button,
+  TouchableOpacity,
+} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-
-const Account = () => {
-
+const Account = props => {
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -27,7 +32,9 @@ const Account = () => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>My Account</Text>
           <View style={styles.cardContent}>
-            <View style={styles.textContainer}  >
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('OrderList')}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialCommunityIcons name="cart-outline" size={16} />
@@ -37,7 +44,7 @@ const Account = () => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-           </View>
+            </TouchableOpacity>
             <View style={styles.textContainer}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
@@ -74,9 +81,7 @@ const Account = () => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-              <View>
-                <MaterialIcons name="keyboard-arrow-right" size={16} />
-              </View>
+            
             </View>
           </View>
         </View>

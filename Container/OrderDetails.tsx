@@ -3,9 +3,10 @@ import React from 'react';
 import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
 import Shirts from '../assets/Shirt.jpg';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import StepperComponent from '../Component/Stepper';
 
-const OrderList = props => {
+const OrderDetails = props => {
+  const steps = ['Order Placed', 'Shipped', 'Out for Delivery', 'Delivered'];
   return (
     <View style={styles.container}>
       <View style={styles.profileHeader}>
@@ -13,11 +14,21 @@ const OrderList = props => {
           style={styles.header}
           onPress={() => props.navigation.navigate('Account')}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
-          <Text style={styles.OrderText}>My Order</Text>
+          <Text style={styles.OrderText}>Order Details</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.cardsContainer}>
-        <Text style={styles.orderId}>Order ID: #12345</Text>
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            padding: 3,
+          }}>
+          <Text style={styles.orderId}>Order ID: #12345</Text>
+          <Text style={styles.orderId}>Date: 05 Dec 2025</Text>
+        </View>
+
         <View style={styles.card}>
           <View
             style={{
@@ -25,7 +36,7 @@ const OrderList = props => {
               flexDirection: 'row',
               justifyContent: 'space-between',
             }}>
-              
+          
             <View style={styles.cardContent}>
               <Image source={Shirts} style={styles.productImage} />
               <View style={{display: 'flex'}}>
@@ -38,15 +49,8 @@ const OrderList = props => {
                 </View>
               </View>
             </View>
-            <View>
-              <TouchableOpacity
-                style={styles.iconWrapper}
-                onPress={() => props.navigation.navigate('OrderDetails')}>
-                <MaterialIcons name="arrow-forward" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
           </View>
-          <View style={styles.divider} />
+          <StepperComponent steps={steps} />
         </View>
       </View>
     </View>
@@ -69,6 +73,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   card: {
+    flex: 1,
     backgroundColor: '#fff',
     marginBottom: 10,
     padding: 10,
@@ -120,4 +125,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OrderList;
+export default OrderDetails;
