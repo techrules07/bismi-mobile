@@ -25,7 +25,6 @@ const OrderList = props => {
               flexDirection: 'row',
               justifyContent: 'space-between',
             }}>
-              
             <View style={styles.cardContent}>
               <Image source={Shirts} style={styles.productImage} />
               <View style={{display: 'flex'}}>
@@ -67,6 +66,7 @@ const styles = StyleSheet.create({
     color: 'gray',
     marginBottom: 5,
     marginTop: 10,
+    marginLeft: 5,
   },
   card: {
     backgroundColor: '#fff',

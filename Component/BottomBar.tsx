@@ -2,14 +2,24 @@
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
+import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import HomeScreenNavigator from './HomeScreenNavigator';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AccountStackNavigator from './AccountStackNavigator';
+import CategoryStackNavigator from './CategoryStackNavigator';
 
+const Tab = createBottomTabNavigator();
 
 const BottomBar = () => {
-  const Tab = createBottomTabNavigator();
+  const getTabBarVisibility = (route) => {
+    const routeName = getFocusedRouteNameFromRoute(route) ?? '';
+    // Screens where the bottom bar should be hidden
+    if (['OrderDetails', 'OrderList','Products'].includes(routeName)) {
+      return { display: 'none' };
+    }
+    return { display: 'flex',   backgroundColor: '#703F07'};
+  };
 
   return (
     <NavigationContainer>
@@ -25,67 +35,73 @@ const BottomBar = () => {
         <Tab.Screen
           name="home"
           component={HomeScreenNavigator}
-          options={{
+          options={({ route }) => ({
             tabBarLabel: 'Home',
-            tabBarIcon: ({color, size}) => (
+            tabBarStyle: getTabBarVisibility(route),
+            tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="home" color={color} size={size} />
             ),
-          }}
+          })}
         />
         <Tab.Screen
           name="explore"
           component={HomeScreenNavigator}
-          options={{
+          options={({ route }) => ({
             tabBarLabel: 'Explore',
-            tabBarIcon: ({color, size}) => (
+            tabBarStyle: getTabBarVisibility(route),
+            tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons
                 name="compass-outline"
                 color={color}
                 size={size}
               />
             ),
-          }}
+          })}
         />
         <Tab.Screen
           name="category"
-          component={HomeScreenNavigator}
-          options={{
+          component={CategoryStackNavigator}
+          options={({ route }) => ({
             tabBarLabel: 'Categories',
-            tabBarIcon: ({color, size}) => (
+            tabBarStyle: getTabBarVisibility(route),
+            tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="category" color={color} size={size} />
             ),
-          }}
+          })}
         />
         <Tab.Screen
           name="account"
           component={AccountStackNavigator}
-          options={{
+          options={({ route }) => ({
             tabBarLabel: 'Account',
-            tabBarIcon: ({color, size}) => (
+            tabBarStyle: getTabBarVisibility(route),
+            tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons
                 name="account-circle-outline"
                 color={color}
                 size={size}
               />
             ),
-          }}
+          })}
         />
         <Tab.Screen
           name="cart"
           component={HomeScreenNavigator}
-          options={{
-            tabBarLabel: 'Explore',
-            tabBarIcon: ({color, size}) => (
+          options={({ route }) => ({
+            tabBarLabel: 'Cart',
+            tabBarStyle: getTabBarVisibility(route),
+            tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons
                 name="cart-outline"
                 color={color}
                 size={size}
               />
             ),
-          }}
+          })}
         />
       </Tab.Navigator>
     </NavigationContainer>
   );
 };
+
 export default BottomBar;

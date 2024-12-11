@@ -28,14 +28,19 @@ const VerticalStepperComponent = ({ steps }) => {
                 />
               )}
             </View>
-            <Text
-              style={[
-                styles.stepLabel,
-                index === currentStep && styles.activeLabel,
-              ]}
-            >
-              {step}
-            </Text>
+            <View style={styles.stepContent}>
+              <Text
+                style={[
+                  styles.stepLabel,
+                  index === currentStep && styles.activeLabel,
+                ]}
+              >
+                {step.label}
+              </Text>
+              {step.value && (
+                <Text style={styles.stepValue}>{step.value}</Text>
+              )}
+            </View>
           </View>
         ))}
       </View>
@@ -57,18 +62,19 @@ const styles = StyleSheet.create({
   },
   stepWrapper: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20, // Adjust spacing between steps
+    alignItems: 'flex-start',
+    marginBottom: 30, // Adjust spacing between steps
   },
   stepIndicator: {
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    marginRight: 10, // Space between dot and content
   },
   dot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#e0e0e0',
   },
   activeDot: {
@@ -79,21 +85,28 @@ const styles = StyleSheet.create({
     height: 70, // Length of the line between dots
     backgroundColor: '#e0e0e0',
     position: 'absolute',
-    top: 20, // Adjust line to connect the dots
+    top: 10, // Adjust line to connect the dots
   },
   activeLine: {
     backgroundColor: 'green',
+  },
+  stepContent: {
+    flex: 1,
   },
   stepLabel: {
     fontSize: 16,
     fontWeight: '400',
     color: '#606060',
-    marginLeft: 20, 
-    lineHeight: 20, 
+    lineHeight: 20,
   },
   activeLabel: {
     color: 'green',
-    fontWeight: '600', 
+    fontWeight: '600',
+  },
+  stepValue: {
+    fontSize: 14,
+    color: '#909090',
+    marginTop: 4,
   },
 });
 
