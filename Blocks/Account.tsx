@@ -45,7 +45,9 @@ const Account = props => {
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
             </TouchableOpacity>
-            <View style={styles.textContainer}>
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('Whislist')}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialCommunityIcons
@@ -58,8 +60,10 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
-            <View style={styles.textContainer}>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('Coupons')}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialCommunityIcons name="gift-outline" size={16} />
@@ -69,7 +73,7 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.textContainer}>
               <View style={styles.textContain}>
@@ -81,14 +85,16 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            
             </View>
           </View>
         </View>
+
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Account Settings</Text>
           <View style={styles.cardContent}>
-            <View style={styles.textContainer}>
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('EditProfile')}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialCommunityIcons
@@ -101,8 +107,10 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
-            <View style={styles.textContainer}>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('Payment')}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialIcons name="payment" size={16} />
@@ -112,8 +120,10 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
-            <View style={styles.textContainer}>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('Address')}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialCommunityIcons
@@ -126,7 +136,7 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.card}>

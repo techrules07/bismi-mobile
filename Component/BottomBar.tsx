@@ -12,13 +12,27 @@ import CategoryStackNavigator from './CategoryStackNavigator';
 const Tab = createBottomTabNavigator();
 
 const BottomBar = () => {
-  const getTabBarVisibility = (route) => {
+  const getTabBarVisibility = route => {
     const routeName = getFocusedRouteNameFromRoute(route) ?? '';
     // Screens where the bottom bar should be hidden
-    if (['OrderDetails', 'OrderList','Products'].includes(routeName)) {
-      return { display: 'none' };
+    if (
+      [
+        'OrderDetails',
+        'OrderList',
+        'Products',
+        'ShirtList',
+        'ShirtListView',
+        'Cart',
+        'Coupons',
+        'Whislist',
+        'EditProfile',
+        'Payment',
+        'Address'
+      ].includes(routeName)
+    ) {
+      return {display: 'none'};
     }
-    return { display: 'flex',   backgroundColor: '#703F07'};
+    return {display: 'flex', backgroundColor: '#703F07'};
   };
 
   return (
@@ -35,10 +49,10 @@ const BottomBar = () => {
         <Tab.Screen
           name="home"
           component={HomeScreenNavigator}
-          options={({ route }) => ({
+          options={({route}) => ({
             tabBarLabel: 'Home',
             tabBarStyle: getTabBarVisibility(route),
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({color, size}) => (
               <MaterialCommunityIcons name="home" color={color} size={size} />
             ),
           })}
@@ -46,10 +60,10 @@ const BottomBar = () => {
         <Tab.Screen
           name="explore"
           component={HomeScreenNavigator}
-          options={({ route }) => ({
+          options={({route}) => ({
             tabBarLabel: 'Explore',
             tabBarStyle: getTabBarVisibility(route),
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({color, size}) => (
               <MaterialCommunityIcons
                 name="compass-outline"
                 color={color}
@@ -61,10 +75,10 @@ const BottomBar = () => {
         <Tab.Screen
           name="category"
           component={CategoryStackNavigator}
-          options={({ route }) => ({
+          options={({route}) => ({
             tabBarLabel: 'Categories',
             tabBarStyle: getTabBarVisibility(route),
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({color, size}) => (
               <MaterialIcons name="category" color={color} size={size} />
             ),
           })}
@@ -72,10 +86,10 @@ const BottomBar = () => {
         <Tab.Screen
           name="account"
           component={AccountStackNavigator}
-          options={({ route }) => ({
+          options={({route}) => ({
             tabBarLabel: 'Account',
             tabBarStyle: getTabBarVisibility(route),
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({color, size}) => (
               <MaterialCommunityIcons
                 name="account-circle-outline"
                 color={color}
@@ -87,10 +101,10 @@ const BottomBar = () => {
         <Tab.Screen
           name="cart"
           component={HomeScreenNavigator}
-          options={({ route }) => ({
+          options={({route}) => ({
             tabBarLabel: 'Cart',
             tabBarStyle: getTabBarVisibility(route),
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({color, size}) => (
               <MaterialCommunityIcons
                 name="cart-outline"
                 color={color}

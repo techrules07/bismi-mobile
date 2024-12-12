@@ -289,8 +289,10 @@ const Category = props => {
                       style={styles.gridImage}
                     />
                     <View style={styles.gridText}>
-                      <Text style={{fontWeight:"bold",color:"black"}}>{store.name}</Text>
-                      <Text style={{color:"black"}}>{store.price}</Text>
+                      <Text style={{fontWeight: 'bold', color: 'black'}}>
+                        {store.name}
+                      </Text>
+                      <Text style={{color: 'black'}}>{store.price}</Text>
                     </View>
                   </View>
                 ))}
@@ -298,9 +300,7 @@ const Category = props => {
             </View>
           </ScrollView>
         )}
-         {selectedSection === 'Fashion' && (
-        <CategoryForMens />
-         )}
+        {selectedSection === 'Fashion' && <CategoryForMens />}
       </View>
     </View>
   );
@@ -356,7 +356,6 @@ const styles = StyleSheet.create({
     width: '30%',
 
     margin: '1.5%',
-    // padding: 10,
     backgroundColor: '#EDE0D4',
     borderRadius: 8,
     elevation: 2,

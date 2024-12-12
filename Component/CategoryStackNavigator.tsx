@@ -4,6 +4,7 @@ import Category from '../Blocks/Category/Category';
 import ShirtList from '../Blocks/Category/ShirtList/ShirtList';
 import CategoryForMens from '../Blocks/Category/CategoryForMens';
 import ShirtListView from '../Blocks/Category/ShirtList/ShirtListView';
+import CartPage from '../Blocks/Category/Cart/Cart';
 
 
 
@@ -20,6 +21,7 @@ const CategoryStackNavigator = () => {
       <CategoryStack.Screen name="ShirtList" component={ShirtList} />
       <CategoryStack.Screen name="CategoryForMens" component={CategoryForMens} />
       <CategoryStack.Screen name="ShirtListView" component={ShirtListView} />
+      <CategoryStack.Screen name="Cart" component={CartPage} />
     </CategoryStack.Navigator>
   );
 };
