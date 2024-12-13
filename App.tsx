@@ -1,10 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
+//@ts-nocheck
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
@@ -24,9 +18,11 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+
 import Login from './Component/Login';
-import { ProductContext, pContext } from './context/ProductContext';
+import {ProductContext} from './context/ProductContext';
 import Home from './Component/BottomBar';
+import AppNavigator from './Component/TopBar';
 
 function AppComponent(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -41,17 +37,18 @@ function AppComponent(): React.JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
+      {/* <AppNavigator/> */}
       <Home />
     </SafeAreaView>
   );
 }
 
-
 const App = () => {
-  return <ProductContext>
-    <AppComponent />
-  </ProductContext>
-}
-
+  return (
+    <ProductContext>
+      <AppComponent />
+    </ProductContext>
+  );
+};
 
 export default App;
