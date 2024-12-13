@@ -33,7 +33,7 @@ const OrderDetails = props => {
             display: 'flex',
             flexDirection: 'row',
             justifyContent: 'space-between',
-            padding: 3,
+            padding: 7,
           }}>
           <Text style={styles.orderId}>Order ID: #12345</Text>
           <Text style={styles.orderId}>Date: 05 Dec 2025</Text>

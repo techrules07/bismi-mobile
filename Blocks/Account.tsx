@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     backgroundColor: '#703F07',
-    height: 100,
+    height: 70,
   },
   profileContent: {
     display: 'flex',

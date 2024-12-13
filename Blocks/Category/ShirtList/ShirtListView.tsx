@@ -150,7 +150,6 @@ const ShirtListView = ({route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
     backgroundColor: '#f9f9f9',
   },
   header: {

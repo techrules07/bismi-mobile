@@ -43,7 +43,7 @@ const BottomBar = () => {
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: '#FFE6A7',
+          tabBarActiveTintColor: '#fff',
           tabBarStyle: {
             backgroundColor: '#703F07',
           },
@@ -74,6 +74,7 @@ const BottomBar = () => {
                 size={size}
               />
             ),
+            
           })}
         />
         <Tab.Screen
