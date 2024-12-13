@@ -15,61 +15,66 @@ import CategoryForMens from './CategoryForMens';
 const sidebarCategories = [
   {
     id: 1,
+    name: 'For You',
+    icon: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
+  },
+  {
+    id: 2,
     name: 'Grocery',
     icon: 'https://images.pexels.com/photos/749353/pexels-photo-749353.jpeg',
   },
   {
-    id: 2,
+    id: 3,
     name: 'Fashion',
     icon: 'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg',
   },
   {
-    id: 3,
+    id: 4,
     name: 'Appliances',
     icon: 'https://images.pexels.com/photos/3965559/pexels-photo-3965559.jpeg',
   },
   {
-    id: 4,
+    id: 5,
     name: 'Mobiles',
     icon: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
   },
   {
-    id: 5,
+    id: 6,
     name: 'Electronics',
     icon: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
   },
   {
-    id: 6,
+    id: 7,
     name: 'Smart Gadgets',
     icon: 'https://images.pexels.com/photos/7129035/pexels-photo-7129035.jpeg',
   },
   {
-    id: 7,
+    id: 8,
     name: 'Home',
     icon: 'https://images.pexels.com/photos/7061644/pexels-photo-7061644.jpeg',
   },
   {
-    id: 8,
+    id: 9,
     name: 'Appliances',
     icon: 'https://images.pexels.com/photos/3965559/pexels-photo-3965559.jpeg',
   },
   {
-    id: 9,
+    id: 10,
     name: 'Mobiles',
     icon: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
   },
   {
-    id: 10,
+    id: 11,
     name: 'Electronics',
     icon: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
   },
   {
-    id: 11,
+    id: 12,
     name: 'Smart Gadgets',
     icon: 'https://images.pexels.com/photos/7129035/pexels-photo-7129035.jpeg',
   },
   {
-    id: 12,
+    id: 13,
     name: 'Home',
     icon: 'https://images.pexels.com/photos/7061644/pexels-photo-7061644.jpeg',
   },
@@ -179,7 +184,6 @@ const Category = props => {
   };
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>All Categories</Text>
         <View style={styles.headerIcons}>
@@ -191,20 +195,7 @@ const Category = props => {
       </View>
 
       <View style={styles.content}>
-        {/* Sidebar - Top Fixed */}
         <View style={styles.sidebarContainer}>
-          <View
-            style={styles.forYouSection}
-            onTouchEnd={() => handleSidebarClick('For You')}>
-            <Image
-              source={{
-                uri: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-              }}
-              style={styles.roundedImages}
-            />
-            <Text style={styles.forYouTitle}>For You</Text>
-          </View>
-          {/* Sidebar */}
           <ScrollView
             style={styles.sidebar}
             contentContainerStyle={styles.sidebarContent}
@@ -212,22 +203,33 @@ const Category = props => {
             {sidebarCategories.map(category => (
               <View
                 key={category.id}
-                style={styles.sidebarItem}
+                style={[
+                  styles.sidebarItem,
+                  selectedSection === category.name && styles.activeSidebarItem,
+                ]}
                 onTouchEnd={() => handleSidebarClick(category.name)}>
                 <Image
                   source={{uri: category.icon}}
-                  style={styles.sidebarIcon}
+                  style={
+                    selectedSection === category.name
+                      ? styles.roundedImages
+                      : styles.sidebarIcon
+                  }
                 />
                 <Text style={styles.sidebarText}>{category.name}</Text>
-                <View style={styles.horizontalLine} />
+                <View
+                  style={
+                    selectedSection === category.name
+                      ? styles.selectedStyle
+                      : styles.horizontalLine
+                  }
+                />
               </View>
             ))}
           </ScrollView>
         </View>
-        {/* Main Content */}
         {selectedSection === 'For You' && (
           <ScrollView style={styles.mainContent}>
-            {/* Recently Viewed Stores */}
             <Text style={styles.sectionTitle}>Recently Viewed Stores</Text>
             <ScrollView
               horizontal
@@ -243,7 +245,6 @@ const Category = props => {
                 </View>
               ))}
             </ScrollView>
-            {/* More On Bismi Section */}
             <Text style={styles.sectionTitle}>More on Bismi</Text>
             <ScrollView
               horizontal
@@ -259,7 +260,6 @@ const Category = props => {
                 </View>
               ))}
             </ScrollView>
-            {/* New Launch Section */}
             <Text style={styles.sectionTitle}>New Launch</Text>
             <ScrollView
               horizontal
@@ -275,7 +275,6 @@ const Category = props => {
                 </View>
               ))}
             </ScrollView>
-            {/* Popular Stores */}
             <Text style={styles.sectionTitle}>Popular Stores</Text>
             <View style={styles.grid}>
               <ScrollView
@@ -314,7 +313,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 10,
     backgroundColor: '#703F07',
-    // elevation: 2,
   },
   headers: {
     display: 'flex',
@@ -324,24 +322,36 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   headerTitle: {fontSize: 18, fontWeight: 'bold', color: '#fff'},
+
   headerIcons: {flexDirection: 'row', gap: 15},
   content: {flexDirection: 'row', flex: 1},
+
   sidebar: {
-    backgroundColor: '#f5f5f5',
-    width: 70, // Reduced the sidebar width to 60
-    paddingVertical: 10,
-    marginTop: 5,
-    maxWidth: 70, // Ensures no width expansion beyond 60
+    backgroundColor: '#EDE0D4',
+    maxWidth: 70,
+    borderRadius: 10,
+    borderTopRadius:10,
+    marginTop:10,
   },
   sidebarContent: {
-    paddingBottom: 10, // Ensure the content is scrollable
+    paddingBottom: 10,
   },
-  sidebarItem: {alignItems: 'center', marginBottom: 20},
+  activeSidebarItem: {
+    backgroundColor: 'white',
+  },
+
+  sidebarItem: {
+    alignItems: 'center',
+    marginBottom: 20,
+    width: 70,
+    maxWidth: 70,
+   
+  },
   sidebarIcon: {width: 40, height: 40},
   sidebarText: {
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 5,
+    marginBottom: 10,
     color: '#703F07',
   },
   mainContent: {flex: 1, padding: 10},

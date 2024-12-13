@@ -8,6 +8,7 @@ import WishlistPage from '../Blocks/Whislist/Whislist';
 import EditProfilePage from '../Blocks/EditProfile/EditProfile';
 import SavedPaymentsPage from '../Blocks/Payments/Payments';
 import SavedAddressesPage from '../Blocks/Address/Address';
+import FAQsScreen from '../Blocks/Faqs/Faqs';
 
 const AccountStack = createStackNavigator();
 
@@ -25,6 +26,7 @@ const AccountStackNavigator = () => {
       <AccountStack.Screen name="EditProfile" component={EditProfilePage} />
       <AccountStack.Screen name="Payment" component={SavedPaymentsPage} />
       <AccountStack.Screen name="Address" component={SavedAddressesPage} />
+      <AccountStack.Screen name="Faqs" component={FAQsScreen} />
     </AccountStack.Navigator>
   );
 };

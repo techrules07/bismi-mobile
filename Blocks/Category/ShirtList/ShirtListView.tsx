@@ -224,10 +224,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   selectedSize: {
-    backgroundColor: '#b0e0e6',
+    backgroundColor: '#EDE0D4',
+    color:"white"
   },
   sizeText: {
     fontSize: 16,
+    color:"black"
   },
   detailsSection: {
     marginBottom: 10,

@@ -143,7 +143,7 @@ const SavedPaymentsPage = () => {
                 <TouchableOpacity
                   style={[styles.addPaymentTrigger, styles.cardWithBorder]}
                   onPress={() => setShowAddPayment(true)}>
-                  <Icon name="plus-circle" size={28} color="#703F07" />
+                  <Icons name="plus" size={28} color="#703F07" />
                   <Text style={styles.addPaymentText}>Add New Payment</Text>
                 </TouchableOpacity>
               )}
@@ -244,10 +244,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 10,
     padding: 15,
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#EDE0D4',
   },
   cardWithBorder: {
     marginTop: 10,
@@ -273,7 +272,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 16,
-    color: 'black',
+    color: '#703F07',
   },
   addPaymentTrigger: {
     flexDirection: 'row',
@@ -282,7 +281,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginLeft: 10,
     color: '#703F07',
-    marginTop:2
   },
   addPaymentForm: {
     padding: 20,
@@ -304,7 +302,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: '#333',
+    color: 'black',
     marginBottom: 5,
   },
   input: {
@@ -317,7 +315,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#703F07',
-    padding: 15,
+    padding: 7,
     borderRadius: 5,
     alignItems: 'center',
   },

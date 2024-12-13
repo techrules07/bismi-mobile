@@ -142,7 +142,9 @@ const Account = props => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Help & Support</Text>
           <View style={styles.cardContent}>
-            <View style={styles.textContainer}>
+          <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('Faqs')}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialCommunityIcons
@@ -155,7 +157,7 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
+            </TouchableOpacity>
             <View style={styles.textContainer}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>

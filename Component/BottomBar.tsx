@@ -8,6 +8,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AccountStackNavigator from './AccountStackNavigator';
 import CategoryStackNavigator from './CategoryStackNavigator';
+import CartPage from '../Blocks/Category/Cart/Cart';
+import LoginScreenNavigator from './LoginStackNavigtor';
 
 const Tab = createBottomTabNavigator();
 
@@ -27,7 +29,9 @@ const BottomBar = () => {
         'Whislist',
         'EditProfile',
         'Payment',
-        'Address'
+        'Address',
+        'Faqs',
+        'FilterPage'
       ].includes(routeName)
     ) {
       return {display: 'none'};
@@ -59,7 +63,7 @@ const BottomBar = () => {
         />
         <Tab.Screen
           name="explore"
-          component={HomeScreenNavigator}
+          component={LoginScreenNavigator}
           options={({route}) => ({
             tabBarLabel: 'Explore',
             tabBarStyle: getTabBarVisibility(route),
@@ -100,7 +104,7 @@ const BottomBar = () => {
         />
         <Tab.Screen
           name="cart"
-          component={HomeScreenNavigator}
+          component={CartPage}
           options={({route}) => ({
             tabBarLabel: 'Cart',
             tabBarStyle: getTabBarVisibility(route),

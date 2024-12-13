@@ -8,29 +8,69 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  RadioButton,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const SavedAddressesPage = () => {
   const [savedAddresses, setSavedAddresses] = useState([
-    {id: 1, address: '123 Main St, New York, NY', type: 'Home'},
-    {id: 2, address: '456 Maple Rd, Los Angeles, CA', type: 'Work'},
+    {
+      id: 1,
+      address: '123 Main St, New York, NY',
+      type: 'Home',
+      fullName: 'John Doe',
+      phone: '123-456-7890',
+      altPhone: '987-654-3210',
+      pincode: '10001',
+      city: 'New York',
+      state: 'NY',
+    },
+    {
+      id: 2,
+      address: '456 Maple Rd, Los Angeles, CA',
+      type: 'Work',
+      fullName: 'Jane Smith',
+      phone: '234-567-8901',
+      altPhone: '876-543-2109',
+      pincode: '90001',
+      city: 'Los Angeles',
+      state: 'CA',
+    },
   ]);
 
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [newAddress, setNewAddress] = useState({
     id: null,
     address: '',
-    type: '',
+    type: 'Home', // Default type
+    fullName: '',
+    phone: '',
+    altPhone: '',
+    pincode: '',
+    city: '',
+    state: '',
   });
 
   const handleSaveAddress = () => {
-    if (newAddress.address && newAddress.type) {
+    if (
+      newAddress.address &&
+      newAddress.fullName &&
+      newAddress.phone &&
+      newAddress.pincode &&
+      newAddress.city &&
+      newAddress.state
+    ) {
       const newAddr = {
         id: savedAddresses.length + 1,
         address: newAddress.address,
         type: newAddress.type,
+        fullName: newAddress.fullName,
+        phone: newAddress.phone,
+        altPhone: newAddress.altPhone,
+        pincode: newAddress.pincode,
+        city: newAddress.city,
+        state: newAddress.state,
       };
 
       if (newAddress.id) {
@@ -43,18 +83,24 @@ const SavedAddressesPage = () => {
       }
 
       setShowAddAddress(false);
-      setNewAddress({id: null, address: '', type: ''});
+      setNewAddress({
+        id: null,
+        address: '',
+        type: 'Home',
+        fullName: '',
+        phone: '',
+        altPhone: '',
+        pincode: '',
+        city: '',
+        state: '',
+      });
     } else {
       Alert.alert('Error', 'Please fill out all fields.');
     }
   };
 
   const handleEditAddress = address => {
-    setNewAddress({
-      id: address.id,
-      address: address.address,
-      type: address.type,
-    });
+    setNewAddress(address);
     setShowAddAddress(true);
   };
 
@@ -65,7 +111,11 @@ const SavedAddressesPage = () => {
         index === savedAddresses.length - 1 && {marginBottom: 20},
       ]}>
       <View>
-        <Text style={styles.addressType}>{item.type}</Text>
+        <View style={styles.details}>
+          <Text style={styles.detailsText}>{item.fullName}</Text>
+          <Text style={styles.addressType}>{item.type}</Text>
+        </View>
+
         <Text style={styles.addressInfo}>{item.address}</Text>
       </View>
       <View style={styles.actionButtons}>
@@ -83,6 +133,7 @@ const SavedAddressesPage = () => {
       </View>
     </View>
   );
+
   const navigation = useNavigation();
   return (
     <View style={styles.container}>
@@ -123,7 +174,7 @@ const SavedAddressesPage = () => {
             <TouchableOpacity
               style={[styles.addAddressTrigger, styles.cardWithBorder]}
               onPress={() => setShowAddAddress(true)}>
-              <Icon name="plus-circle" size={28} color="#007bff" />
+              <Icons name="plus" size={28} color="#703F07" />
               <Text style={styles.addAddressText}>Add New Address</Text>
             </TouchableOpacity>
           </>
@@ -146,15 +197,86 @@ const SavedAddressesPage = () => {
                 setNewAddress(prev => ({...prev, address: text}))
               }
             />
-            <Text style={styles.label}>Address Type</Text>
+            <Text style={styles.label}>Full Name</Text>
             <TextInput
               style={styles.input}
-              placeholder="Home, Work, etc."
-              value={newAddress.type}
+              placeholder="Full Name"
+              value={newAddress.fullName}
               onChangeText={text =>
-                setNewAddress(prev => ({...prev, type: text}))
+                setNewAddress(prev => ({...prev, fullName: text}))
               }
             />
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              value={newAddress.phone}
+              onChangeText={text =>
+                setNewAddress(prev => ({...prev, phone: text}))
+              }
+            />
+
+            <Text style={styles.label}>Pincode</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Pincode"
+              value={newAddress.pincode}
+              onChangeText={text =>
+                setNewAddress(prev => ({...prev, pincode: text}))
+              }
+            />
+            <Text style={styles.label}>City</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="City"
+              value={newAddress.city}
+              onChangeText={text =>
+                setNewAddress(prev => ({...prev, city: text}))
+              }
+            />
+            <Text style={styles.label}>State</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="State"
+              value={newAddress.state}
+              onChangeText={text =>
+                setNewAddress(prev => ({...prev, state: text}))
+              }
+            />
+            <Text style={styles.label}>Address Type</Text>
+            <View style={styles.radioButtons}>
+              <TouchableOpacity
+                style={styles.radioButton}
+                onPress={() =>
+                  setNewAddress(prev => ({...prev, type: 'Home'}))
+                }>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    newAddress.type === 'Home'
+                      ? styles.radioSelected
+                      : styles.radioUnselected,
+                  ]}
+                />
+                <Text style={styles.radioText}>Home</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.radioButton}
+                onPress={() =>
+                  setNewAddress(prev => ({...prev, type: 'Work'}))
+                }>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    newAddress.type === 'Work'
+                      ? styles.radioSelected
+                      : styles.radioUnselected,
+                  ]}
+                />
+                <Text style={styles.radioText}>Work</Text>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSaveAddress}>
@@ -196,22 +318,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 10,
     padding: 15,
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#EDE0D4',
   },
   cardWithBorder: {
     marginTop: 10,
   },
   addressType: {
-    fontSize: 18,
+    borderRadius: 5,
+    backgroundColor: '#fff',
     fontWeight: 'bold',
-    color: '#333',
+    color: '#703F07',
+    width: 50,
+    textAlign: 'center',
+  },
+  details: {
+    flexDirection: 'row',
+    gap: 10,
   },
   addressInfo: {
     fontSize: 16,
     color: '#666',
+  },
+  detailsText: {
+    fontSize: 16,
+    color: 'black',
+    fontWeight: 'bold',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -220,7 +353,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 16,
-    color: 'black',
+    color: '#703F07',
   },
   addAddressTrigger: {
     flexDirection: 'row',
@@ -228,7 +361,8 @@ const styles = StyleSheet.create({
   addAddressText: {
     fontSize: 18,
     marginLeft: 10,
-    color: '#007bff',
+    color: '#703F07',
+    marginTop: 3,
   },
   addAddressForm: {
     padding: 20,
@@ -246,11 +380,11 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'black',
   },
   label: {
     fontSize: 16,
-    color: '#333',
+    color: 'black',
     marginBottom: 5,
   },
   input: {
@@ -262,8 +396,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   saveButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
+    backgroundColor: '#703F07',
+    padding: 7,
     borderRadius: 5,
     alignItems: 'center',
   },
@@ -271,6 +405,37 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  radioButtons: {
+    flexDirection: 'row',
+    // justifyContent: 'space-between',
+    marginBottom: 20,
+    gap: 30,
+  },
+  radioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioSelected: {
+    backgroundColor: '#703F07',
+    borderColor: '#703F07',
+  },
+  radioUnselected: {
+    backgroundColor: '#fff',
+    borderColor: 'gray',
+  },
+  radioText: {
+    fontSize: 16,
+    color: '#333',
   },
   noAddresses: {
     fontSize: 18,
