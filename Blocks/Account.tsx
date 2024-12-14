@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import LoginScreen from './Login/Login';
 
 const Account = props => {
   return (
@@ -177,6 +178,9 @@ const Account = props => {
             <Button title="Log Out" color="#703F07" />
           </View>
         </View>
+      </View>
+      <View>
+        <LoginScreen/>
       </View>
     </View>
   );

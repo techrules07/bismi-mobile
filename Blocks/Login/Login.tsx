@@ -1,7 +1,7 @@
 //@ts-nocheck
 
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,25 @@ import {
   StyleSheet,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import {UserContext} from '../../../bismi-mobile/context/UserContext';
+import {userLogin} from '../Networking/HomePageService';
 const LoginScreen = () => {
+  const userContext = useContext(UserContext);
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState({mobile: '', password: ''});
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const navigation = useNavigation();
-
+  useEffect(() => {
+    async function userResponse(params) {
+      const userLoginResponse = await userLogin();
+      console.log(userLoginResponse.data);
+    }
+    if (userLoginResponse.status == 200 && userLoginResponse.data.code == 200) {
+      userContext.updateLogin(userLoginResponse.data.data);
+    }
+    userResponse();
+  }, []);
   const validateMobileNumber = (number: string) => {
     const regex = /^[0-9]{10}$/;
     return regex.test(number);
@@ -49,7 +60,7 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      
+
       {/* Mobile Number */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Mobile</Text>
@@ -61,14 +72,19 @@ const LoginScreen = () => {
           keyboardType="phone-pad"
         />
       </View>
-      {errorMessage.mobile && <Text style={styles.errorText}>{errorMessage.mobile}</Text>}
+      {errorMessage.mobile && (
+        <Text style={styles.errorText}>{errorMessage.mobile}</Text>
+      )}
 
       {/* Password */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Password</Text>
         <View style={styles.passwordContainer}>
           <TextInput
-            style={[styles.input, errorMessage.password ? styles.errorInput : null]}
+            style={[
+              styles.input,
+              errorMessage.password ? styles.errorInput : null,
+            ]}
             placeholder="Enter your password"
             value={password}
             onChangeText={setPassword}
@@ -85,7 +101,9 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-      {errorMessage.password && <Text style={styles.errorText}>{errorMessage.password}</Text>}
+      {errorMessage.password && (
+        <Text style={styles.errorText}>{errorMessage.password}</Text>
+      )}
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
