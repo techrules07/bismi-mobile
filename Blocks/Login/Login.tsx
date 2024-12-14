@@ -11,24 +11,24 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {UserContext} from '../../../bismi-mobile/context/UserContext';
-import {userLogin} from '../Networking/HomePageService';
+import {userLogin} from '../../Networking/HomePageService';
 const LoginScreen = () => {
-  const userContext = useContext(UserContext);
+  // const userContext = useContext(UserContext);
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState({mobile: '', password: ''});
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const navigation = useNavigation();
-  useEffect(() => {
-    async function userResponse(params) {
-      const userLoginResponse = await userLogin();
-      console.log(userLoginResponse.data);
-    }
-    if (userLoginResponse.status == 200 && userLoginResponse.data.code == 200) {
-      userContext.updateLogin(userLoginResponse.data.data);
-    }
-    userResponse();
-  }, []);
+  // useEffect(() => {
+  //   async function userResponse(params) {
+  //     const userLoginResponse = await userLogin();
+  //     console.log(userLoginResponse.data);
+  //   }
+  //   if (userLoginResponse.status == 200 && userLoginResponse.data.code == 200) {
+  //     userContext.updateLogin(userLoginResponse.data.data);
+  //   }
+  //   userResponse();
+  // }, []);
   const validateMobileNumber = (number: string) => {
     const regex = /^[0-9]{10}$/;
     return regex.test(number);

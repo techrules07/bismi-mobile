@@ -180,7 +180,7 @@ const Account = props => {
         </View>
       </View>
       <View>
-        <LoginScreen/>
+        {/* <LoginScreen/> */}
       </View>
     </View>
   );
