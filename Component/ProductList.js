@@ -7,31 +7,29 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import {pContext} from '../context/ProductContext';
-import {getAllProducts} from '../Networking/HomePageService';
 import Heart from '../assets/Heart.svg';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import ProductAdapter from '../services/adapters/product-adapter';
+import { useAllProducts } from '../services/hooks/useAllProducts';
+import { NETWORK_STATUS } from '../enum/enum';
 const ProductList = () => {
-  const productContext = useContext(pContext);
   const navigation = useNavigation();
+  const {productList, updateProductList} = useAllProducts();
   useEffect(() => {
     async function getProducts(params) {
-      const productsListRespone = await getAllProducts(1);
-      console.log(productsListRespone.data);
+      const productsListRespone = await ProductAdapter.getAllProducts(1);
       if (
-        productsListRespone.status == 200 &&
-        productsListRespone.data.code == 200
+        productsListRespone.status == NETWORK_STATUS.SUCCESS
       ) {
-        productContext.updateProductList(
-          productsListRespone.data.data.listAllProductItems,
+        updateProductList(
+          productsListRespone.data.listAllProductItems,
         );
       }
     }
 
     getProducts();
   }, []);
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -56,9 +54,9 @@ const ProductList = () => {
         </View>
       </View>
       <View style={{paddingLeft: 5, paddingRight: 5}}>
-        {productContext.productList.length > 0 && (
+        {productList.length > 0 && (
           <FlatList
-            data={productContext.productList}
+            data={productList}
             keyExtractor={item => item.id}
             numColumns={3}
             renderItem={({item}) => {

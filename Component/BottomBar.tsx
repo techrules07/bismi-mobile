@@ -31,7 +31,7 @@ const BottomBar = () => {
         'Payment',
         'Address',
         'Faqs',
-        'FilterPage'
+        'FilterPage',
       ].includes(routeName)
     ) {
       return {display: 'none'};
@@ -51,7 +51,7 @@ const BottomBar = () => {
           headerShown: false,
         }}>
         <Tab.Screen
-          name="home"
+          name="home_screen"
           component={HomeScreenNavigator}
           options={({route}) => ({
             tabBarLabel: 'Home',
@@ -74,7 +74,6 @@ const BottomBar = () => {
                 size={size}
               />
             ),
-            
           })}
         />
         <Tab.Screen
