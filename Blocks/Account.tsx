@@ -11,9 +11,11 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LoginScreen from './Login/Login';
+import {useUserInfo} from '../services/hooks/useUserInfo';
 
 const Account = props => {
-  return (
+  const {user} = useUserInfo();
+  return user ? (
     <View style={styles.container}>
       <View style={styles.profileCard}>
         <View style={styles.profileHeader}></View>
@@ -143,7 +145,7 @@ const Account = props => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Help & Support</Text>
           <View style={styles.cardContent}>
-          <TouchableOpacity
+            <TouchableOpacity
               style={styles.textContainer}
               onPress={() => props.navigation.navigate('Faqs')}>
               <View style={styles.textContain}>
@@ -179,10 +181,10 @@ const Account = props => {
           </View>
         </View>
       </View>
-      <View>
-        {/* <LoginScreen/> */}
-      </View>
+      <View>{/* <LoginScreen/> */}</View>
     </View>
+  ) : (
+    <LoginScreen />
   );
 };
 
