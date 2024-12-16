@@ -22,20 +22,19 @@ const HomeScreen = props => {
   const width = Dimensions.get('window').width;
 
   useEffect(() => {
-    debugger;
     async function fetchAllOffers() {
-      const response = await ProductAdapter.getAllOffers();
-      if (response.status == NETWORK_STATUS.SUCCESS) {
-        updateSliderItems(response.data);
+      const response = await ProductAdapter?.getAllOffers();
+      if (response?.status == NETWORK_STATUS?.SUCCESS) {
+        updateSliderItems(response?.data);
       }
     }
 
     async function getAllCategoriesApi() {
-      const categoriesResponse = await ProductAdapter.getAllCategories();
+      const categoriesResponse = await ProductAdapter?.getAllCategories();
       if (
-        categoriesResponse.status == NETWORK_STATUS.SUCCESS
+        categoriesResponse?.status == NETWORK_STATUS?.SUCCESS
       ) {
-        updateCategories(categoriesResponse.data);
+        updateCategories(categoriesResponse?.data);
       }
     }
 

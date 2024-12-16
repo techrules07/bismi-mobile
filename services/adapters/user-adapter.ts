@@ -2,12 +2,44 @@
 import {AxiosConfig} from '../../Networking/AxiosConfig';
 
 
-const userLogin = (userData: any) => {
-  return AxiosConfig.post('/auth/user/verify-phone', userData);
+const verifyLogin = async (userData: any) => {
+  debugger
+  try {
+    const response = await AxiosConfig.post('auth/user/verify-phone', userData);
+    console.log('API Response:', response);
+    return response.data; 
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw new Error('Failed to login');
+  }
 };
-
+const userLogin = async (userData:any) => {
+  debugger
+  console.log("userData",userData)
+  try {
+    const response = await AxiosConfig.post('auth/user/check-phone', userData);
+    console.log('API Response:', response);
+    return response.data; 
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw new Error('Failed to login');
+  }
+};
+const signUp = async (userData: any) => {
+  debugger
+  try {
+    const response = await AxiosConfig.post('auth/user/add-user', userData);
+    console.log('API Response:', response);
+    return response.data; 
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw new Error('Failed to login');
+  }
+};
 const UserAdapter = {
-    userLogin
+    userLogin,
+    verifyLogin,
+    signUp
 }
 
 export default UserAdapter;

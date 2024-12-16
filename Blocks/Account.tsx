@@ -12,9 +12,16 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LoginScreen from './Login/Login';
 import {useUserInfo} from '../services/hooks/useUserInfo';
+import {useNavigation} from '@react-navigation/native';
 
 const Account = props => {
-  const {user} = useUserInfo();
+  const navigation = useNavigation();
+  const {user, logout} = useUserInfo();
+  console.log('user', user);
+  const handleLogout = () => {
+    logout();
+    navigation.navigate('Login');
+  };
   return user ? (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -177,7 +184,7 @@ const Account = props => {
 
         <View style={[styles.card, styles.logoutCard]}>
           <View style={styles.logoutButtonContainer}>
-            <Button title="Log Out" color="#703F07" />
+            <Button title="Log Out" color="#703F07" onPress={handleLogout} />
           </View>
         </View>
       </View>

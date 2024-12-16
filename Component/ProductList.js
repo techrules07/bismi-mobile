@@ -11,20 +11,17 @@ import Heart from '../assets/Heart.svg';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ProductAdapter from '../services/adapters/product-adapter';
-import { useAllProducts } from '../services/hooks/useAllProducts';
-import { NETWORK_STATUS } from '../enum/enum';
+import {useAllProducts} from '../services/hooks/useAllProducts';
+import {NETWORK_STATUS} from '../enum/enum';
 const ProductList = () => {
   const navigation = useNavigation();
   const {productList, updateProductList} = useAllProducts();
   useEffect(() => {
+ 
     async function getProducts(params) {
       const productsListRespone = await ProductAdapter.getAllProducts(1);
-      if (
-        productsListRespone.status == NETWORK_STATUS.SUCCESS
-      ) {
-        updateProductList(
-          productsListRespone.data.listAllProductItems,
-        );
+      if (productsListRespone.status == NETWORK_STATUS.SUCCESS) {
+        updateProductList(productsListRespone.data.listAllProductItems);
       }
     }
 

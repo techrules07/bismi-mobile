@@ -1,7 +1,5 @@
 //@ts-nocheck
-
-import {useNavigation} from '@react-navigation/native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,58 +8,99 @@ import {
   StyleSheet,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {UserContext} from '../../../bismi-mobile/context/UserContext';
-import {userLogin} from '../../Networking/HomePageService';
+import { useNavigation } from '@react-navigation/native';
+import { useUserInfo } from '../../services/hooks/useUserInfo';
+import UserAdapter from '../../services/adapters/user-adapter';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const LoginScreen = () => {
-  // const userContext = useContext(UserContext);
   const [mobileNumber, setMobileNumber] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState({mobile: '', password: ''});
+  const [fullName, setFullName] = useState(''); // Added fullName state
+  const [errorMessage, setErrorMessage] = useState({ mobile: '', password: '', fullName: '' });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const { login } = useUserInfo();
   const navigation = useNavigation();
-  // useEffect(() => {
-  //   async function userResponse(params) {
-  //     const userLoginResponse = await userLogin();
-  //     console.log(userLoginResponse.data);
-  //   }
-  //   if (userLoginResponse.status == 200 && userLoginResponse.data.code == 200) {
-  //     userContext.updateLogin(userLoginResponse.data.data);
-  //   }
-  //   userResponse();
-  // }, []);
+
   const validateMobileNumber = (number: string) => {
     const regex = /^[0-9]{10}$/;
     return regex.test(number);
   };
 
-  const handleLogin = () => {
-    setErrorMessage({mobile: '', password: ''});
+  const handleLogin = async () => {
+    setErrorMessage({ mobile: '', password: '', fullName: '' });
 
     let isValid = true;
     if (!mobileNumber || !validateMobileNumber(mobileNumber)) {
-      setErrorMessage(prev => ({
+      setErrorMessage((prev) => ({
         ...prev,
         mobile: 'Please enter a valid 10-digit mobile number.',
       }));
       isValid = false;
     }
-    if (!password || password.length < 6) {
-      setErrorMessage(prev => ({
+
+    if (!fullName) {
+      setErrorMessage((prev) => ({
         ...prev,
-        password: 'Password must be at least 6 characters long.',
+        fullName: 'Please enter your full name.',
       }));
       isValid = false;
     }
+
     if (isValid) {
-      navigation.navigate('home');
+      try {
+        const userLoginResponse = await UserAdapter.userLogin({
+          name: fullName,
+          phone: mobileNumber,
+          email: '',
+          otp: '',
+        });
+
+        if (
+          userLoginResponse?.status === 'Success' &&
+          userLoginResponse?.code === 200
+        ) {
+          const userData = userLoginResponse.data;
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+
+          login(userLoginResponse.data);
+
+          if (userData?.registered == true) {
+            navigation.navigate('OTP', { userData });
+          } else {
+            navigation.navigate('SignUp', { userData });
+          }
+        } else {
+          setErrorMessage((prev) => ({
+            ...prev,
+            password: 'Invalid mobile number or password.',
+          }));
+        }
+      } catch (error) {
+        console.error(error);
+        setErrorMessage((prev) => ({
+          ...prev,
+          password: 'An error occurred. Please try again.',
+        }));
+      }
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Full Name</Text>
+        <TextInput
+          style={[styles.input, errorMessage.fullName ? styles.errorInput : null]}
+          placeholder="Enter your full name"
+          value={fullName}
+          onChangeText={setFullName}
+        />
+      </View>
+      {errorMessage.fullName && (
+        <Text style={styles.errorText}>{errorMessage.fullName}</Text>
+      )}
 
-      {/* Mobile Number */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Mobile</Text>
         <TextInput
@@ -76,15 +115,11 @@ const LoginScreen = () => {
         <Text style={styles.errorText}>{errorMessage.mobile}</Text>
       )}
 
-      {/* Password */}
-      <View style={styles.inputContainer}>
+      {/* <View style={styles.inputContainer}>
         <Text style={styles.label}>Password</Text>
         <View style={styles.passwordContainer}>
           <TextInput
-            style={[
-              styles.input,
-              errorMessage.password ? styles.errorInput : null,
-            ]}
+            style={[styles.input, errorMessage.password ? styles.errorInput : null]}
             placeholder="Enter your password"
             value={password}
             onChangeText={setPassword}
@@ -100,9 +135,9 @@ const LoginScreen = () => {
             />
           </TouchableOpacity>
         </View>
-      </View>
+      </View> */}
       {errorMessage.password && (
-        <Text style={styles.errorText}>{errorMessage.password}</Text>
+        <Text style={styles.errorTexts}>{errorMessage.password}</Text>
       )}
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -112,16 +147,16 @@ const LoginScreen = () => {
       <TouchableOpacity
         style={styles.link}
         onPress={() => navigation.navigate('SignUp')}>
-        <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-          <Text style={{color: 'black'}}>Login with </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          <Text style={{ color: 'black' }}>Login with </Text>
           <Text
             style={styles.linkText}
             onPress={() => navigation.navigate('OTP')}>
             OTP
           </Text>
         </View>
-        <View style={{flexDirection: 'row'}}>
-          <Text style={{color: 'black'}}>Don’t have an account? </Text>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{ color: 'black' }}>Don’t have an account? </Text>
           <Text
             style={styles.linkText}
             onPress={() => navigation.navigate('SignUp')}>
@@ -199,6 +234,12 @@ const styles = StyleSheet.create({
     color: 'red',
     marginBottom: 10,
     textAlign: 'left',
+    width: '100%',
+  },
+  errorTexts: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
     width: '100%',
   },
 });
