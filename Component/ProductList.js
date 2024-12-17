@@ -6,27 +6,36 @@ import {
   Image,
   ScrollView,
   StyleSheet,
+  Dimensions
 } from 'react-native';
+import {pContext} from '../context/ProductContext';
+import {getAllProducts} from '../Networking/HomePageService';
 import Heart from '../assets/Heart.svg';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import ProductAdapter from '../services/adapters/product-adapter';
-import {useAllProducts} from '../services/hooks/useAllProducts';
-import {NETWORK_STATUS} from '../enum/enum';
 const ProductList = () => {
+  const productContext = useContext(pContext);
   const navigation = useNavigation();
-  const {productList, updateProductList} = useAllProducts();
+    const width = Dimensions.get('window').width;
+  const route = useRoute();
+  const {categoryId} = route.params;
   useEffect(() => {
- 
     async function getProducts(params) {
-      const productsListRespone = await ProductAdapter.getAllProducts(1);
-      if (productsListRespone.status == NETWORK_STATUS.SUCCESS) {
-        updateProductList(productsListRespone.data.listAllProductItems);
+      const productsListRespone = await getAllProducts(categoryId);
+      console.log(productsListRespone.data);
+      if (
+        productsListRespone.status == 200 &&
+        productsListRespone.data.code == 200
+      ) {
+        productContext.updateProductList(
+          productsListRespone.data.data.listAllProductItems,
+        );
       }
     }
 
     getProducts();
   }, []);
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -51,9 +60,9 @@ const ProductList = () => {
         </View>
       </View>
       <View style={{paddingLeft: 5, paddingRight: 5}}>
-        {productList.length > 0 && (
+        {productContext.productList.length > 0 && (
           <FlatList
-            data={productList}
+            data={productContext.productList}
             keyExtractor={item => item.id}
             numColumns={3}
             renderItem={({item}) => {

@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   View,
   Image,
@@ -11,12 +11,12 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LoginScreen from './Login/Login';
-import {useUserInfo} from '../services/hooks/useUserInfo';
+import {UserContext} from '../context/UserContext';
 import {useNavigation} from '@react-navigation/native';
 
 const Account = props => {
   const navigation = useNavigation();
-  const {user, logout} = useUserInfo();
+  const {user, logout} = useContext(UserContext);
   console.log('user', user);
   const handleLogout = () => {
     logout();
@@ -188,7 +188,7 @@ const Account = props => {
           </View>
         </View>
       </View>
-      <View>{/* <LoginScreen/> */}</View>
+      <View></View>
     </View>
   ) : (
     <LoginScreen />

@@ -61,7 +61,7 @@ const BottomBar = () => {
             ),
           })}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="explore"
           component={LoginScreenNavigator}
           options={({route}) => ({
@@ -75,7 +75,7 @@ const BottomBar = () => {
               />
             ),
           })}
-        />
+        /> */}
         <Tab.Screen
           name="category"
           component={CategoryStackNavigator}

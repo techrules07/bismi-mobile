@@ -1,7 +1,6 @@
-import React, {useState, useEffect, ReactNode} from 'react';
-import {UserContext} from '../contexts/user-context';
-import {Text} from 'react-native';
+import React, {createContext, useState, useEffect, ReactNode} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Text} from 'react-native';
 
 interface User {
   id: string;
@@ -17,12 +16,20 @@ interface UserContextType {
   logout: () => void;
 }
 
-const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+const defaultProps: UserContextType = {
+  user: null,
+  login: () => {},
+  logout: () => {},
+};
 
+export const UserContext = createContext<UserContextType>(defaultProps);
+
+export const UserContextProvider: React.FC<{children: ReactNode}> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => {
-    debugger;
     const fetchUser = async () => {
       try {
         const savedUser = await AsyncStorage.getItem('user');
@@ -39,9 +46,8 @@ const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
   }, []);
 
   const login = async (userData: User) => {
-    debugger;
     try {
-      await AsyncStorage.setItem('user', JSON.stringify(userData)); // Save user data in AsyncStorage
+      await AsyncStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
     } catch (error) {
       console.error('Failed to save user data to AsyncStorage:', error);
@@ -51,13 +57,18 @@ const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('user');
+      setUser(null);
     } catch (error) {
       console.error('Failed to remove user data from AsyncStorage:', error);
     }
   };
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return (
+      <React.Fragment>
+        <Text>Loading...</Text>
+      </React.Fragment>
+    );
   }
 
   return (
@@ -66,5 +77,3 @@ const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
     </UserContext.Provider>
   );
 };
-
-export {UserContextProvider};

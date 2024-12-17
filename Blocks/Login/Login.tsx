@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,17 +8,20 @@ import {
   StyleSheet,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation } from '@react-navigation/native';
-import { useUserInfo } from '../../services/hooks/useUserInfo';
-import UserAdapter from '../../services/adapters/user-adapter';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import UserAdapter from '../../Networking/UserPageService';
 
 const LoginScreen = () => {
+  const [userData, setUserData] = useState(null);
   const [mobileNumber, setMobileNumber] = useState('');
-  const [fullName, setFullName] = useState(''); // Added fullName state
-  const [errorMessage, setErrorMessage] = useState({ mobile: '', password: '', fullName: '' });
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const { login } = useUserInfo();
+  const [otp, setOtp] = useState('');
+  const [errorMessage, setErrorMessage] = useState({
+    mobile: '',
+    otp: '',
+  });
+  const [isOtpVisible, setIsOtpVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
   const validateMobileNumber = (number: string) => {
@@ -27,29 +30,23 @@ const LoginScreen = () => {
   };
 
   const handleLogin = async () => {
-    setErrorMessage({ mobile: '', password: '', fullName: '' });
+    debugger;
+    setErrorMessage({mobile: '', otp: ''});
 
     let isValid = true;
     if (!mobileNumber || !validateMobileNumber(mobileNumber)) {
-      setErrorMessage((prev) => ({
+      setErrorMessage(prev => ({
         ...prev,
         mobile: 'Please enter a valid 10-digit mobile number.',
       }));
       isValid = false;
     }
 
-    if (!fullName) {
-      setErrorMessage((prev) => ({
-        ...prev,
-        fullName: 'Please enter your full name.',
-      }));
-      isValid = false;
-    }
-
     if (isValid) {
       try {
+        setIsLoading(true);
         const userLoginResponse = await UserAdapter.userLogin({
-          name: fullName,
+          name: '',
           phone: mobileNumber,
           email: '',
           otp: '',
@@ -60,46 +57,79 @@ const LoginScreen = () => {
           userLoginResponse?.code === 200
         ) {
           const userData = userLoginResponse.data;
+          console.log('userData', userData);
           await AsyncStorage.setItem('user', JSON.stringify(userData));
 
-          login(userLoginResponse.data);
-
-          if (userData?.registered == true) {
-            navigation.navigate('OTP', { userData });
+          if (userData?.registered === true) {
+            setIsOtpVisible(true);
+            setUserData(userData);
           } else {
-            navigation.navigate('SignUp', { userData });
+            setErrorMessage({
+              ...errorMessage,
+              mobile: 'Your number is not registered yet.',
+            });
+            navigation.navigate('SignUp', {userData: userLoginResponse?.data});
           }
         } else {
-          setErrorMessage((prev) => ({
+          setErrorMessage(prev => ({
             ...prev,
-            password: 'Invalid mobile number or password.',
+            mobile: 'Invalid mobile number. Please try again.',
           }));
         }
       } catch (error) {
         console.error(error);
-        setErrorMessage((prev) => ({
+        setErrorMessage(prev => ({
           ...prev,
-          password: 'An error occurred. Please try again.',
+          mobile: 'An error occurred. Please try again.',
         }));
+      } finally {
+        setIsLoading(false);
       }
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    debugger;
+    if (otp.length !== 6) {
+      setErrorMessage(prev => ({
+        ...prev,
+        otp: 'Please enter a valid 6-digit OTP.',
+      }));
+      return;
+    }
+
+    try {
+      const userLoginResponse = await UserAdapter?.verifyLogin({
+        id: userData?.id,
+        name: '',
+        phone: userData?.phone,
+        email: '',
+        otp: otp,
+      });
+
+      if (
+        userLoginResponse?.status === 'Success' &&
+        userLoginResponse?.code === 200
+      ) {
+        await AsyncStorage.setItem(
+          'user',
+          JSON.stringify(userLoginResponse?.data),
+        );
+
+        navigation.navigate('Account', {userData: userLoginResponse?.data});
+        console.log('userLoginResponse', userLoginResponse);
+      } else {
+        setErrorMessage('Invalid OTP. Please try again.');
+      }
+    } catch (error) {
+      console.error(error);
+      setErrorMessage('An error occurred. Please try again.');
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Full Name</Text>
-        <TextInput
-          style={[styles.input, errorMessage.fullName ? styles.errorInput : null]}
-          placeholder="Enter your full name"
-          value={fullName}
-          onChangeText={setFullName}
-        />
-      </View>
-      {errorMessage.fullName && (
-        <Text style={styles.errorText}>{errorMessage.fullName}</Text>
-      )}
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Mobile</Text>
@@ -115,55 +145,46 @@ const LoginScreen = () => {
         <Text style={styles.errorText}>{errorMessage.mobile}</Text>
       )}
 
-      {/* <View style={styles.inputContainer}>
-        <Text style={styles.label}>Password</Text>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={[styles.input, errorMessage.password ? styles.errorInput : null]}
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!isPasswordVisible}
-          />
-          <TouchableOpacity
-            style={styles.eyeIcon}
-            onPress={() => setIsPasswordVisible(prev => !prev)}>
-            <MaterialCommunityIcons
-              name={isPasswordVisible ? 'eye' : 'eye-off'}
-              color="gray"
-              size={28}
-            />
-          </TouchableOpacity>
-        </View>
-      </View> */}
-      {errorMessage.password && (
-        <Text style={styles.errorTexts}>{errorMessage.password}</Text>
+      {!isOtpVisible && (
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={isLoading}>
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Logging in...' : 'Get OTP'}
+          </Text>
+        </TouchableOpacity>
       )}
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
+      {isOtpVisible && (
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Enter OTP</Text>
+          <TextInput
+            style={[styles.input, errorMessage.otp ? styles.errorInput : null]}
+            placeholder="Enter OTP"
+            value={otp}
+            onChangeText={setOtp}
+            keyboardType="number-pad"
+            maxLength={6}
+          />
+          {errorMessage.otp && (
+            <Text style={styles.errorText}>{errorMessage.otp}</Text>
+          )}
 
-      <TouchableOpacity
-        style={styles.link}
-        onPress={() => navigation.navigate('SignUp')}>
-        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-          <Text style={{ color: 'black' }}>Login with </Text>
-          <Text
-            style={styles.linkText}
-            onPress={() => navigation.navigate('OTP')}>
-            OTP
-          </Text>
+          <TouchableOpacity style={styles.button} onPress={handleVerifyOtp}>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
         </View>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ color: 'black' }}>Don’t have an account? </Text>
-          <Text
-            style={styles.linkText}
-            onPress={() => navigation.navigate('SignUp')}>
-            Sign Up
-          </Text>
-        </View>
-      </TouchableOpacity>
+      )}
+
+      <View style={{flexDirection: 'row'}}>
+        <Text style={{color: 'black'}}>Don’t have an account? </Text>
+        <Text
+          style={styles.linkText}
+          onPress={() => navigation.navigate('SignUp')}>
+          Register
+        </Text>
+      </View>
     </View>
   );
 };
@@ -201,16 +222,6 @@ const styles = StyleSheet.create({
   errorInput: {
     borderColor: 'red',
   },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: 10,
-    padding: 10,
-  },
   button: {
     backgroundColor: '#703F07',
     padding: 15,
@@ -224,6 +235,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   link: {
+    display: 'flex',
+    justifyContent: 'row',
     marginTop: 20,
   },
   linkText: {
@@ -231,12 +244,6 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   errorText: {
-    color: 'red',
-    marginBottom: 10,
-    textAlign: 'left',
-    width: '100%',
-  },
-  errorTexts: {
     color: 'red',
     marginBottom: 10,
     textAlign: 'center',

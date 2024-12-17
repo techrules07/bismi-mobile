@@ -8,8 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {useUserInfo} from '../../services/hooks/useUserInfo';
-import UserAdapter from '../../services/adapters/user-adapter'
+import UserAdapter from '../../Networking/UserPageService';
 const OtpVerificationScreen = ({route}) => {
   const {userData} = route.params;
   console.log('userData', userData);
@@ -18,13 +17,13 @@ const OtpVerificationScreen = ({route}) => {
   const navigation = useNavigation();
   const handleVerifyOtp = async () => {
     debugger;
-    setErrorMessage('');
+
 
     if (otp.length !== 6) {
       setErrorMessage('Please enter a 6-digit OTP.');
       return;
     }
-
+    setErrorMessage('');
     try {
       const userLoginResponse = await UserAdapter?.verifyLogin({
         id: userData?.id,
@@ -65,7 +64,6 @@ const OtpVerificationScreen = ({route}) => {
         maxLength={6}
       />
 
-      {/* Error message display */}
       {errorMessage ? (
         <Text style={styles.errorText}>{errorMessage}</Text>
       ) : null}

@@ -1,4 +1,3 @@
-//@ts-nocheck
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
@@ -19,12 +18,10 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import Login from './Component/Login';
-// import {ProductContext} from './context/ProductContext';
 import Home from './Component/BottomBar';
 import AppNavigator from './Component/TopBar';
-import {AllProductsContextProvider} from './services/providers/all-products-provider';
-import {UserContextProvider} from './services/providers/user-provider';
+import {ProductContext} from './context/ProductContext';
+import {UserContextProvider} from './context/UserContext';
 
 function AppComponent(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -47,11 +44,11 @@ function AppComponent(): React.JSX.Element {
 
 const App = () => {
   return (
-    <AllProductsContextProvider>
-      <UserContextProvider>
+    <UserContextProvider>
+      <ProductContext>
         <AppComponent />
-      </UserContextProvider>
-    </AllProductsContextProvider>
+      </ProductContext>
+    </UserContextProvider>
   );
 };
 

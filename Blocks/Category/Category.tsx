@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -11,74 +11,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CategoryForMens from './CategoryForMens';
-
-const sidebarCategories = [
-  {
-    id: 1,
-    name: 'For You',
-    icon: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-  },
-  {
-    id: 2,
-    name: 'Grocery',
-    icon: 'https://images.pexels.com/photos/749353/pexels-photo-749353.jpeg',
-  },
-  {
-    id: 3,
-    name: 'Fashion',
-    icon: 'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg',
-  },
-  {
-    id: 4,
-    name: 'Appliances',
-    icon: 'https://images.pexels.com/photos/3965559/pexels-photo-3965559.jpeg',
-  },
-  {
-    id: 5,
-    name: 'Mobiles',
-    icon: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
-  },
-  {
-    id: 6,
-    name: 'Electronics',
-    icon: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
-  },
-  {
-    id: 7,
-    name: 'Smart Gadgets',
-    icon: 'https://images.pexels.com/photos/7129035/pexels-photo-7129035.jpeg',
-  },
-  {
-    id: 8,
-    name: 'Home',
-    icon: 'https://images.pexels.com/photos/7061644/pexels-photo-7061644.jpeg',
-  },
-  {
-    id: 9,
-    name: 'Appliances',
-    icon: 'https://images.pexels.com/photos/3965559/pexels-photo-3965559.jpeg',
-  },
-  {
-    id: 10,
-    name: 'Mobiles',
-    icon: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
-  },
-  {
-    id: 11,
-    name: 'Electronics',
-    icon: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
-  },
-  {
-    id: 12,
-    name: 'Smart Gadgets',
-    icon: 'https://images.pexels.com/photos/7129035/pexels-photo-7129035.jpeg',
-  },
-  {
-    id: 13,
-    name: 'Home',
-    icon: 'https://images.pexels.com/photos/7061644/pexels-photo-7061644.jpeg',
-  },
-];
+import {getAllCategories, getAllOffers} from '../../Networking/HomePageService';
+import {pContext} from '../../context/ProductContext';
 
 const popularStores = [
   {
@@ -177,11 +111,48 @@ const bismi = [
   },
 ];
 const Category = props => {
-  const [selectedSection, setSelectedSection] = useState('For You');
+  debugger;
+  const [selectedSection, setSelectedSection] = useState(1);
+  const productContext = useContext(pContext);
+  console.log('productContext', productContext);
 
-  const handleSidebarClick = section => {
-    setSelectedSection(section); // Update the selected section
+  useEffect(() => {
+    async function getAllCategoriesApi() {
+      const categoriesResponse = await getAllCategories();
+      if (
+        categoriesResponse.status == 200 &&
+        categoriesResponse.data.code == 200
+      ) {
+        productContext.updateCategories(categoriesResponse.data.data);
+      }
+    }
+    getAllCategoriesApi();
+  }, []);
+
+  const handleSidebarClick = async section => {
+    debugger;
+    setSelectedSection(section);
+    await getProducts(section);
   };
+
+  const getProducts = async section => {
+    try {
+      const productsListResponse = await getAllProducts(section);
+      console.log(productsListResponse.data);
+
+      if (
+        productsListResponse?.status === 200 &&
+        productsListResponse?.data?.code === 200
+      ) {
+        productContext.updateProductList(
+          productsListResponse?.data?.data?.listAllProductItems,
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -200,26 +171,27 @@ const Category = props => {
             style={styles.sidebar}
             contentContainerStyle={styles.sidebarContent}
             showsVerticalScrollIndicator={false}>
-            {sidebarCategories.map(category => (
+            {productContext.categories.map(category => (
               <View
                 key={category.id}
                 style={[
                   styles.sidebarItem,
-                  selectedSection === category.name && styles.activeSidebarItem,
+                  selectedSection === category?.id && styles.activeSidebarItem,
                 ]}
-                onTouchEnd={() => handleSidebarClick(category.name)}>
+                onTouchEnd={() => handleSidebarClick(category?.id)}>
                 <Image
-                  source={{uri: category.icon}}
-                  style={
-                    selectedSection === category.name
+                  source={{uri: category.imageURL}}
+                  style={[
+                    selectedSection === category?.id
                       ? styles.roundedImages
-                      : styles.sidebarIcon
-                  }
+                      : styles.sidebarIcon,
+                    {backgroundColor: 'transparent'},
+                  ]}
                 />
-                <Text style={styles.sidebarText}>{category.name}</Text>
+                <Text style={styles.sidebarText}>{category?.categoryName}</Text>
                 <View
                   style={
-                    selectedSection === category.name
+                    selectedSection === category?.id
                       ? styles.selectedStyle
                       : styles.horizontalLine
                   }
@@ -228,17 +200,17 @@ const Category = props => {
             ))}
           </ScrollView>
         </View>
-        {selectedSection === 'For You' && (
+        {selectedSection&& (
           <ScrollView style={styles.mainContent}>
             <Text style={styles.sectionTitle}>Recently Viewed Stores</Text>
             <ScrollView
               horizontal
               style={styles.horizontalScroll}
               showsHorizontalScrollIndicator={false}>
-              {recentlyViewed.map(item => (
+              {productContext.productList.map(item => (
                 <View key={item.id} style={styles.recentItem}>
                   <Image
-                    source={{uri: item.image}}
+                    source={{uri: item?.mainImage}}
                     style={styles.recentImage}
                   />
                   <Text style={styles.recentText}>{item.name}</Text>
@@ -330,8 +302,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDE0D4',
     maxWidth: 70,
     borderRadius: 10,
-    borderTopRadius:10,
-    marginTop:10,
+    borderTopRadius: 10,
+    marginTop: 10,
   },
   sidebarContent: {
     paddingBottom: 10,
@@ -345,9 +317,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: 70,
     maxWidth: 70,
-   
   },
-  sidebarIcon: {width: 40, height: 40},
+  sidebarIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'transparent',
+  },
   sidebarText: {
     fontSize: 12,
     textAlign: 'center',
@@ -386,11 +361,11 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   roundedImages: {
-    width: 50,
-    height: 50,
-    borderRadius: 40,
+    width: 56,
+    height: 56,
+    borderRadius: 500,
+    backgroundColor: 'transparent',
   },
-  //   sidebarContainer: {flex: 1},
   forYouSection: {
     marginTop: 20,
     alignItems: 'center',

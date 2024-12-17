@@ -10,31 +10,29 @@ import {
 } from 'react-native';
 import Logo from '../assets/logo-bismi.png';
 import Search from '../assets/search.png';
+import {getAllOffers, getAllCategories} from '../Networking/HomePageService';
+import {pContext} from '../context/ProductContext';
 import Carousel from 'react-native-reanimated-carousel';
-import {useAllProducts} from '../services/hooks/useAllProducts';
-import ProductAdapter from '../services/adapters/product-adapter';
-import { NETWORK_STATUS } from '../enum/enum';
 
 const HomeScreen = props => {
-  console.log(useAllProducts());
-  const {updateCategories, updateSliderItems, sliderItems, categories} =
-    useAllProducts();
+  const productContext = useContext(pContext);
   const width = Dimensions.get('window').width;
 
   useEffect(() => {
     async function fetchAllOffers() {
-      const response = await ProductAdapter?.getAllOffers();
-      if (response?.status == NETWORK_STATUS?.SUCCESS) {
-        updateSliderItems(response?.data);
+      const response = await getAllOffers();
+      if (response.status == 200 && response.data.code == 200) {
+        productContext.updateSliderItems(response.data.data);
       }
     }
 
     async function getAllCategoriesApi() {
-      const categoriesResponse = await ProductAdapter?.getAllCategories();
+      const categoriesResponse = await getAllCategories();
       if (
-        categoriesResponse?.status == NETWORK_STATUS?.SUCCESS
+        categoriesResponse.status == 200 &&
+        categoriesResponse.data.code == 200
       ) {
-        updateCategories(categoriesResponse?.data);
+        productContext.updateCategories(categoriesResponse.data.data);
       }
     }
 
@@ -50,7 +48,6 @@ const HomeScreen = props => {
         flexDirection: 'column',
         alignItems: 'center',
       }}>
-      <View></View>
       <View
         style={{
           display: 'flex',
@@ -95,12 +92,14 @@ const HomeScreen = props => {
           height: 500,
         }}>
         <View style={{height: 160, width: '100%'}}>
-          {sliderItems.length > 0 && (
+          {productContext.sliderItems.length > 0 && (
             <Carousel
               width={width - 30}
               height={160}
-              data={sliderItems}
+              data={productContext.sliderItems}
               scrollAnimationDuration={1000}
+              autoPlay={true}
+              autoPlayInterval={1000}
               renderItem={item => {
                 return (
                   <View style={{height: 160, width: '100%'}}>
@@ -131,7 +130,7 @@ const HomeScreen = props => {
                 paddingTop: 16,
                 paddingBottom: 16,
               }}>
-              {categories.map(item => {
+              {productContext.categories.map(item => {
                 return (
                   <TouchableOpacity
                     style={{
@@ -145,7 +144,9 @@ const HomeScreen = props => {
                       paddingBottom: 25,
                     }}
                     onPress={() => {
-                      props.navigation.navigate('Products');
+                      props.navigation.navigate('Products', {
+                        categoryId: item.id,
+                      });
                     }}>
                     <View
                       style={{
