@@ -11,7 +11,7 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LoginScreen from './Login/Login';
-import {UserContext} from '../context/UserContext';
+import {UserContext} from '../Context/UserContext';
 import {useNavigation} from '@react-navigation/native';
 
 const Account = props => {

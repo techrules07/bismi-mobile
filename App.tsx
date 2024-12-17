@@ -20,8 +20,8 @@ import {
 
 import Home from './Component/BottomBar';
 import AppNavigator from './Component/TopBar';
-import {ProductContext} from './context/ProductContext';
-import {UserContextProvider} from './context/UserContext';
+import {ProductContext} from './Context/ProductContext';
+import {UserContextProvider} from './Context/UserContext';
 
 function AppComponent(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';

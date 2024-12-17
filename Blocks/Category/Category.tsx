@@ -12,7 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CategoryForMens from './CategoryForMens';
 import {getAllCategories, getAllOffers} from '../../Networking/HomePageService';
-import {pContext} from '../../context/ProductContext';
+import {pContext} from '../../Context/ProductContext';
 
 const popularStores = [
   {

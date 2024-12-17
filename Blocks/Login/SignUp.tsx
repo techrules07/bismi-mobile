@@ -10,7 +10,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import UserAdapter from '../../Networking/UserPageService';
-import {UserContext} from '../../context/UserContext';
+import {UserContext} from '../../Context/UserContext';
 
 const SignUpScreen = () => {
   const {user} = useContext(UserContext);
