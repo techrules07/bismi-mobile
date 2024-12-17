@@ -44,11 +44,13 @@ function AppComponent(): React.JSX.Element {
 
 const App = () => {
   return (
-    <UserContextProvider>
-      <ProductContext>
-        <AppComponent />
-      </ProductContext>
-    </UserContextProvider>
+    <>
+      <UserContextProvider>
+        <ProductContext>
+          <AppComponent />
+        </ProductContext>
+      </UserContextProvider>
+    </>
   );
 };
 
