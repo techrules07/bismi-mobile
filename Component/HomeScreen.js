@@ -98,6 +98,8 @@ const HomeScreen = props => {
               height={160}
               data={productContext.sliderItems}
               scrollAnimationDuration={1000}
+              autoPlay={true}
+              autoPlayInterval={1000}
               renderItem={item => {
                 return (
                   <View style={{height: 160, width: '100%'}}>

@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ShirtDetails = ({selectedShirt, favorites, toggleFavorite}) => {
+const ShirtDetails = ({selectedShirt, favorites, toggleFavorite,route}) => {
+  debugger
   const [selectedSize, setSelectedSize] = useState(null);
-
+  const { selectedItem } = route.params;
+  console.log("SelectedItem",selectedItem)
   return (
     <ScrollView style={styles.detailsContainer}>
       <View style={styles.imageContainer}>
