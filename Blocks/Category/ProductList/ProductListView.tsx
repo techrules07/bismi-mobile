@@ -1,4 +1,4 @@
-import {useNavigation} from '@react-navigation/native';
+//@ts-nocheck
 import React, {useState} from 'react';
 import {
   View,
@@ -9,114 +9,127 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useNavigation} from '@react-navigation/native';
 
-const ShirtDetails = ({selectedShirt, favorites, toggleFavorite,route}) => {
-  debugger
-  const [selectedSize, setSelectedSize] = useState(null);
-  const { selectedItem } = route.params;
-  console.log("SelectedItem",selectedItem)
+const ProductDetails = ({
+  selectedItem,
+  favorites,
+  toggleFavorite,
+  similarItem,
+  onSelectSimilarItem,
+}) => {
+  const navigation = useNavigation();
   return (
     <ScrollView style={styles.detailsContainer}>
       <View style={styles.imageContainer}>
         <Image
-          source={{uri: selectedShirt.image}}
+          source={{uri: selectedItem?.mainImage}}
           style={styles.selectedImage}
         />
       </View>
 
       <View style={styles.iconContainer}>
-        <Text style={styles.shirtTitle}>{selectedShirt.name}</Text>
+        <Text style={styles.shirtTitle}>{selectedItem?.productCategory}</Text>
         <View style={styles.iconView}>
+          <Icon
+            name="cart"
+            size={30}
+            color="gray"
+            onPress={() => {
+              navigation.navigate('Cart',{selectedItem});
+            }}
+          />
           <Icon
             name="share-variant"
             size={30}
             color="gray"
             style={styles.icon}
           />
-          <TouchableOpacity onPress={() => toggleFavorite(selectedShirt.id)}>
+          <TouchableOpacity onPress={() => toggleFavorite(selectedItem?.id)}>
             <Icon
               name={
-                favorites.includes(selectedShirt.id) ? 'heart' : 'heart-outline'
+                favorites.includes(selectedItem?.id) ? 'heart' : 'heart-outline'
               }
               size={30}
-              color={favorites.includes(selectedShirt.id) ? 'red' : 'gray'}
+              color={favorites.includes(selectedItem?.id) ? 'red' : 'gray'}
               style={styles.icon}
             />
           </TouchableOpacity>
         </View>
       </View>
-
-      <Text style={styles.price}>{selectedShirt.price}</Text>
-
-      {/* Available Sizes Section */}
-      <Text style={styles.sectionTitle}>Available Sizes:</Text>
-      <View style={styles.sizeOptions}>
-        {['S', 'M', 'L', 'XL', 'XXL'].map(size => (
-          <TouchableOpacity
-            key={size}
-            style={[
-              styles.sizeButton,
-              selectedSize === size && styles.selectedSize,
-            ]}
-            onPress={() => setSelectedSize(size)}>
-            <Text style={styles.sizeText}>{size}</Text>
-          </TouchableOpacity>
-        ))}
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
+        {/* <TouchableOpacity
+          style={styles.addToCartButton}
+          onPress={() => addToCart(item)}>
+          <Text style={styles.addToCartText}>Add to Cart</Text>
+        </TouchableOpacity> */}
       </View>
-
-      {/* Product Details Section */}
       <Text style={styles.sectionTitle}>Product Details:</Text>
       <View style={styles.detailsSection}>
-        <Text style={styles.detailsText}>Brand: {selectedShirt.brand}</Text>
+        <Text style={styles.detailsText}>Brand: {selectedItem?.brandName}</Text>
         <Text style={styles.detailsText}>
-          Material: {selectedShirt.material}
+          Material: {selectedItem?.subCatName}
         </Text>
-        <Text style={styles.detailsText}>Fit: {selectedShirt.fit}</Text>
-        <Text style={styles.detailsText}>Color: {selectedShirt.color}</Text>
+        <Text style={styles.detailsText}>Product: {selectedItem?.product}</Text>
+        <Text style={styles.detailsText}>Color: {selectedItem?.colorName}</Text>
       </View>
 
-      {/* Product Description Section */}
       <Text style={styles.sectionTitle}>Product Description:</Text>
-      <Text style={styles.descriptionText}>{selectedShirt.description}</Text>
+      <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
 
-      {/* Similar Collections Section */}
-      <Text style={styles.sectionTitle}>Similar Collections:</Text>
+      <Text style={styles.sectionTitle}>Similar Products:</Text>
       <ScrollView
         horizontal
         style={styles.similarItemsContainer}
         showsHorizontalScrollIndicator={false}>
-        {selectedShirt?.similarItems?.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <Image source={{uri: item.image}} style={styles.cardImage} />
-            <View style={styles.shirtInfo}>
-              <Text style={styles.cardTitle}>{item.title || 'Shirt'}</Text>
-              <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
-                <Icon
-                  name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-                  size={24}
-                  color={favorites.includes(item.id) ? 'red' : '#ccc'}
-                />
-              </TouchableOpacity>
+        {similarItem?.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            onPress={() => onSelectSimilarItem(item)}>
+            <View style={styles.card}>
+              <Image source={{uri: item?.mainImage}} style={styles.cardImage} />
+              <View style={styles.shirtInfo}>
+                <Text style={styles.cardTitle}>{item?.productCategory}</Text>
+                <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
+                  <Icon
+                    name={
+                      favorites.includes(item.id) ? 'heart' : 'heart-outline'
+                    }
+                    size={24}
+                    color={favorites.includes(item.id) ? 'red' : '#ccc'}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.cardPrice}>{item?.unitPrice}</Text>
             </View>
-            <Text style={styles.cardPrice}>{item.price}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </ScrollView>
   );
 };
 
-const ShirtListView = ({route}) => {
+const ProductListView = ({route}) => {
   const navigation = useNavigation();
-  const {selectedShirt, favorites, toggleFavorite} = route.params;
+  const {selectedItem, similarItem} = route.params;
 
-  const [favoriteItems, setFavoriteItems] = useState(favorites);
+  const [currentItem, setCurrentItem] = useState(selectedItem);
+  const [currentSimilarItems, setCurrentSimilarItems] = useState(similarItem);
+  const [favoriteItems, setFavoriteItems] = useState([]);
 
   const handleFavoriteToggle = id => {
     const updatedFavorites = favoriteItems.includes(id)
       ? favoriteItems.filter(item => item !== id)
       : [...favoriteItems, id];
     setFavoriteItems(updatedFavorites);
+  };
+
+  const handleSelectSimilarItem = item => {
+    setCurrentItem(item);
+    setCurrentSimilarItems(
+      currentSimilarItems.filter(similar => similar.id !== item.id),
+    );
   };
 
   return (
@@ -127,23 +140,30 @@ const ShirtListView = ({route}) => {
             name="arrow-left"
             size={24}
             color="#fff"
-            onPress={() => navigation.navigate('ShirtList')}
+            onPress={() => navigation.navigate('Category')}
           />
-          <Text style={styles.headerTitle}>Shirts</Text>
+          <Text style={styles.headerTitle}>Products</Text>
         </View>
 
         <View style={styles.headerIcons}>
           <Icon name="magnify" size={24} color="#fff" />
           <Icon name="microphone" size={24} color="#fff" />
           <Icon name="camera" size={24} color="#fff" />
-          <Icon name="cart" size={24} color="#fff" onPress={() => navigation.navigate('Cart')}/>
+          <Icon
+            name="cart"
+            size={24}
+            color="#fff"
+            onPress={() => navigation.navigate('Cart')}
+          />
         </View>
       </View>
 
-      <ShirtDetails
-        selectedShirt={selectedShirt}
+      <ProductDetails
+        selectedItem={currentItem}
         favorites={favoriteItems}
         toggleFavorite={handleFavoriteToggle}
+        similarItem={currentSimilarItems}
+        onSelectSimilarItem={handleSelectSimilarItem}
       />
     </View>
   );
@@ -226,11 +246,11 @@ const styles = StyleSheet.create({
   },
   selectedSize: {
     backgroundColor: '#EDE0D4',
-    color:"white"
+    color: 'white',
   },
   sizeText: {
     fontSize: 16,
-    color:"black"
+    color: 'black',
   },
   detailsSection: {
     marginBottom: 10,
@@ -255,8 +275,8 @@ const styles = StyleSheet.create({
   card: {
     width: 150,
     marginLeft: 10,
-    borderWidth: 0, // No border
-    borderRadius: 0, // No rounded corners
+    borderWidth: 0,
+    borderRadius: 0,
     gap: 10,
   },
   cardImage: {
@@ -280,6 +300,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
   },
+  addToCartButton: {
+    backgroundColor: '#703F07',
+    borderRadius: 30,
+    // paddingVertical: 10,
+    // paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    width: '40%',
+    padding: 10,
+  },
+  addToCartText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
 });
 
-export default ShirtListView;
+export default ProductListView;

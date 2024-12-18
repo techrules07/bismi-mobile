@@ -24,7 +24,7 @@ const BottomBar = () => {
         'OrderList',
         'Products',
         'ShirtList',
-        'ShirtListView',
+        'ProductListView',
         'Cart',
         'Coupons',
         'Whislist',
@@ -62,7 +62,7 @@ const BottomBar = () => {
             ),
           })}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="explore"
           component={ExploreScreen}
           options={({route}) => ({
@@ -76,7 +76,7 @@ const BottomBar = () => {
               />
             ),
           })}
-        />
+        /> */}
         <Tab.Screen
           name="category"
           component={CategoryStackNavigator}
@@ -103,7 +103,7 @@ const BottomBar = () => {
             ),
           })}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="cart"
           component={CartPage}
           options={({route}) => ({
@@ -117,7 +117,7 @@ const BottomBar = () => {
               />
             ),
           })}
-        />
+        /> */}
       </Tab.Navigator>
     </NavigationContainer>
   );

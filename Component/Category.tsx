@@ -18,7 +18,7 @@ import {
   getAllProducts,
 } from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 const popularStores = [
   {
@@ -118,7 +118,7 @@ const bismi = [
 ];
 const Category = props => {
   const [selectedSection, setSelectedSection] = useState(1);
-const navigation = useNavigation();
+  const navigation = useNavigation();
   const handleSidebarClick = async section => {
     setSelectedSection(section);
     getProducts(section);
@@ -242,7 +242,12 @@ const navigation = useNavigation();
                   key={item.id}
                   style={styles.recentItem}
                   onPress={() =>
-                    navigation.navigate('ShirtListView', {selectedItem: item})
+                    navigation.navigate('ProductListView', {
+                      selectedItem: item,
+                      similarItem: productContext?.productList?.filter(
+                        otherItem => otherItem?.id !== item?.id,
+                      ),
+                    })
                   }>
                   <Image
                     source={{uri: item?.mainImage}}
@@ -312,7 +317,7 @@ const navigation = useNavigation();
             </View>
           </ScrollView>
         )}
-        {selectedSection === 'Fashion' && <CategoryForMens />}
+        {/* {selectedSection === 'Fashion' && <CategoryForMens />} */}
       </View>
     </View>
   );
