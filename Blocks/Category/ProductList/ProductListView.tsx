@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
-
+import {addToCart} from '../../../Networking/HomePageService';
+import {pContext} from '../../../Context/ProductContext';
+import {UserContext} from '../../../Context/UserContext';
+import Snackbar from 'react-native-snackbar';
 const ProductDetails = ({
   selectedItem,
   favorites,
@@ -19,6 +22,36 @@ const ProductDetails = ({
   onSelectSimilarItem,
 }) => {
   const navigation = useNavigation();
+  const productContext = useContext(pContext);
+  const {user, logout} = useContext(UserContext);
+  console.log('user', user);
+  const addToCarts = defaultItem => {
+    debugger
+    async function addToCartApi() {
+      const cartResponse = await addToCart(defaultItem);
+      if (cartResponse?.status == 200 && cartResponse?.data?.code == 200) {
+        productContext?.addToCart(cartResponse?.data?.data);
+  
+        // Show success snackbar with tick icon
+        Snackbar.show({
+          text: 'Product added to cart successfully!',
+          backgroundColor: 'green',
+          // icon: 'check',  // You can use an icon library to add a tick icon here
+          // duration: Snackbar.LENGTH_SHORT,
+        });
+      } else {
+        // Show failure snackbar with cross icon
+        Snackbar.show({
+          text: 'Failed to add product to cart!',
+          backgroundColor: 'red',
+          // icon: 'close',  // You can use a cross icon for failure
+          // duration: Snackbar.LENGTH_SHORT,
+        });
+      }
+    }
+  
+    addToCartApi();
+  };
   return (
     <ScrollView style={styles.detailsContainer}>
       <View style={styles.imageContainer}>
@@ -36,9 +69,32 @@ const ProductDetails = ({
             size={30}
             color="gray"
             onPress={() => {
-              navigation.navigate('Cart',{selectedItem});
+              const defaultItem = {
+                id: selectedItem?.id,
+                userId: user?.id,
+                productId: selectedItem?.productSizeId,
+                category: selectedItem?.availabilityId,
+                subCategory: selectedItem?.productCategoryId,
+                productCategory: selectedItem?.productCategoryId,
+                brand: selectedItem?.brandId,
+                color: selectedItem?.colorId,
+                unit: selectedItem?.unitId,
+                productSize:
+                  parseFloat(
+                    selectedItem?.productSize?.replace(/[^\d.-]/g, ''),
+                  ) || 0,
+                quantity: 1,
+                active: true,
+              };
+
+              addToCarts(defaultItem);
+
+              navigation.navigate('Cart', {
+                selectedItem,
+              });
             }}
           />
+
           <Icon
             name="share-variant"
             size={30}
