@@ -10,6 +10,7 @@ import AccountStackNavigator from './AccountStackNavigator';
 import CategoryStackNavigator from './CategoryStackNavigator';
 import CartPage from '../Blocks/Category/Cart/Cart';
 import LoginScreenNavigator from './LoginStackNavigtor';
+import ExploreScreen from './ExploreScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,7 +32,7 @@ const BottomBar = () => {
         'Payment',
         'Address',
         'Faqs',
-        'FilterPage'
+        'FilterPage',
       ].includes(routeName)
     ) {
       return {display: 'none'};
@@ -63,7 +64,7 @@ const BottomBar = () => {
         />
         <Tab.Screen
           name="explore"
-          component={LoginScreenNavigator}
+          component={ExploreScreen}
           options={({route}) => ({
             tabBarLabel: 'Explore',
             tabBarStyle: getTabBarVisibility(route),
@@ -74,7 +75,6 @@ const BottomBar = () => {
                 size={size}
               />
             ),
-            
           })}
         />
         <Tab.Screen
