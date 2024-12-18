@@ -10,14 +10,16 @@ import {
 import {pContext} from '../context/ProductContext';
 import {getAllProducts} from '../Networking/HomePageService';
 import Heart from '../assets/Heart.svg';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const ProductList = () => {
   const productContext = useContext(pContext);
   const navigation = useNavigation();
+  const route = useRoute();
+  const {categoryId} = route.params;
   useEffect(() => {
     async function getProducts(params) {
-      const productsListRespone = await getAllProducts(1);
+      const productsListRespone = await getAllProducts(categoryId);
       console.log(productsListRespone.data);
       if (
         productsListRespone.status == 200 &&
