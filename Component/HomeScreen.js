@@ -142,7 +142,9 @@ const HomeScreen = props => {
                       paddingBottom: 25,
                     }}
                     onPress={() => {
-                      props.navigation.navigate('Products');
+                      props.navigation.navigate('Products', {
+                        categoryId: item.id,
+                      });
                     }}>
                     <View
                       style={{
