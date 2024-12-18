@@ -1,10 +1,10 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import ShirtList from '../Blocks/Category/ShirtList/ShirtList';
+import ShirtList from '../Blocks/Category/ProductList/ShirtList';
 import CategoryForMens from '../Blocks/Category/CategoryForMens';
-import ShirtListView from '../Blocks/Category/ShirtList/ShirtListView';
+import ProductListView from '../Blocks/Category/ProductList/ProductListView';
 import CartPage from '../Blocks/Category/Cart/Cart';
-import FilterPage from '../Blocks/Category/ShirtList/Filter';
+import FilterPage from '../Blocks/Category/ProductList/Filter';
 import Category from './Category';
 
 const CategoryStack = createStackNavigator();
@@ -21,7 +21,10 @@ const CategoryStackNavigator = () => {
         name="CategoryForMens"
         component={CategoryForMens}
       />
-      <CategoryStack.Screen name="ShirtListView" component={ShirtListView} />
+      <CategoryStack.Screen
+        name="ProductListView"
+        component={ProductListView}
+      />
       <CategoryStack.Screen name="Cart" component={CartPage} />
       <CategoryStack.Screen name="FilterPage" component={FilterPage} />
     </CategoryStack.Navigator>

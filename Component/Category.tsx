@@ -14,9 +14,11 @@ import CategoryForMens from '../Blocks/Category/CategoryForMens';
 import {
   getAllCategories,
   getAllOffers,
+  getAllPremiumProducts,
   getAllProducts,
 } from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
+import {useNavigation} from '@react-navigation/native';
 
 const popularStores = [
   {
@@ -116,22 +118,41 @@ const bismi = [
 ];
 const Category = props => {
   const [selectedSection, setSelectedSection] = useState(1);
-
+  const navigation = useNavigation();
   const handleSidebarClick = async section => {
     setSelectedSection(section);
     getProducts(section);
   };
   const productContext = useContext(pContext);
+  console.log('productContext', productContext);
   useEffect(() => {
     fetchAllOffers();
     getAllCategoriesApi();
     getProducts(1);
+    getPremiumProductsApi();
   }, []);
   console.log(productContext?.categories);
   async function fetchAllOffers() {
     const response = await getAllOffers();
     if (response.status == 200 && response.data.code == 200) {
       productContext.updateSliderItems(response.data.data);
+    }
+  }
+  async function getPremiumProductsApi(
+    updatePremiumProducts: (data: any[]) => void,
+  ) {
+    try {
+      const response = await getAllPremiumProducts();
+      if (response?.status === 200 && response?.data?.code === 200) {
+        productContext?.updatePremiumProducts(response?.data?.data);
+      } else {
+        console.error(
+          'Failed to fetch premium products: Invalid response structure',
+          response,
+        );
+      }
+    } catch (error) {
+      console.error('Failed to fetch premium products:', error);
     }
   }
 
@@ -144,6 +165,7 @@ const Category = props => {
       productContext.updateCategories(categoriesResponse.data.data);
     }
   }
+
   async function getProducts(section) {
     try {
       const productsListResponse = await getAllProducts(section);
@@ -216,7 +238,17 @@ const Category = props => {
               style={styles.horizontalScroll}
               showsHorizontalScrollIndicator={false}>
               {productContext.productList.map(item => (
-                <View key={item.id} style={styles.recentItem}>
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.recentItem}
+                  onPress={() =>
+                    navigation.navigate('ProductListView', {
+                      selectedItem: item,
+                      similarItem: productContext?.productList?.filter(
+                        otherItem => otherItem?.id !== item?.id,
+                      ),
+                    })
+                  }>
                   <Image
                     source={{uri: item?.mainImage}}
                     style={styles.recentImage}
@@ -224,7 +256,7 @@ const Category = props => {
                   <Text style={styles.recentText} numberOfLines={1}>
                     {item?.product}
                   </Text>
-                </View>
+                </TouchableOpacity>
               ))}
             </ScrollView>
             <Text style={styles.sectionTitle}>More on Bismi</Text>
@@ -257,23 +289,27 @@ const Category = props => {
                 </View>
               ))}
             </ScrollView>
-            <Text style={styles.sectionTitle}>Popular Stores</Text>
+            <Text style={styles.sectionTitle}>Premium Stores</Text>
             <View style={styles.grid}>
               <ScrollView
                 horizontal
                 style={styles.horizontalScroll}
                 showsHorizontalScrollIndicator={false}>
-                {popularStores.map(store => (
+                {productContext?.premiumProducts?.map(store => (
                   <View key={store.id} style={styles.gridItem}>
                     <Image
-                      source={{uri: store.image}}
+                      source={{uri: store?.mainImageUrl}}
                       style={styles.gridImage}
                     />
                     <View style={styles.gridText}>
-                      <Text style={{fontWeight: 'bold', color: 'black'}}>
-                        {store.name}
-                      </Text>
-                      <Text style={{color: 'black'}}>{store.price}</Text>
+                      <View style={{flexDirection: 'row'}}>
+                        <Text style={{fontWeight: 'bold', color: 'black'}}>
+                          {store?.subCategoryName}
+                        </Text>
+                        {/* <Text>{store?.categoryName }</Text> */}
+                      </View>
+
+                      <Text style={{color: 'black'}}>₹{store?.unitPrice}</Text>
                     </View>
                   </View>
                 ))}
@@ -281,7 +317,7 @@ const Category = props => {
             </View>
           </ScrollView>
         )}
-        {selectedSection === 'Fashion' && <CategoryForMens />}
+        {/* {selectedSection === 'Fashion' && <CategoryForMens />} */}
       </View>
     </View>
   );

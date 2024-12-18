@@ -186,7 +186,7 @@ const ShirtList = props => {
 
   const handleShirtSelect = shirt => {
     setSelectedShirt(shirt);
-    navigation.navigate('ShirtListView', {
+    navigation.navigate('ProductListView', {
       selectedShirt: shirt,
       favorites: Array.from(favorites),
       toggleFavorite,

@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,24 +10,18 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const CartPage = () => {
+const CartPage = ({route}) => {
+  const {selectedItem} = route.params;
+  console.log('selectedItem', selectedItem);
+
   const navigation = useNavigation();
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'Men’s Casual Shirt',
-      price: 1299,
-      image: 'https://via.placeholder.com/150',
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: 'Women’s Printed Kurti',
-      price: 899,
-      image: 'https://via.placeholder.com/150',
-      quantity: 1,
-    },
-  ]);
+  const [cartItems, setCartItems] = useState([{...selectedItem, quantity: 1}]);
+
+  useEffect(() => {
+    if (selectedItem) {
+      setCartItems([{...selectedItem, quantity: 1}]);
+    }
+  }, [selectedItem]);
 
   const updateQuantity = (id, increment) => {
     setCartItems(prevItems =>
@@ -52,15 +46,7 @@ const CartPage = () => {
     alert(`Item with ID ${id} moved to wishlist!`);
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0,
-    );
-  };
-
   const shippingCost = 50;
-  const totalAmount = calculateTotal() + shippingCost;
 
   return (
     <View style={styles.container}>
@@ -70,7 +56,7 @@ const CartPage = () => {
             name="arrow-left"
             size={24}
             color="#fff"
-            onPress={() => navigation.navigate('ShirtList')}
+            onPress={() => navigation.navigate('Category')}
           />
           <Text style={styles.headerTitle}>My Cart</Text>
         </View>
@@ -93,10 +79,10 @@ const CartPage = () => {
         {cartItems.map(item => (
           <View key={item.id} style={styles.cartItem}>
             <View style={{display: 'flex', flexDirection: 'row'}}>
-              <Image source={{uri: item.image}} style={styles.itemImage} />
+              <Image source={{uri: item.mainImage}} style={styles.itemImage} />
               <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemPrice}>₹{item.price}</Text>
+                <Text style={styles.itemName}>{item.productCategory}</Text>
+                <Text style={styles.itemPrice}>₹{item.unitPrice}</Text>
               </View>
             </View>
 
@@ -106,14 +92,16 @@ const CartPage = () => {
                 onPress={() => updateQuantity(item.id, false)}>
                 <Text style={styles.quantityText}>-</Text>
               </TouchableOpacity>
+
               <Text style={styles.quantityValue}>{item.quantity}</Text>
+
               <TouchableOpacity
                 style={styles.quantityButton}
                 onPress={() => updateQuantity(item.id, true)}>
                 <Text style={styles.quantityText}>+</Text>
               </TouchableOpacity>
             </View>
-            {/* Remove and Move to Wishlist */}
+
             <View style={styles.divider} />
             <View style={styles.actionButtons}>
               <TouchableOpacity onPress={() => removeItem(item.id)}>
@@ -127,16 +115,11 @@ const CartPage = () => {
           </View>
         ))}
       </ScrollView>
-      {/* Price Summary */}
       <View style={styles.priceSummary}>
         <Text style={styles.priceHeader}>Price Details</Text>
         <View style={styles.priceDetails}>
           <Text style={styles.summaryText}>Price</Text>
-          <Text style={styles.summaryValue}>₹{calculateTotal()}</Text>
-        </View>
-        <View style={styles.priceDetails}>
-          <Text style={styles.summaryText}>Shipping</Text>
-          <Text style={styles.summaryValue}>₹{shippingCost}</Text>
+          <Text style={styles.summaryValue}>₹{selectedItem.unitPrice}</Text>
         </View>
         <View style={styles.dividers} />
         <View style={styles.priceDetails}>
@@ -144,13 +127,15 @@ const CartPage = () => {
             Total Price
           </Text>
           <Text style={[styles.summaryValue, styles.totalValue]}>
-            ₹{totalAmount}
+            ₹{selectedItem.unitPrice * selectedItem.quantity}
           </Text>
         </View>
         <View style={styles.dividers} />
       </View>
       <View style={styles.checkoutContainer}>
-        <Text style={styles.totalAmountText}>₹{totalAmount}</Text>
+        <Text style={styles.totalAmountText}>
+          ₹{selectedItem.unitPrice * selectedItem.quantity}
+        </Text>
         <TouchableOpacity style={styles.checkoutButton}>
           <Text style={styles.checkoutButtonText}>Place Order</Text>
         </TouchableOpacity>
@@ -191,8 +176,6 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowRadius: 5,
   },
-  cartItems: {},
-  headerIcons: {flexDirection: 'row', gap: 15, justifyContent: 'flex-end'},
   itemImage: {
     width: 80,
     height: 80,
@@ -200,8 +183,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   itemDetails: {
-    // flex: 1,
-    // justifyContent: 'space-between',
+    flex: 1,
   },
   itemName: {
     fontSize: 16,
@@ -214,7 +196,6 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 5,
   },
-
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -238,7 +219,6 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // marginTop: 5,
   },
   actionText: {
     color: 'black',
@@ -246,7 +226,6 @@ const styles = StyleSheet.create({
     marginRight: 50,
     marginLeft: 50,
   },
-
   checkoutContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -308,7 +287,6 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     width: '100%',
   },
-
   totalText: {
     fontWeight: 'bold',
   },
