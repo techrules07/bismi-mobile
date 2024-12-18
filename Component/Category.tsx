@@ -16,75 +16,7 @@ import {
   getAllOffers,
   getAllProducts,
 } from '../Networking/HomePageService';
-import {pContext} from '../context/ProductContext';
-
-const sidebarCategories = [
-  {
-    id: 1,
-    name: 'For You',
-    icon: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-  },
-  {
-    id: 2,
-    name: 'Grocery',
-    icon: 'https://images.pexels.com/photos/749353/pexels-photo-749353.jpeg',
-  },
-  {
-    id: 3,
-    name: 'Fashion',
-    icon: 'https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg',
-  },
-  {
-    id: 4,
-    name: 'Appliances',
-    icon: 'https://images.pexels.com/photos/3965559/pexels-photo-3965559.jpeg',
-  },
-  {
-    id: 5,
-    name: 'Mobiles',
-    icon: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
-  },
-  {
-    id: 6,
-    name: 'Electronics',
-    icon: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
-  },
-  {
-    id: 7,
-    name: 'Smart Gadgets',
-    icon: 'https://images.pexels.com/photos/7129035/pexels-photo-7129035.jpeg',
-  },
-  {
-    id: 8,
-    name: 'Home',
-    icon: 'https://images.pexels.com/photos/7061644/pexels-photo-7061644.jpeg',
-  },
-  {
-    id: 9,
-    name: 'Appliances',
-    icon: 'https://images.pexels.com/photos/3965559/pexels-photo-3965559.jpeg',
-  },
-  {
-    id: 10,
-    name: 'Mobiles',
-    icon: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
-  },
-  {
-    id: 11,
-    name: 'Electronics',
-    icon: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
-  },
-  {
-    id: 12,
-    name: 'Smart Gadgets',
-    icon: 'https://images.pexels.com/photos/7129035/pexels-photo-7129035.jpeg',
-  },
-  {
-    id: 13,
-    name: 'Home',
-    icon: 'https://images.pexels.com/photos/7061644/pexels-photo-7061644.jpeg',
-  },
-];
+import {pContext} from '../Context/ProductContext';
 
 const popularStores = [
   {
@@ -289,7 +221,9 @@ const Category = props => {
                     source={{uri: item?.mainImage}}
                     style={styles.recentImage}
                   />
-                  <Text style={styles.recentText}>{item.name}</Text>
+                  <Text style={styles.recentText} numberOfLines={1}>
+                    {item?.product}
+                  </Text>
                 </View>
               ))}
             </ScrollView>
@@ -426,7 +360,13 @@ const styles = StyleSheet.create({
   horizontalScroll: {marginVertical: 10},
   recentItem: {marginRight: 10, alignItems: 'center'},
   recentImage: {width: 80, height: 80, borderRadius: 8},
-  recentText: {marginTop: 5, fontSize: 12, textAlign: 'center'},
+  recentText: {
+    marginTop: 5,
+    fontSize: 12,
+    textAlign: 'center',
+    color: 'black',
+    width: 100,
+  },
   roundedImage: {
     width: 80,
     height: 80,

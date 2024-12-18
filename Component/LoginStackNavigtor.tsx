@@ -1,9 +1,9 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import LoginScreen from '../Blocks/Login/Login';
-import SignUpScreen from '../Blocks/Login/SignUp';
-import OtpVerificationScreen from '../Blocks/Login/OTP';
+import LoginScreen from './Login';
+import SignUpScreen from './SignUp';
+import OtpVerificationScreen from './OTP';
 
 const LoginScreenStack = createStackNavigator(); // Use capital "S"
 

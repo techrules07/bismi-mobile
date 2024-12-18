@@ -7,7 +7,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import {pContext} from '../context/ProductContext';
+import {pContext} from '../Context/ProductContext';
 import {getAllProducts} from '../Networking/HomePageService';
 import Heart from '../assets/Heart.svg';
 import {useNavigation, useRoute} from '@react-navigation/native';
