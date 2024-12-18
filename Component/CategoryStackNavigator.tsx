@@ -1,11 +1,11 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import Category from '../Blocks/Category/Category';
 import ShirtList from '../Blocks/Category/ShirtList/ShirtList';
 import CategoryForMens from '../Blocks/Category/CategoryForMens';
 import ShirtListView from '../Blocks/Category/ShirtList/ShirtListView';
 import CartPage from '../Blocks/Category/Cart/Cart';
 import FilterPage from '../Blocks/Category/ShirtList/Filter';
+import Category from './Category';
 
 const CategoryStack = createStackNavigator();
 

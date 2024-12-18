@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import CategoryForMens from './CategoryForMens';
+import CategoryForMens from '../Blocks/Category/CategoryForMens';
+import {
+  getAllCategories,
+  getAllOffers,
+  getAllProducts,
+} from '../Networking/HomePageService';
+import {pContext} from '../context/ProductContext';
 
 const sidebarCategories = [
   {
@@ -177,11 +183,52 @@ const bismi = [
   },
 ];
 const Category = props => {
-  const [selectedSection, setSelectedSection] = useState('For You');
+  const [selectedSection, setSelectedSection] = useState(1);
 
-  const handleSidebarClick = section => {
-    setSelectedSection(section); // Update the selected section
+  const handleSidebarClick = async section => {
+    setSelectedSection(section);
+    getProducts(section);
   };
+  const productContext = useContext(pContext);
+  useEffect(() => {
+    fetchAllOffers();
+    getAllCategoriesApi();
+    getProducts(1);
+  }, []);
+  console.log(productContext?.categories);
+  async function fetchAllOffers() {
+    const response = await getAllOffers();
+    if (response.status == 200 && response.data.code == 200) {
+      productContext.updateSliderItems(response.data.data);
+    }
+  }
+
+  async function getAllCategoriesApi() {
+    const categoriesResponse = await getAllCategories();
+    if (
+      categoriesResponse.status == 200 &&
+      categoriesResponse.data.code == 200
+    ) {
+      productContext.updateCategories(categoriesResponse.data.data);
+    }
+  }
+  async function getProducts(section) {
+    try {
+      const productsListResponse = await getAllProducts(section);
+      console.log(productsListResponse.data);
+
+      if (
+        productsListResponse?.status === 200 &&
+        productsListResponse?.data?.code === 200
+      ) {
+        productContext.updateProductList(
+          productsListResponse?.data?.data?.listAllProductItems,
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  }
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -200,26 +247,27 @@ const Category = props => {
             style={styles.sidebar}
             contentContainerStyle={styles.sidebarContent}
             showsVerticalScrollIndicator={false}>
-            {sidebarCategories.map(category => (
+            {productContext.categories.map(category => (
               <View
                 key={category.id}
                 style={[
                   styles.sidebarItem,
-                  selectedSection === category.name && styles.activeSidebarItem,
+                  selectedSection === category?.id && styles.activeSidebarItem,
                 ]}
-                onTouchEnd={() => handleSidebarClick(category.name)}>
+                onTouchEnd={() => handleSidebarClick(category?.id)}>
                 <Image
-                  source={{uri: category.icon}}
-                  style={
-                    selectedSection === category.name
+                  source={{uri: category.imageURL}}
+                  style={[
+                    selectedSection === category?.id
                       ? styles.roundedImages
-                      : styles.sidebarIcon
-                  }
+                      : styles.sidebarIcon,
+                    {backgroundColor: 'transparent'},
+                  ]}
                 />
-                <Text style={styles.sidebarText}>{category.name}</Text>
+                <Text style={styles.sidebarText}>{category?.categoryName}</Text>
                 <View
                   style={
-                    selectedSection === category.name
+                    selectedSection === category?.id
                       ? styles.selectedStyle
                       : styles.horizontalLine
                   }
@@ -228,17 +276,17 @@ const Category = props => {
             ))}
           </ScrollView>
         </View>
-        {selectedSection === 'For You' && (
+        {selectedSection && (
           <ScrollView style={styles.mainContent}>
             <Text style={styles.sectionTitle}>Recently Viewed Stores</Text>
             <ScrollView
               horizontal
               style={styles.horizontalScroll}
               showsHorizontalScrollIndicator={false}>
-              {recentlyViewed.map(item => (
+              {productContext.productList.map(item => (
                 <View key={item.id} style={styles.recentItem}>
                   <Image
-                    source={{uri: item.image}}
+                    source={{uri: item?.mainImage}}
                     style={styles.recentImage}
                   />
                   <Text style={styles.recentText}>{item.name}</Text>
@@ -330,8 +378,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDE0D4',
     maxWidth: 70,
     borderRadius: 10,
-    borderTopRadius:10,
-    marginTop:10,
+    borderTopRadius: 10,
+    marginTop: 10,
   },
   sidebarContent: {
     paddingBottom: 10,
@@ -345,7 +393,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: 70,
     maxWidth: 70,
-   
   },
   sidebarIcon: {width: 40, height: 40},
   sidebarText: {
