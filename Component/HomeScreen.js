@@ -11,7 +11,7 @@ import {
 import Logo from '../assets/logo-bismi.png';
 import Search from '../assets/search.png';
 import {getAllOffers, getAllCategories} from '../Networking/HomePageService';
-import {pContext} from '../context/ProductContext';
+import {pContext} from '../Context/ProductContext';
 import Carousel from 'react-native-reanimated-carousel';
 
 const HomeScreen = props => {

@@ -20,9 +20,10 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 import Login from './Component/Login';
-import {ProductContext} from './context/ProductContext';
+import {ProductContext} from './Context/ProductContext';
 import Home from './Component/BottomBar';
 import AppNavigator from './Component/TopBar';
+import {UserContextProvider} from './Context/UserContext';
 
 function AppComponent(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -46,7 +47,9 @@ function AppComponent(): React.JSX.Element {
 const App = () => {
   return (
     <ProductContext>
-      <AppComponent />
+      <UserContextProvider>
+        <AppComponent />
+      </UserContextProvider>
     </ProductContext>
   );
 };
