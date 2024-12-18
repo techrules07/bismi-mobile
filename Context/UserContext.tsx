@@ -22,11 +22,11 @@ const defaultProps: UserContextType = {
   logout: () => {},
 };
 
-export const UserContext = createContext<UserContextType>(defaultProps);
+const UserContext = createContext<UserContextType | null | undefined>(
+  undefined,
+);
 
-export const UserContextProvider: React.FC<{children: ReactNode}> = ({
-  children,
-}) => {
+const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => {
@@ -63,13 +63,13 @@ export const UserContextProvider: React.FC<{children: ReactNode}> = ({
     }
   };
 
-  if (loading) {
-    return (
-      <React.Fragment>
-        <Text>Loading...</Text>
-      </React.Fragment>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <React.Fragment>
+  //       <Text>Loading...</Text>
+  //     </React.Fragment>
+  //   );
+  // }
 
   return (
     <UserContext.Provider value={{user, login, logout}}>
@@ -77,3 +77,5 @@ export const UserContextProvider: React.FC<{children: ReactNode}> = ({
     </UserContext.Provider>
   );
 };
+
+export {UserContext, UserContextProvider};

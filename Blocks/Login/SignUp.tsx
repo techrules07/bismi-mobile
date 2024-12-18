@@ -45,11 +45,10 @@ const SignUpScreen = () => {
 
     try {
       const userLoginResponse = await UserAdapter.signUp({
-        id: user?.id,
+        id: 0,
         name: fullName,
         phone: mobileNumber,
         email: email,
-        otp: user?.otp,
       });
 
       console.log('userLoginResponse', userLoginResponse);

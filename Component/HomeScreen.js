@@ -130,9 +130,10 @@ const HomeScreen = props => {
                 paddingTop: 16,
                 paddingBottom: 16,
               }}>
-              {productContext.categories.map(item => {
+              {productContext.categories.map((item,itemIndex) => {
                 return (
                   <TouchableOpacity
+                    key={itemIndex}
                     style={{
                       flexGrow: 0,
                       flexShrink: 0,

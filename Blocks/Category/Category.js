@@ -11,7 +11,11 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CategoryForMens from './CategoryForMens';
-import {getAllCategories, getAllOffers} from '../../Networking/HomePageService';
+import {
+  getAllCategories,
+  getAllOffers,
+  getAllProducts,
+} from '../../Networking/HomePageService';
 import {pContext} from '../../Context/ProductContext';
 
 const popularStores = [
@@ -132,7 +136,7 @@ const Category = props => {
   const handleSidebarClick = async section => {
     debugger;
     setSelectedSection(section);
-    await getProducts(section);
+    getProducts(section);
   };
 
   const getProducts = async section => {
@@ -200,7 +204,7 @@ const Category = props => {
             ))}
           </ScrollView>
         </View>
-        {selectedSection&& (
+        {selectedSection && (
           <ScrollView style={styles.mainContent}>
             <Text style={styles.sectionTitle}>Recently Viewed Stores</Text>
             <ScrollView
