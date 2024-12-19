@@ -1,5 +1,6 @@
+//@ts-nocheck
 import {useNavigation} from '@react-navigation/native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
   Text,
@@ -9,37 +10,123 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-const CartPage = ({route}) => {
-  const {selectedItem} = route.params;
-  console.log('selectedItem', selectedItem);
-
+import {pContext} from '../Context/ProductContext';
+import {
+  getAllCartItems,
+  getDetails,
+  quantity,
+  removeCart,
+} from '../Networking/HomePageService';
+import {UserContext} from '../Context/UserContext';
+import Snackbar from 'react-native-snackbar';
+const CartPage = () => {
+  const productContext = useContext(pContext);
+  const {user, logout} = useContext(UserContext);
   const navigation = useNavigation();
-  const [cartItems, setCartItems] = useState([{...selectedItem, quantity: 1}]);
-
+  const [cartItems, setCartItems] = useState([]);
+  console.log('cartItems', cartItems);
+  const [productDetails, setProductDetails] = useState([]);
   useEffect(() => {
-    if (selectedItem) {
-      setCartItems([{...selectedItem, quantity: 1}]);
-    }
-  }, [selectedItem]);
+    const fetchCartDetails = async () => {
+      const requestId = user?.id;
 
-  const updateQuantity = (id, increment) => {
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: increment
-                ? item.quantity + 1
-                : Math.max(1, item.quantity - 1),
-            }
-          : item,
-      ),
-    );
+      if (!requestId) {
+        console.error('User information is missing');
+        return;
+      }
+
+      try {
+        const detailsResponse = await getAllCartItems(requestId);
+
+        if (
+          detailsResponse?.code === 200 &&
+          detailsResponse?.status === 'Success'
+        ) {
+          console.log('Details retrieved successfully:', detailsResponse);
+          setCartItems(detailsResponse?.data);
+        } else {
+          throw new Error('Failed to retrieve product details');
+        }
+      } catch (error) {
+        console.error('Error fetching cart details:', error);
+      }
+    };
+
+    fetchCartDetails();
+  }, [user]);
+
+  const handleAddQuantity = async id => {
+    const data = {requestId: id, type: 1};
+    try {
+      const response = await quantity(data);
+      if (response?.code === 200) {
+        setCartItems(prev =>
+          prev.map(item =>
+            item.id === id ? {...item, quantity: item.quantity + 1} : item,
+          ),
+        );
+        productContext.updateQuantity(cartItems);
+        Snackbar.show({
+          text: 'Quantity increased successfully!',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'green',
+        });
+      } else {
+        throw new Error(response?.message || 'Failed to update quantity');
+      }
+    } catch (error) {
+      console.error('Error increasing quantity:', error);
+    }
   };
 
-  const removeItem = id => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+  const handleRemoveQuantity = async id => {
+    const data = {requestId: id, type: 2};
+    try {
+      const response = await quantity(data);
+      if (response?.code === 200) {
+        setCartItems(prev =>
+          prev.map(item =>
+            item.id === id
+              ? {...item, quantity: Math.max(1, item.quantity - 1)}
+              : item,
+          ),
+        );
+        productContext.updateQuantity(cartItems); // Update context
+        Snackbar.show({
+          text: 'Quantity decreased successfully!',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'green',
+        });
+      } else {
+        throw new Error(response?.message || 'Failed to update quantity');
+      }
+    } catch (error) {
+      console.error('Error decreasing quantity:', error);
+    }
+  };
+
+  const removeItem = async id => {
+    try {
+      const userId = user?.id;
+      const response = await removeCart(id, userId);
+      if (response?.code === 200 && response?.status === 'Success') {
+        setCartItems(prev => prev.filter(item => item.id !== id));
+        productContext.removeFromCart(id);
+        Snackbar.show({
+          text: 'Product removed successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      } else {
+        throw new Error('Failed to remove product from cart');
+      }
+    } catch (error) {
+      Snackbar.show({
+        text: error?.message || 'Something went wrong!',
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
   };
 
   const moveToWishlist = id => {
@@ -47,6 +134,15 @@ const CartPage = ({route}) => {
   };
 
   const shippingCost = 50;
+
+  const totalPrice = cartItems?.reduce(
+    (acc, item) => acc + item.unitPrice * item.quantity,
+    0,
+  );
+  const cartWithDetails = cartItems.map(item => {
+    const productDetail = productDetails.find(detail => detail.id === item.id);
+    return productDetail ? {...item, ...productDetail} : item;
+  });
 
   return (
     <View style={styles.container}>
@@ -69,46 +165,48 @@ const CartPage = ({route}) => {
           <Text style={styles.addressText}>Delivery to : Danish20001</Text>
           <Text style={styles.addressText}>CHANGE</Text>
         </View>
-
         <Text style={styles.addressTexts}>John henry street , chennai</Text>
         <Text style={styles.addressText}>
-          Estimated Delivery Date : 05 oct 2025
+          Estimated Delivery Date : 05 Oct 2025
         </Text>
       </View>
       <ScrollView style={styles.cartItemsContainer}>
-        {cartItems.map(item => (
-          <View key={item.id} style={styles.cartItem}>
+        {cartItems?.map(item => (
+          <View key={item?.id} style={styles.cartItem}>
             <View style={{display: 'flex', flexDirection: 'row'}}>
-              <Image source={{uri: item.mainImage}} style={styles.itemImage} />
+              <Image
+                source={{uri: item?.productImage}}
+                style={styles.itemImage}
+              />
               <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.productCategory}</Text>
-                <Text style={styles.itemPrice}>₹{item.unitPrice}</Text>
+                <Text style={styles.itemName}>{item?.productCategoryName}</Text>
+                <Text style={styles.itemPrice}>₹{item?.priceWithGst}</Text>
               </View>
             </View>
 
             <View style={styles.quantityContainer}>
               <TouchableOpacity
                 style={styles.quantityButton}
-                onPress={() => updateQuantity(item.id, false)}>
+                onPress={() => handleRemoveQuantity(item.id)}>
                 <Text style={styles.quantityText}>-</Text>
               </TouchableOpacity>
 
-              <Text style={styles.quantityValue}>{item.quantity}</Text>
+              <Text style={styles.quantityValue}>{item?.quantity}</Text>
 
               <TouchableOpacity
                 style={styles.quantityButton}
-                onPress={() => updateQuantity(item.id, true)}>
+                onPress={() => handleAddQuantity(item?.id)}>
                 <Text style={styles.quantityText}>+</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.divider} />
             <View style={styles.actionButtons}>
-              <TouchableOpacity onPress={() => removeItem(item.id)}>
+              <TouchableOpacity onPress={() => removeItem(item?.id)}>
                 <Text style={styles.actionText}>Remove</Text>
               </TouchableOpacity>
               <View style={styles.verticalDivider} />
-              <TouchableOpacity onPress={() => moveToWishlist(item.id)}>
+              <TouchableOpacity onPress={() => moveToWishlist(item?.id)}>
                 <Text style={styles.actionText}>Move to Wishlist</Text>
               </TouchableOpacity>
             </View>
@@ -119,7 +217,7 @@ const CartPage = ({route}) => {
         <Text style={styles.priceHeader}>Price Details</Text>
         <View style={styles.priceDetails}>
           <Text style={styles.summaryText}>Price</Text>
-          <Text style={styles.summaryValue}>₹{selectedItem.unitPrice}</Text>
+          <Text style={styles.summaryValue}>₹{totalPrice}</Text>
         </View>
         <View style={styles.dividers} />
         <View style={styles.priceDetails}>
@@ -127,15 +225,13 @@ const CartPage = ({route}) => {
             Total Price
           </Text>
           <Text style={[styles.summaryValue, styles.totalValue]}>
-            ₹{selectedItem.unitPrice * selectedItem.quantity}
+            ₹{totalPrice + shippingCost}
           </Text>
         </View>
         <View style={styles.dividers} />
       </View>
       <View style={styles.checkoutContainer}>
-        <Text style={styles.totalAmountText}>
-          ₹{selectedItem.unitPrice * selectedItem.quantity}
-        </Text>
+        <Text style={styles.totalAmountText}>₹{totalPrice + shippingCost}</Text>
         <TouchableOpacity style={styles.checkoutButton}>
           <Text style={styles.checkoutButtonText}>Place Order</Text>
         </TouchableOpacity>

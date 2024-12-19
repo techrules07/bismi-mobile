@@ -1,4 +1,6 @@
-import React, {createContext, useState} from 'react';
+import React, {createContext, useState, useEffect} from 'react';
+import {getAllCartItems} from './yourApiFile'; // Import the API function
+import {quantity} from '../Networking/HomePageService';
 
 interface ValueProviders {
   products: any[];
@@ -6,14 +8,20 @@ interface ValueProviders {
   categories: any[];
   productList: any[];
   premiumProducts: any[];
-  cartItems: any[]; // Added cartItems to the context
+  newArrival: any[];
+  cartItems: any[];
+  homeItems: any[];
   updateSliderItems: (data: any[]) => void;
   updateCategories: (data: any[]) => void;
   updateProductList: (data: any[]) => void;
   updatePremiumProducts: (data: any[]) => void;
-  addToCart: (product: any) => void; // Function to add item to cart
-  removeFromCart: (productId: string) => void; // Function to remove item from cart
-  getCartDetails: () => any[]; // Function to get cart details
+  updateNewArrival: (data: any[]) => void;
+  updateHomeItems: (data: any[]) => void;
+  addToCart: (product: any) => void;
+  removeFromCart: (productId: string) => void;
+  getCartDetails: () => any[];
+  fetchCartItems: (requestId: number) => void;
+  updateQuantity: (productId: string, increment: boolean) => void; // Unified function
 }
 
 const pContext = createContext<ValueProviders | null | undefined>(undefined);
@@ -24,8 +32,25 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const [categories, setCategories] = useState<any[]>([]);
   const [productList, setProductList] = useState<any[]>([]);
   const [premiumProducts, setPremiumProducts] = useState<any[]>([]);
-  const [cartItems, setCartItems] = useState<any[]>([]); // Added cartItems state
-
+  const [newArrival, setNewArrival] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [homeItems, setHomeItems] = useState<any[]>([]);
+  const fetchCartItems = async (requestId: number) => {
+    try {
+      const response = await getAllCartItems(requestId);
+      if (response) {
+        setCartItems(response);
+      }
+    } catch (error) {
+      console.error('Error fetching cart items:', error);
+    }
+  };
+  const updateQuantity = updatedCart => {
+    setCartItems(updatedCart);
+  };
+  const updateHomeItems = updateItem => {
+    setHomeItems(updateItem);
+  };
   const updateSliderItems = (data: any[]) => {
     setSliderItems(data);
   };
@@ -41,6 +66,10 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const updatePremiumProducts = (data: any[]) => {
     setPremiumProducts(data);
   };
+  const updateNewArrival = (data: any[]) => {
+    setNewArrival(data);
+  };
+
   const addToCart = (product: any) => {
     setCartItems(prevItems => {
       const itemExists = prevItems.find(item => item.id === product.id);
@@ -77,9 +106,15 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         premiumProducts,
         updatePremiumProducts,
         cartItems,
+        newArrival,
         addToCart,
         removeFromCart,
         getCartDetails,
+        fetchCartItems,
+        updateNewArrival,
+        updateQuantity,
+        updateHomeItems,
+        homeItems,
       }}>
       {children}
     </pContext.Provider>

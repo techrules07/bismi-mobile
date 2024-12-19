@@ -8,7 +8,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AccountStackNavigator from './AccountStackNavigator';
 import CategoryStackNavigator from './CategoryStackNavigator';
-import CartPage from '../Blocks/Category/Cart/Cart';
+import CartPage from './Cart';
 import LoginScreenNavigator from './LoginStackNavigtor';
 import ExploreScreen from './ExploreScreen';
 
@@ -103,7 +103,7 @@ const BottomBar = () => {
             ),
           })}
         />
-        {/* <Tab.Screen
+        <Tab.Screen
           name="cart"
           component={CartPage}
           options={({route}) => ({
@@ -117,7 +117,7 @@ const BottomBar = () => {
               />
             ),
           })}
-        /> */}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );

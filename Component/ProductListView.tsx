@@ -10,10 +10,12 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
-import {addToCart} from '../../../Networking/HomePageService';
-import {pContext} from '../../../Context/ProductContext';
-import {UserContext} from '../../../Context/UserContext';
+import {addToCart, getDetails} from '../Networking/HomePageService';
+import {pContext} from '../Context/ProductContext';
+import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
+import SuccessScreen from './SuccessScreen';
+
 const ProductDetails = ({
   selectedItem,
   favorites,
@@ -24,34 +26,55 @@ const ProductDetails = ({
   const navigation = useNavigation();
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isAddedToCart, setIsAddedToCart] = useState(false);
   console.log('user', user);
-  const addToCarts = defaultItem => {
-    debugger;
-    async function addToCartApi() {
-      const cartResponse = await addToCart(defaultItem);
-      if (cartResponse?.code == 200 && cartResponse?.status == 'Success') {
-        productContext?.addToCart(defaultItem);
 
-        // Show success snackbar with tick icon
+  const addToCarts = async defaultItem => {
+    try {
+      const cartResponse = await addToCart(defaultItem);
+      if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
+        productContext?.addToCart(defaultItem);
         Snackbar.show({
           text: 'Product added to cart successfully!',
+          duration: Snackbar.LENGTH_LONG,
           backgroundColor: 'green',
-          // icon: 'check',  // You can use an icon library to add a tick icon here
-          // duration: Snackbar.LENGTH_SHORT,
         });
-      } else {
-        // Show failure snackbar with cross icon
-        Snackbar.show({
-          text: 'Failed to add product to cart!',
-          backgroundColor: 'red',
-          // icon: 'close',  // You can use a cross icon for failure
-          // duration: Snackbar.LENGTH_SHORT,
-        });
-      }
-    }
+        setIsAddedToCart(true);
+        setShowPopup(true);
+        const requestId = defaultItem?.id;
+        const userId = user?.id;
 
-    addToCartApi();
+        const detailsResponse = await getDetails(requestId, userId);
+
+        if (
+          detailsResponse?.code === 200 &&
+          detailsResponse?.status === 'Success'
+        ) {
+          console.log('Details retrieved successfully:', detailsResponse);
+        } else {
+          throw new Error('Failed to retrieve product details');
+        }
+
+        setTimeout(() => {
+          navigation.navigate('Cart', {
+            selectedItem,
+          });
+        }, 2000);
+      } else {
+        throw new Error('Failed to add product to cart');
+      }
+    } catch (error) {
+      Snackbar.show({
+        text: error?.message || 'Something went wrong!',
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+
+      setShowPopup(false);
+    }
   };
+
   return (
     <ScrollView style={styles.detailsContainer}>
       <View style={styles.imageContainer}>
@@ -64,15 +87,12 @@ const ProductDetails = ({
       <View style={styles.iconContainer}>
         <Text style={styles.shirtTitle}>{selectedItem?.productCategory}</Text>
         <View style={styles.iconView}>
-          <Icon
-            name="cart"
-            size={30}
-            color="gray"
+          <TouchableOpacity
             onPress={() => {
               const defaultItem = {
                 id: selectedItem?.id,
                 userId: user?.id,
-                productId: selectedItem?.productSizeId,
+                productId: selectedItem?.id,
                 category: selectedItem?.availabilityId,
                 subCategory: selectedItem?.productCategoryId,
                 productCategory: selectedItem?.productCategoryId,
@@ -86,14 +106,14 @@ const ProductDetails = ({
                 quantity: 1,
                 active: true,
               };
-
               addToCarts(defaultItem);
-
-              navigation.navigate('Cart', {
-                selectedItem,
-              });
-            }}
-          />
+            }}>
+            {isAddedToCart ? (
+              <Icon name="cart-check" size={30} color="green" />
+            ) : (
+              <Icon name="cart" size={30} color="gray" />
+            )}
+          </TouchableOpacity>
 
           <Icon
             name="share-variant"
@@ -162,6 +182,9 @@ const ProductDetails = ({
           </TouchableOpacity>
         ))}
       </ScrollView>
+      {/* {showPopup && (
+        <SuccessScreen />
+      )} */}
     </ScrollView>
   );
 };

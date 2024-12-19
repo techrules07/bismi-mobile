@@ -2,8 +2,8 @@ import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import ShirtList from '../Blocks/Category/ProductList/ShirtList';
 import CategoryForMens from '../Blocks/Category/CategoryForMens';
-import ProductListView from '../Blocks/Category/ProductList/ProductListView';
-import CartPage from '../Blocks/Category/Cart/Cart';
+import ProductListView from './ProductListView';
+import CartPage from './Cart';
 import FilterPage from '../Blocks/Category/ProductList/Filter';
 import Category from './Category';
 
