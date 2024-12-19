@@ -1,6 +1,8 @@
 import React, {createContext, useState, useEffect} from 'react';
-import {getAllCartItems} from './yourApiFile'; // Import the API function
-import {quantity} from '../Networking/HomePageService';
+import {
+  getAllCartItems,
+  getSearchProducts,
+} from '../Networking/HomePageService';
 
 interface ValueProviders {
   products: any[];
@@ -11,17 +13,20 @@ interface ValueProviders {
   newArrival: any[];
   cartItems: any[];
   homeItems: any[];
+  searchResults: any[];
   updateSliderItems: (data: any[]) => void;
   updateCategories: (data: any[]) => void;
   updateProductList: (data: any[]) => void;
   updatePremiumProducts: (data: any[]) => void;
   updateNewArrival: (data: any[]) => void;
   updateHomeItems: (data: any[]) => void;
+  updateSearchResults: (data: any[]) => void;
+  searchProducts: (query: string) => Promise<void>;
   addToCart: (product: any) => void;
   removeFromCart: (productId: string) => void;
   getCartDetails: () => any[];
   fetchCartItems: (requestId: number) => void;
-  updateQuantity: (productId: string, increment: boolean) => void; // Unified function
+  updateQuantity: (productId: string, increment: boolean) => void;
 }
 
 const pContext = createContext<ValueProviders | null | undefined>(undefined);
@@ -35,6 +40,7 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const [newArrival, setNewArrival] = useState<any[]>([]);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [homeItems, setHomeItems] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]); 
   const fetchCartItems = async (requestId: number) => {
     try {
       const response = await getAllCartItems(requestId);
@@ -45,12 +51,28 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
       console.error('Error fetching cart items:', error);
     }
   };
+
+  const searchProducts = async (query: string) => {
+    try {
+      const response = await getSearchProducts(query);
+      setSearchResults(response.data); 
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    }
+  };
+
+  const updateSearchResults = (data: any[]) => {
+    setSearchResults(data);
+  };
+
   const updateQuantity = updatedCart => {
     setCartItems(updatedCart);
   };
+
   const updateHomeItems = updateItem => {
     setHomeItems(updateItem);
   };
+
   const updateSliderItems = (data: any[]) => {
     setSliderItems(data);
   };
@@ -66,6 +88,7 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const updatePremiumProducts = (data: any[]) => {
     setPremiumProducts(data);
   };
+
   const updateNewArrival = (data: any[]) => {
     setNewArrival(data);
   };
@@ -115,6 +138,9 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         updateQuantity,
         updateHomeItems,
         homeItems,
+        searchResults,
+        updateSearchResults,
+        searchProducts,
       }}>
       {children}
     </pContext.Provider>

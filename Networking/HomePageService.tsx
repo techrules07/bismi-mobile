@@ -3,6 +3,11 @@ import {AxiosConfig} from './AxiosConfig';
 export const getAllOffers = () => {
   return AxiosConfig.post('/offers/getOffers');
 };
+export const getSearchProducts = (productSearch: any) => {
+  return AxiosConfig.post(
+    `products/searchProduct?productSearch=${encodeURIComponent(productSearch)}`,
+  );
+};
 
 export const getAllCategories = () => {
   return AxiosConfig.get('/products/get/get-categories');
