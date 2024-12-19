@@ -13,6 +13,7 @@ import Search from '../assets/search.png';
 import {getAllOffers, getAllCategories} from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
 import Carousel from 'react-native-reanimated-carousel';
+import SuccessScreen from './SuccessScreen';
 
 const HomeScreen = props => {
   const productContext = useContext(pContext);
@@ -79,7 +80,6 @@ const HomeScreen = props => {
           />
         </View>
       </View>
-
       <View
         style={{
           flex: 1,

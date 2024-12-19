@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useContext } from 'react';
+import React, {useContext} from 'react';
 import {
   View,
   Image,
@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { UserContext } from '../Context/UserContext';
-import { useNavigation } from '@react-navigation/native';
+import {UserContext} from '../Context/UserContext';
+import {useNavigation} from '@react-navigation/native';
 
 const Account = props => {
   const navigation = useNavigation();
@@ -31,7 +31,7 @@ const Account = props => {
             style={styles.profilePhoto}
           />
           <View>
-            <Text style={styles.profileName}>John Doe</Text>
+            <Text style={styles.profileName}>{user?.name}</Text>
             <Text style={styles.profiler}>(Member)</Text>
           </View>
         </View>
@@ -151,7 +151,7 @@ const Account = props => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Help & Support</Text>
           <View style={styles.cardContent}>
-          <TouchableOpacity
+            <TouchableOpacity
               style={styles.textContainer}
               onPress={() => props.navigation.navigate('Faqs')}>
               <View style={styles.textContain}>

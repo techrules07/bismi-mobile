@@ -26,12 +26,12 @@ const ProductDetails = ({
   const {user, logout} = useContext(UserContext);
   console.log('user', user);
   const addToCarts = defaultItem => {
-    debugger
+    debugger;
     async function addToCartApi() {
       const cartResponse = await addToCart(defaultItem);
-      if (cartResponse?.status == 200 && cartResponse?.data?.code == 200) {
-        productContext?.addToCart(cartResponse?.data?.data);
-  
+      if (cartResponse?.code == 200 && cartResponse?.status == 'Success') {
+        productContext?.addToCart(defaultItem);
+
         // Show success snackbar with tick icon
         Snackbar.show({
           text: 'Product added to cart successfully!',
@@ -49,7 +49,7 @@ const ProductDetails = ({
         });
       }
     }
-  
+
     addToCartApi();
   };
   return (
