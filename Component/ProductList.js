@@ -6,6 +6,7 @@ import {
   Image,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
 import {pContext} from '../Context/ProductContext';
 import {getAllProducts} from '../Networking/HomePageService';
@@ -65,14 +66,26 @@ const ProductList = () => {
             numColumns={3}
             renderItem={({item}) => {
               return (
-                <View
+                <TouchableOpacity
                   style={{
                     flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
                     padding: 8,
-                  }}>
-                  <Image source={{uri: item.mainImage}} style={{height: 180}} />
+                  }}
+                  onPress={() =>
+                    navigation.navigate('ProductListView', {
+                      selectedItem: item,
+                      similarItem: productContext?.productList?.filter(
+                        otherItem => otherItem?.id !== item?.id,
+                      ),
+                    })
+                  }>
+                  <Image
+                    source={{uri: item.mainImage}}
+                   
+                    style={{height: 180}}
+                  />
                   <Text
                     style={{fontWeight: 700, marginTop: 8, color: '#000000'}}
                     numberOfLines={1}>
@@ -80,9 +93,9 @@ const ProductList = () => {
                   </Text>
                   <View style={{display: 'flex', flexDirection: 'row'}}>
                     <View style={{display: 'flex', flexDirection: 'column'}}>
-                      <Text style={{fontSize: 10, fontWeight: 600}}>
+                      {/* <Text style={{fontSize: 10, fontWeight: 600}}>
                         Casual Shirts
-                      </Text>
+                      </Text> */}
                       <View
                         style={{flexDirection: 'row', alignItems: 'center'}}>
                         <Text
@@ -117,7 +130,7 @@ const ProductList = () => {
                     </View>
                     <Image source={Heart} style={{width: 50, height: 50}} />
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             }}
           />

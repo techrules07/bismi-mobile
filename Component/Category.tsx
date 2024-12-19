@@ -16,67 +16,11 @@ import {
   getAllOffers,
   getAllPremiumProducts,
   getAllProducts,
+  getNewArrivalProducts,
 } from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
 import {useNavigation} from '@react-navigation/native';
 
-const popularStores = [
-  {
-    id: 1,
-    name: 'Shaadi Specials',
-    image: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
-    price: 'Up to 12000',
-  },
-  {
-    id: 2,
-    name: 'Merry Christmas!',
-    image: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-    price: 'Up to 12000',
-  },
-  {
-    id: 3,
-    name: 'Winter Store',
-    image: 'https://images.pexels.com/photos/688660/pexels-photo-688660.jpeg',
-    price: 'Up to 12000',
-  },
-  {
-    id: 4,
-    name: "Kid's Zone",
-    image:
-      'https://images.pexels.com/photos/40815/kids-child-painted-hands-40815.jpeg',
-    price: 'Up to 12000',
-  },
-  {
-    id: 5,
-    name: 'Pocket Bazaar',
-    image: 'https://images.pexels.com/photos/1161462/pexels-photo-1161462.jpeg',
-    price: 'Up to 12000',
-  },
-  {
-    id: 6,
-    name: 'Trendy Women',
-    image: 'https://images.pexels.com/photos/4586521/pexels-photo-4586521.jpeg',
-    price: 'Up to 12000',
-  },
-];
-
-const recentlyViewed = [
-  {
-    id: 1,
-    name: "Women's Dress",
-    image: 'https://images.pexels.com/photos/1192601/pexels-photo-1192601.jpeg',
-  },
-  {
-    id: 2,
-    name: "Women's Skirt",
-    image: 'https://images.pexels.com/photos/688660/pexels-photo-688660.jpeg',
-  },
-  {
-    id: 3,
-    name: "Women's Top",
-    image: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-  },
-];
 const newLaunches = [
   {
     id: 1,
@@ -99,23 +43,7 @@ const newLaunches = [
     image: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
   },
 ];
-const bismi = [
-  {
-    id: 1,
-    name: 'New Smartwatch',
-    image: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
-  },
-  {
-    id: 2,
-    name: 'Gaming Laptop',
-    image: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-  },
-  {
-    id: 3,
-    name: 'Winter Store',
-    image: 'https://images.pexels.com/photos/688660/pexels-photo-688660.jpeg',
-  },
-];
+
 const Category = props => {
   const [selectedSection, setSelectedSection] = useState(1);
   const navigation = useNavigation();
@@ -130,6 +58,7 @@ const Category = props => {
     getAllCategoriesApi();
     getProducts(1);
     getPremiumProductsApi();
+    getNewArrivalApi();
   }, []);
   console.log(productContext?.categories);
   async function fetchAllOffers() {
@@ -155,7 +84,18 @@ const Category = props => {
       console.error('Failed to fetch premium products:', error);
     }
   }
-
+  async function getNewArrivalApi(updateNewArrival: (data: any[]) => void) {
+    try {
+      const response = await getNewArrivalProducts();
+      if (response?.status === 200 && response?.data?.code === 200) {
+        productContext?.updateNewArrival(response?.data?.data);
+      } else {
+        console.error('Failed to fetch new arrival', response);
+      }
+    } catch (error) {
+      console.error('Failed to fetch arrival products:', error);
+    }
+  }
   async function getAllCategoriesApi() {
     const categoriesResponse = await getAllCategories();
     if (
@@ -232,7 +172,7 @@ const Category = props => {
         </View>
         {selectedSection && (
           <ScrollView style={styles.mainContent}>
-            <Text style={styles.sectionTitle}>Recently Viewed Stores</Text>
+            <Text style={styles.sectionTitle}>List of Category</Text>
             <ScrollView
               horizontal
               style={styles.horizontalScroll}
@@ -259,18 +199,18 @@ const Category = props => {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            <Text style={styles.sectionTitle}>More on Bismi</Text>
+            <Text style={styles.sectionTitle}>More Offers</Text>
             <ScrollView
               horizontal
               style={styles.horizontalScroll}
               showsHorizontalScrollIndicator={false}>
-              {bismi.map(item => (
+              {productContext?.sliderItems?.map(item => (
                 <View key={item.id} style={styles.recentItem}>
                   <Image
-                    source={{uri: item.image}}
+                    source={{uri: item?.offerImage}}
                     style={styles.roundedImage}
                   />
-                  <Text style={styles.recentText}>{item.name}</Text>
+                  <Text style={styles.recentText}>{item?.offerName}</Text>
                 </View>
               ))}
             </ScrollView>
@@ -279,17 +219,17 @@ const Category = props => {
               horizontal
               style={styles.horizontalScroll}
               showsHorizontalScrollIndicator={false}>
-              {newLaunches.map(item => (
+              {productContext?.newArrival.map(item => (
                 <View key={item.id} style={styles.recentItem}>
                   <Image
-                    source={{uri: item.image}}
+                    source={{uri: item?.mainImageUrl }}
                     style={styles.roundedImage}
                   />
-                  <Text style={styles.recentText}>{item.name}</Text>
+                  <Text style={styles.recentText}>{item?.productName }</Text>
                 </View>
               ))}
             </ScrollView>
-            <Text style={styles.sectionTitle}>Premium Stores</Text>
+            <Text style={styles.sectionTitle}>Premium Category</Text>
             <View style={styles.grid}>
               <ScrollView
                 horizontal

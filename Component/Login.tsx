@@ -30,7 +30,6 @@ const LoginScreen = () => {
   };
 
   const handleLogin = async () => {
-    debugger;
     setErrorMessage({mobile: '', otp: ''});
 
     let isValid = true;
@@ -89,7 +88,6 @@ const LoginScreen = () => {
   };
 
   const handleVerifyOtp = async () => {
-    debugger;
     if (otp.length !== 6) {
       setErrorMessage(prev => ({
         ...prev,

@@ -17,7 +17,7 @@ const SuccessScreen = () => {
       <View
         style={{
           borderRadius: 8,
-          overflow: 'hidden', // Confines ripple effect within the button bounds
+          overflow: 'hidden',
         }}>
         <Pressable
           android_ripple={{color: '#bb86fc'}}

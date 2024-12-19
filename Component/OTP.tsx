@@ -16,7 +16,7 @@ const OtpVerificationScreen = ({route}) => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
   const handleVerifyOtp = async () => {
-    debugger;
+
 
 
     if (otp.length !== 6) {
