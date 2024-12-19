@@ -5,11 +5,15 @@ interface ValueProviders {
   sliderItems: any[];
   categories: any[];
   productList: any[];
-  premiumProducts: any[]; // Added premiumProducts
+  premiumProducts: any[];
+  cartItems: any[]; // Added cartItems to the context
   updateSliderItems: (data: any[]) => void;
   updateCategories: (data: any[]) => void;
   updateProductList: (data: any[]) => void;
-  updatePremiumProducts: (data: any[]) => void; // Added updatePremiumProducts
+  updatePremiumProducts: (data: any[]) => void;
+  addToCart: (product: any) => void; // Function to add item to cart
+  removeFromCart: (productId: string) => void; // Function to remove item from cart
+  getCartDetails: () => any[]; // Function to get cart details
 }
 
 const pContext = createContext<ValueProviders | null | undefined>(undefined);
@@ -19,7 +23,8 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const [sliderItems, setSliderItems] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [productList, setProductList] = useState<any[]>([]);
-  const [premiumProducts, setPremiumProducts] = useState<any[]>([]); // Added premiumProducts state
+  const [premiumProducts, setPremiumProducts] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<any[]>([]); // Added cartItems state
 
   const updateSliderItems = (data: any[]) => {
     setSliderItems(data);
@@ -34,7 +39,29 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   };
 
   const updatePremiumProducts = (data: any[]) => {
-    setPremiumProducts(data); // Added updatePremiumProducts function
+    setPremiumProducts(data);
+  };
+  const addToCart = (product: any) => {
+    setCartItems(prevItems => {
+      const itemExists = prevItems.find(item => item.id === product.id);
+      if (itemExists) {
+        return prevItems.map(item =>
+          item.id === product.id
+            ? {...item, quantity: item.quantity + 1}
+            : item,
+        );
+      } else {
+        return [...prevItems, {...product, quantity: 1}];
+      }
+    });
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+  };
+
+  const getCartDetails = () => {
+    return cartItems;
   };
 
   return (
@@ -47,8 +74,12 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         updateCategories,
         productList,
         updateProductList,
-        premiumProducts, // Added premiumProducts to context value
-        updatePremiumProducts, // Added updatePremiumProducts to context value
+        premiumProducts,
+        updatePremiumProducts,
+        cartItems,
+        addToCart,
+        removeFromCart,
+        getCartDetails,
       }}>
       {children}
     </pContext.Provider>
