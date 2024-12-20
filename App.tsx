@@ -24,6 +24,7 @@ import {ProductContext} from './Context/ProductContext';
 import Home from './Component/BottomBar';
 import AppNavigator from './Component/TopBar';
 import {UserContextProvider} from './Context/UserContext';
+import {CouponProvider} from './Context/CouponContext';
 
 function AppComponent(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -48,7 +49,9 @@ const App = () => {
   return (
     <ProductContext>
       <UserContextProvider>
-        <AppComponent />
+        <CouponProvider>
+          <AppComponent />
+        </CouponProvider>
       </UserContextProvider>
     </ProductContext>
   );

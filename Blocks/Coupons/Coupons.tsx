@@ -1,6 +1,6 @@
 //@ts-nocheck
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -11,18 +11,32 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {getAllCoupons} from '../../Networking/CouponPageService';
 
 const CouponsPage = () => {
   const navigation = useNavigation();
-  const [coupon, setCoupon] = useState({
-    code: 'FREESHIP20',
-    description: 'Get 20% off on shipping for orders above ₹1000',
-    expiry: '31st Dec 2024',
-    minPurchase: 1000,
-    imageUrl: 'https://via.placeholder.com/150', // Example image
-    status: 'active',
-  });
+  const [coupon, setCoupon] = useState([]);
+  console.log('coupon', coupon);
+  useEffect(() => {
+    const getAllCoupon = async () => {
+      try {
+        const couponsResponse = await getAllCoupons();
+        if (
+          couponsResponse?.code === 200 &&
+          couponsResponse?.status === 'Success'
+        ) {
+          console.log('Details retrieved successfully:', couponsResponse);
+          setCoupon(couponsResponse?.data);
+        } else {
+          throw new Error('Failed to retrieve product details');
+        }
+      } catch (error) {
+        console.error('Error fetching cart details:', error);
+      }
+    };
 
+    getAllCoupon();
+  }, []);
   const applyCoupon = () => {
     if (coupon.status === 'active') {
       Alert.alert(
@@ -62,43 +76,50 @@ const CouponsPage = () => {
         <Text style={styles.pageTitle}>Available Coupon</Text>
         <View style={styles.circle}></View>
         <View style={styles.circleRight}></View>
-        <View style={styles.couponCard}>
-          <View style={styles.row}>
-            <View style={styles.imageWrapper}>
-              <Image
-                source={{uri: coupon.imageUrl}}
-                style={styles.couponImage}
-              />
-            </View>
+        {coupon?.map(_item => (
+          <View style={styles.couponCard}>
+            <View style={styles.row}>
+              <View style={styles.imageWrapper}>
+                <Image
+                  source={{uri: _item?.couponImage}}
+                  style={styles.couponImage}
+                />
+              </View>
 
-            <View style={styles.dottedLine}></View>
-            <View style={styles.details}>
-              <Text style={styles.couponDescription}>{coupon.description}</Text>
-              <Text style={styles.expiryText}>Expires: {coupon.expiry}</Text>
-              <Text style={styles.minPurchase}>
-                Min Purchase: ₹{coupon.minPurchase}
-              </Text>
-              <Text
-                style={
-                  coupon.status === 'active'
-                    ? styles.activeText
-                    : styles.expiredText
-                }>
-                {coupon.status === 'active' ? 'Active' : 'Expired'}
-              </Text>
-              <TouchableOpacity
-                style={
-                  coupon.status === 'active'
-                    ? styles.applyButton
-                    : styles.disabledButton
-                }
-                onPress={applyCoupon}
-                disabled={coupon.status !== 'active'}>
-                <Text style={styles.buttonText}>Apply Coupon</Text>
-              </TouchableOpacity>
+              <View style={styles.dottedLine}></View>
+              <View style={styles.details}>
+                <Text style={styles.couponDescription}>
+                  {_item?.description}
+                </Text>
+                <Text style={styles.couponDescription}>
+                  Coupon code : {_item?.couponCode }
+                </Text>
+                <Text style={styles.expiryText}>Expires: {_item?.endDate}</Text>
+                <Text style={styles.minPurchase}>
+                  Min Purchase: ₹{_item?.minimumPurchaseAmount}
+                </Text>
+                <Text
+                  style={
+                    coupon.status === 'active'
+                      ? styles.activeText
+                      : styles.expiredText
+                  }>
+                  {coupon.active === 'active' ? 'Active' : 'Expired'}
+                </Text>
+                <TouchableOpacity
+                  style={
+                    coupon.status === 'active'
+                      ? styles.applyButton
+                      : styles.disabledButton
+                  }
+                  onPress={applyCoupon}
+                  disabled={coupon.status !== 'active'}>
+                  <Text style={styles.buttonText}>Apply Coupon</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        ))}
       </View>
     </ScrollView>
   );
