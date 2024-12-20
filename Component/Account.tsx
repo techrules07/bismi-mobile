@@ -12,6 +12,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {UserContext} from '../Context/UserContext';
 import {useNavigation} from '@react-navigation/native';
+import LoginScreen from './Login';
 
 const Account = props => {
   const navigation = useNavigation();
@@ -21,7 +22,7 @@ const Account = props => {
     logout();
     navigation.navigate('Login');
   };
-  return (
+  return user ? (
     <View style={styles.container}>
       <View style={styles.profileCard}>
         <View style={styles.profileHeader}></View>
@@ -188,6 +189,8 @@ const Account = props => {
         </View>
       </View>
     </View>
+  ) : (
+    <LoginScreen />
   );
 };
 
