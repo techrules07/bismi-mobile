@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import UserAdapter from '../Networking/UserPageService';
+import {UserContext} from '../Context/UserContext';
 
 const LoginScreen = () => {
   const [userData, setUserData] = useState(null);
@@ -23,7 +24,7 @@ const LoginScreen = () => {
   const [isOtpVisible, setIsOtpVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
-
+  const {setUser} = useContext(UserContext);
   const validateMobileNumber = (number: string) => {
     const regex = /^[0-9]{10}$/;
     return regex.test(number);
@@ -113,6 +114,7 @@ const LoginScreen = () => {
           'user',
           JSON.stringify(userLoginResponse?.data),
         );
+        setUser(userLoginResponse?.data);
 
         navigation.navigate('Account', {userData: userLoginResponse?.data});
         console.log('userLoginResponse', userLoginResponse);

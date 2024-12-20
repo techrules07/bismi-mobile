@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useState} from 'react';
 import {
   View,
   Text,
@@ -15,13 +15,28 @@ import Search from '../assets/search.png';
 import {getAllOffers, getAllCategories} from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
 import Carousel from 'react-native-reanimated-carousel';
-import SuccessScreen from './SuccessScreen';
 
 const HomeScreen = props => {
   const productContext = useContext(pContext);
-  console.log('pry', productContext);
+  const [searchQuery, setSearchQuery] = useState('');
   const width = Dimensions.get('window').width;
-
+  const handleSearch = text => {
+    if (typeof text === 'string') {
+      setSearchQuery(text);
+    }
+  };
+  let filteredProducts = [];
+  if(searchQuery){
+    let search_query = searchQuery?.toLowerCase()?.trim();
+    filteredProducts = Array.isArray(productContext?.categories)
+      ? productContext?.categories.filter(product =>
+          product?.categoryName?.toLowerCase()?.includes(search_query),
+        )
+      : [];
+  }
+  const productsToDisplay = searchQuery
+    ? filteredProducts
+    : productContext?.categories || [];
   useEffect(() => {
     async function fetchAllOffers() {
       const response = await getAllOffers();
@@ -84,8 +99,11 @@ const HomeScreen = props => {
               paddingRight: 10,
             }}>
             <Image source={Search} style={{width: 15, height: 15}} />
+
             <TextInput
-              placeholder="search product"
+              placeholder="Search product"
+              value={searchQuery}
+              onChangeText={handleSearch}
               style={{paddingTop: 5, paddingBottom: 5, paddingLeft: 10}}
             />
           </View>
@@ -144,7 +162,7 @@ const HomeScreen = props => {
                   paddingTop: 16,
                   paddingBottom: 16,
                 }}>
-                {productContext.categories.map(item => {
+                {productsToDisplay?.map(item => {
                   return (
                     <TouchableOpacity
                       style={{

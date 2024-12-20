@@ -14,13 +14,8 @@ interface UserContextType {
   user: User | null;
   login: (userData: User) => void;
   logout: () => void;
+  setUser: (userData: User) => void;
 }
-
-const defaultProps: UserContextType = {
-  user: null,
-  login: () => {},
-  logout: () => {},
-};
 
 const UserContext = createContext<UserContextType | null | undefined>(
   undefined,
@@ -56,6 +51,7 @@ const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
 
   const logout = async () => {
     try {
+      const savedUser = await AsyncStorage.getItem('user');
       await AsyncStorage.removeItem('user');
       setUser(null);
     } catch (error) {
@@ -72,10 +68,10 @@ const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
   // }
 
   return (
-    <UserContext.Provider value={{user, login, logout}}>
+    <UserContext.Provider value={{user, login, logout, setUser}}>
       {children}
     </UserContext.Provider>
   );
 };
 
-export {UserContext, UserContextProvider}
+export {UserContext, UserContextProvider};
