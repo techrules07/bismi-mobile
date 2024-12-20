@@ -1,5 +1,4 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,134 +6,270 @@ import {
   FlatList,
   TouchableOpacity,
   TextInput,
-  Alert,
-  RadioButton,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import Icons from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import {UserContext} from '../../Context/UserContext';
+import {
+  addAddress,
+  defaultAddressApi,
+  deleteAddress,
+  getAddress,
+  updateAddress,
+} from '../../Networking/AddressPageService';
+import {ScrollView} from 'react-native-gesture-handler';
+import {useNavigation} from '@react-navigation/native';
+import Snackbar from 'react-native-snackbar';
 const SavedAddressesPage = () => {
-  const [savedAddresses, setSavedAddresses] = useState([
-    {
-      id: 1,
-      address: '123 Main St, New York, NY',
-      type: 'Home',
-      fullName: 'John Doe',
-      phone: '123-456-7890',
-      altPhone: '987-654-3210',
-      pincode: '10001',
-      city: 'New York',
-      state: 'NY',
-    },
-    {
-      id: 2,
-      address: '456 Maple Rd, Los Angeles, CA',
-      type: 'Work',
-      fullName: 'Jane Smith',
-      phone: '234-567-8901',
-      altPhone: '876-543-2109',
-      pincode: '90001',
-      city: 'Los Angeles',
-      state: 'CA',
-    },
-  ]);
-
+  const [isChecked, setIsChecked] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [addressLine1, setAddressLine1] = useState('');
+  const [addressLine2, setAddressLine2] = useState('');
+  const [landmark, setLandmark] = useState('');
+  const [phone, setPhone] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [selectedAddressTypeId, setSelectedAddressTypeId] = useState(null);
+  const [cityId, setCityId] = useState(null);
+  const [stateId, setStateId] = useState(null);
+  const [errors, setErrors] = useState('');
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  console.log('savedAddresses', savedAddresses);
+  const {user} = useContext(UserContext);
   const [showAddAddress, setShowAddAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    id: null,
-    address: '',
-    type: 'Home', // Default type
-    fullName: '',
-    phone: '',
-    altPhone: '',
-    pincode: '',
-    city: '',
-    state: '',
-  });
+  const [loading, setLoading] = useState(false);
+  const [defaultAddress, setDefaultAddress] = useState(false);
+  const [addressId, setAddressId] = useState(null);
+  const navigation = useNavigation();
+
+  const addressTypes = {
+    Home: 1,
+    Work: 2,
+    Office: 3,
+  };
+  useEffect(() => {
+    if (user?.id) {
+      const requestId = user.id;
+      const userId = user.id;
+
+      getAddress(requestId, userId)
+        .then(data => {
+          const addresses = data?.data;
+
+          const defaultAddress = addresses?.find(address => address.default);
+
+          if (!defaultAddress && addresses?.length > 0) {
+            addresses[0].default = true;
+          }
+
+          setSavedAddresses(addresses);
+
+          if (defaultAddress) {
+            setDefaultAddress(defaultAddress.id);
+          } else {
+            setDefaultAddress(addresses[0]?.id);
+          }
+        })
+        .catch(error => {
+          console.log('Failed to fetch addresses:', error);
+        });
+    } else {
+      console.log('User is not available');
+    }
+  }, [user]);
+
+  const handleDefaultAddress = addressId => {
+    if (user?.id) {
+      const userId = user?.id;
+      defaultAddressApi(addressId, userId)
+        .then(data => {
+          Snackbar.show({
+            text: 'Default address set successfully!',
+            duration: Snackbar.LENGTH_LONG,
+            backgroundColor: 'green',
+          });
+
+          setSavedAddresses(prevAddresses =>
+            prevAddresses.map(address =>
+              address.id === addressId
+                ? {...address, default: true}
+                : {...address, default: false},
+            ),
+          );
+
+          setDefaultAddress(addressId);
+        })
+        .catch(error => {
+          Snackbar.show({
+            text: 'Failed to set default address!',
+            duration: Snackbar.LENGTH_LONG,
+            backgroundColor: 'red',
+          });
+          console.log('Failed to set default address:', error);
+        });
+    }
+  };
 
   const handleSaveAddress = () => {
     if (
-      newAddress.address &&
-      newAddress.fullName &&
-      newAddress.phone &&
-      newAddress.pincode &&
-      newAddress.city &&
-      newAddress.state
+      fullName?.length === 0 ||
+      addressLine1?.length === 0 ||
+      addressLine2?.length === 0 ||
+      landmark?.length === 0 ||
+      phone?.length === 0 ||
+      pincode?.length === 0 ||
+      !selectedAddressTypeId ||
+      !cityId ||
+      !stateId
     ) {
-      const newAddr = {
-        id: savedAddresses.length + 1,
-        address: newAddress.address,
-        type: newAddress.type,
-        fullName: newAddress.fullName,
-        phone: newAddress.phone,
-        altPhone: newAddress.altPhone,
-        pincode: newAddress.pincode,
-        city: newAddress.city,
-        state: newAddress.state,
-      };
+      return setErrors('Please fill out all fields');
+    }
 
-      if (newAddress.id) {
-        const updatedAddresses = savedAddresses.map(address =>
-          address.id === newAddress.id ? {...address, ...newAddr} : address,
-        );
-        setSavedAddresses(updatedAddresses);
-      } else {
-        setSavedAddresses([...savedAddresses, newAddr]);
-      }
+    const bodyData = {
+      userId: user.id,
+      name: fullName,
+      streetName: addressLine1,
+      locality: addressLine2,
+      city: 1,
+      state: 1,
+      pincode: pincode,
+      landmark: landmark,
+      addressType: selectedAddressTypeId,
+      phone: phone,
+      default: isChecked,
+    };
 
-      setShowAddAddress(false);
-      setNewAddress({
-        id: null,
-        address: '',
-        type: 'Home',
-        fullName: '',
-        phone: '',
-        altPhone: '',
-        pincode: '',
-        city: '',
-        state: '',
-      });
+    if (addressId) {
+      updateAddress(bodyData)
+        .then(res => {
+          if (res?.code === 200) {
+            setErrors('');
+            Snackbar.show({
+              text: 'Address updated successfully!',
+              duration: Snackbar.LENGTH_SHORT,
+              backgroundColor: 'green',
+            });
+          } else {
+            setErrors(res.data.message);
+            setTimeout(() => setErrors(''), 3000);
+            setLoading(false);
+            Snackbar.show({
+              text: 'Failed to update address!',
+              duration: Snackbar.LENGTH_SHORT,
+              backgroundColor: 'red',
+            });
+          }
+        })
+        .catch(error => {
+          setLoading(false);
+          setErrors('Error updating address');
+          console.error(error);
+        });
     } else {
-      Alert.alert('Error', 'Please fill out all fields.');
+      addAddress(bodyData)
+        .then(res => {
+          if (res.data.code === 200) {
+            setLoading(false);
+            setErrors('');
+            Snackbar.show({
+              text: 'Address added successfully!',
+              duration: Snackbar.LENGTH_SHORT,
+              backgroundColor: 'green',
+            });
+          } else {
+            setErrors(res.data.message);
+            setTimeout(() => setErrors(''), 3000);
+            setLoading(false);
+            Snackbar.show({
+              text: 'Failed to add address!',
+              duration: Snackbar.LENGTH_SHORT,
+              backgroundColor: 'red',
+            });
+          }
+        })
+        .catch(error => {
+          setLoading(false);
+          setErrors('Error adding address');
+          console.error(error);
+        });
     }
   };
 
   const handleEditAddress = address => {
-    setNewAddress(address);
+    setFullName(address.name);
+    setAddressLine1(address.addressLine1);
+    setAddressLine2(address.addressLine2 || '');
+    setLandmark(address.landmark || '');
+    setPhone(address.phone);
+    setPincode(address.pincode);
+    setStateId(address.state);
+    setCityId(address.city);
+    setSelectedAddressTypeId(addressTypes[address.addressType] || null);
+    setAddressId(address.id);
     setShowAddAddress(true);
   };
+  const handleCloseForm = () => {
+    setFullName('');
+    setAddressLine1('');
+    setAddressLine2('');
+    setLandmark('');
+    setPhone('');
+    setPincode('');
+    setStateId(null);
+    setCityId(null);
+    setSelectedAddressTypeId(null);
+    setAddressId(null);
+    setShowAddAddress(false);
+  };
 
-  const renderAddressCard = ({item, index}) => (
-    <View
-      style={[
-        styles.addressCard,
-        index === savedAddresses.length - 1 && {marginBottom: 20},
-      ]}>
+  const handleDeleteAddress = addressId => {
+    debugger;
+
+    deleteAddress(addressId)
+      .then(() => {
+        setSavedAddresses(prevAddresses =>
+          prevAddresses.filter(address => address.id !== addressId),
+        );
+
+        Snackbar.show({
+          text: 'Address deleted successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      })
+      .catch(error => {
+        Snackbar.show({
+          text: 'Failed to delete address!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'red',
+        });
+        console.log('Failed to delete address:', error);
+      });
+  };
+
+  const renderAddressCard = ({item}) => (
+    <View style={styles.addressCard}>
       <View>
-        <View style={styles.details}>
-          <Text style={styles.detailsText}>{item.fullName}</Text>
-          <Text style={styles.addressType}>{item.type}</Text>
-        </View>
-
-        <Text style={styles.addressInfo}>{item.address}</Text>
+        <Text style={styles.detailsText}>{item.name}</Text>
+        <Text style={styles.addressType}>
+          {item.default ? 'Default' : item.addressType}
+        </Text>
+        <Text style={styles.addressInfo}>{item.addressLine1}</Text>
       </View>
       <View style={styles.actionButtons}>
         <TouchableOpacity onPress={() => handleEditAddress(item)}>
           <Text style={styles.actionText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() =>
-            setSavedAddresses(
-              savedAddresses.filter(address => address.id !== item.id),
-            )
-          }>
+        <TouchableOpacity onPress={() => handleDeleteAddress(item.id)}>
           <Text style={styles.actionText}>Delete</Text>
         </TouchableOpacity>
+        {!item.default && (
+          <TouchableOpacity onPress={() => handleDefaultAddress(item.id)}>
+            <Text style={styles.actionText}>Default</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
 
-  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -143,11 +278,10 @@ const SavedAddressesPage = () => {
             name="arrow-left"
             size={24}
             color="#fff"
-            onPress={() => navigation.navigate('Account')}
+            onPress={() => navigation.goBack()}
           />
           <Text style={styles.headerTitle}>Address</Text>
         </View>
-
         <View style={styles.headerIcons}>
           <Icons name="magnify" size={24} color="#fff" />
           <Icons
@@ -179,112 +313,99 @@ const SavedAddressesPage = () => {
             </TouchableOpacity>
           </>
         ) : (
-          <View style={styles.addAddressForm}>
+          <ScrollView
+            style={styles.addAddressForm}
+            showsVerticalScrollIndicator={false}>
             <View style={styles.formHeader}>
-              <Text style={styles.formTitle}>
-                {newAddress.id ? 'Edit Address' : 'Add Address'}
-              </Text>
-              <TouchableOpacity onPress={() => setShowAddAddress(false)}>
+              <Text style={styles.formTitle}>{'Address Information'}</Text>
+              <TouchableOpacity onPress={handleCloseForm}>
                 <Icons name="close-circle-outline" size={28} color="#703F07" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Address</Text>
+            <Text style={styles.label}>Address Line 1</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter address"
-              value={newAddress.address}
-              onChangeText={text =>
-                setNewAddress(prev => ({...prev, address: text}))
-              }
+              value={addressLine1}
+              onChangeText={setAddressLine1}
+            />
+            <Text style={styles.label}>Address Line 2</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter address line 2"
+              value={addressLine2}
+              onChangeText={setAddressLine2}
+            />
+            <Text style={styles.label}>Landmark</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter landmark"
+              value={landmark}
+              onChangeText={setLandmark}
             />
             <Text style={styles.label}>Full Name</Text>
             <TextInput
               style={styles.input}
               placeholder="Full Name"
-              value={newAddress.fullName}
-              onChangeText={text =>
-                setNewAddress(prev => ({...prev, fullName: text}))
-              }
+              value={fullName}
+              onChangeText={setFullName}
             />
             <Text style={styles.label}>Phone Number</Text>
             <TextInput
               style={styles.input}
               placeholder="Phone Number"
-              value={newAddress.phone}
-              onChangeText={text =>
-                setNewAddress(prev => ({...prev, phone: text}))
-              }
+              value={phone}
+              onChangeText={setPhone}
             />
-
             <Text style={styles.label}>Pincode</Text>
             <TextInput
               style={styles.input}
               placeholder="Pincode"
-              value={newAddress.pincode}
-              onChangeText={text =>
-                setNewAddress(prev => ({...prev, pincode: text}))
-              }
+              value={pincode}
+              onChangeText={setPincode}
             />
             <Text style={styles.label}>City</Text>
             <TextInput
               style={styles.input}
               placeholder="City"
-              value={newAddress.city}
-              onChangeText={text =>
-                setNewAddress(prev => ({...prev, city: text}))
-              }
+              value={cityId}
+              onChangeText={setCityId}
             />
             <Text style={styles.label}>State</Text>
             <TextInput
               style={styles.input}
               placeholder="State"
-              value={newAddress.state}
-              onChangeText={text =>
-                setNewAddress(prev => ({...prev, state: text}))
-              }
+              value={stateId}
+              onChangeText={setStateId}
             />
             <Text style={styles.label}>Address Type</Text>
             <View style={styles.radioButtons}>
-              <TouchableOpacity
-                style={styles.radioButton}
-                onPress={() =>
-                  setNewAddress(prev => ({...prev, type: 'Home'}))
-                }>
-                <View
-                  style={[
-                    styles.radioCircle,
-                    newAddress.type === 'Home'
-                      ? styles.radioSelected
-                      : styles.radioUnselected,
-                  ]}
-                />
-                <Text style={styles.radioText}>Home</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.radioButton}
-                onPress={() =>
-                  setNewAddress(prev => ({...prev, type: 'Work'}))
-                }>
-                <View
-                  style={[
-                    styles.radioCircle,
-                    newAddress.type === 'Work'
-                      ? styles.radioSelected
-                      : styles.radioUnselected,
-                  ]}
-                />
-                <Text style={styles.radioText}>Work</Text>
-              </TouchableOpacity>
+              {['Home', 'Work', 'Office'].map(type => (
+                <TouchableOpacity
+                  key={type}
+                  style={styles.radioButton}
+                  onPress={() => setSelectedAddressTypeId(addressTypes[type])}>
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      selectedAddressTypeId === addressTypes[type]
+                        ? styles.radioSelected
+                        : styles.radioUnselected,
+                    ]}
+                  />
+                  <Text style={styles.radioText}>{type}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-
             <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSaveAddress}>
               <Text style={styles.saveButtonText}>
-                {newAddress.id ? 'Save Changes' : 'Save Address'}
+                {selectedAddressTypeId ? 'Save Changes' : 'Save Address'}
               </Text>
             </TouchableOpacity>
-          </View>
+            {errors && <Text style={styles.errorText}>{errors}</Text>}
+          </ScrollView>
         )}
       </View>
     </View>
@@ -294,154 +415,151 @@ const SavedAddressesPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 10,
     backgroundColor: '#703F07',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    padding: 15,
+    alignItems: 'center',
   },
-  headerIcons: {flexDirection: 'row', gap: 15},
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     marginLeft: 10,
   },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   addressCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#EDE0D4',
     padding: 15,
     marginBottom: 10,
-    backgroundColor: '#EDE0D4',
+    borderRadius: 8,
+    elevation: 1,
   },
-  cardWithBorder: {
-    marginTop: 10,
-  },
-  addressType: {
-    borderRadius: 5,
-    backgroundColor: '#fff',
-    fontWeight: 'bold',
+  label: {
+    marginTop: 15,
+    fontSize: 14,
     color: '#703F07',
-    width: 50,
-    textAlign: 'center',
-  },
-  details: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  addressInfo: {
-    fontSize: 16,
-    color: '#666',
   },
   detailsText: {
     fontSize: 16,
-    color: 'black',
     fontWeight: 'bold',
   },
+  addressType: {
+    fontSize: 14,
+    color: '#703F07',
+    // borderWidth: 1,
+    padding: 5,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    alignContent: 'center',
+    alignItems: 'center',
+  },
+  addressInfo: {
+    fontSize: 14,
+    color: '#333',
+  },
   actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 100,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
   },
   actionText: {
-    fontSize: 16,
     color: '#703F07',
+    fontSize: 14,
+    marginBottom: 5,
   },
   addAddressTrigger: {
     flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    marginTop: 20,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
   },
   addAddressText: {
-    fontSize: 18,
+    fontSize: 16,
     marginLeft: 10,
     color: '#703F07',
-    marginTop: 3,
   },
-  addAddressForm: {
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    backgroundColor: '#fff',
-  },
-  formHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  formTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  label: {
+  noAddresses: {
     fontSize: 16,
-    color: 'black',
-    marginBottom: 5,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 20,
   },
   input: {
+    height: 40,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 5,
-    padding: 10,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  saveButton: {
-    backgroundColor: '#703F07',
-    padding: 7,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginBottom: 10,
+    paddingLeft: 10,
+    marginTop: 10,
   },
   radioButtons: {
     flexDirection: 'row',
-    // justifyContent: 'space-between',
-    marginBottom: 20,
-    gap: 30,
+    marginBottom: 10,
+    marginTop: 10,
   },
   radioButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 15,
   },
   radioCircle: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  radioSelected: {
-    backgroundColor: '#703F07',
-    borderColor: '#703F07',
+    marginRight: 5,
   },
   radioUnselected: {
-    backgroundColor: '#fff',
-    borderColor: 'gray',
+    borderColor: '#ccc',
+  },
+  radioSelected: {
+    borderColor: '#703F07',
+    backgroundColor: '#703F07',
   },
   radioText: {
     fontSize: 16,
-    color: '#333',
   },
-  noAddresses: {
-    fontSize: 18,
-    color: '#999',
-    textAlign: 'center',
+  saveButton: {
+    backgroundColor: '#703F07',
+    padding: 15,
+    borderRadius: 8,
     marginTop: 20,
+    marginBottom: 20,
+  },
+  saveButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 18,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  addAddressForm: {
+    marginTop: 20,
+    height: 700,
+  },
+  formHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  formTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
 
