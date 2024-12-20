@@ -18,7 +18,6 @@ import Carousel from 'react-native-reanimated-carousel';
 
 const HomeScreen = props => {
   const productContext = useContext(pContext);
-  console.log('pry', productContext);
   const [searchQuery, setSearchQuery] = useState('');
   const width = Dimensions.get('window').width;
   const handleSearch = text => {
@@ -26,12 +25,15 @@ const HomeScreen = props => {
       setSearchQuery(text);
     }
   };
-
-  const filteredProducts = Array.isArray(productContext?.categories)
-    ? productContext?.categories.filter(product =>
-        product?.categoryName.includes(searchQuery),
-      )
-    : [];
+  let filteredProducts = [];
+  if(searchQuery){
+    let search_query = searchQuery?.toLowerCase()?.trim();
+    filteredProducts = Array.isArray(productContext?.categories)
+      ? productContext?.categories.filter(product =>
+          product?.categoryName?.toLowerCase()?.includes(search_query),
+        )
+      : [];
+  }
   const productsToDisplay = searchQuery
     ? filteredProducts
     : productContext?.categories || [];
