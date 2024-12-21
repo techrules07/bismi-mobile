@@ -30,6 +30,7 @@ const ProductDetails = ({
   const {user, logout} = useContext(UserContext);
   const [showPopup, setShowPopup] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   console.log('user', user);
 
   const addToCarts = async defaultItem => {
@@ -89,7 +90,13 @@ const ProductDetails = ({
       productSize: parseFloat(item?.productSize?.replace(/[^\d.-]/g, '')) || 0,
     };
 
-    productContext?.addToFavorite(favoriteObject);
+    if (isFavorite) {
+      productContext?.removeFromFavorite(favoriteObject);
+    } else {
+      productContext?.addToFavorite(favoriteObject);
+    }
+
+    setIsFavorite(prevState => !prevState);
   };
   return (
     <ScrollView style={styles.detailsContainer}>
@@ -139,17 +146,9 @@ const ProductDetails = ({
           />
           <TouchableOpacity onPress={() => handleFavoriteToggle(selectedItem)}>
             <Icon
-              name={
-                favorites.some(fav => fav.productId === selectedItem?.id)
-                  ? 'heart'
-                  : 'heart-outline'
-              }
+              name={isFavorite ? 'heart' : 'heart-outline'}
               size={30}
-              color={
-                favorites.some(fav => fav.productId === selectedItem?.id)
-                  ? 'red'
-                  : 'gray'
-              }
+              color={isFavorite ? 'red' : 'gray'}
             />
           </TouchableOpacity>
         </View>
@@ -191,17 +190,9 @@ const ProductDetails = ({
                 <TouchableOpacity
                   onPress={() => handleFavoriteToggle(selectedItem)}>
                   <Icon
-                    name={
-                      favorites.some(fav => fav.productId === selectedItem?.id)
-                        ? 'heart'
-                        : 'heart-outline'
-                    }
+                    name={isFavorite ? 'heart' : 'heart-outline'}
                     size={30}
-                    color={
-                      favorites.some(fav => fav.productId === selectedItem?.id)
-                        ? 'red'
-                        : 'gray'
-                    }
+                    color={isFavorite ? 'red' : 'gray'}
                   />
                 </TouchableOpacity>
               </View>
