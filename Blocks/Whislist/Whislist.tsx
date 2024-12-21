@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,58 +10,122 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {UserContext} from '../../Context/UserContext';
+import {pContext} from '../../Context/ProductContext';
+import Snackbar from 'react-native-snackbar';
+import {addToCart} from '../../Networking/HomePageService';
 
 const WishlistPage = () => {
-  const [wishlist, setWishlist] = useState([
-    {
-      id: 1,
-      name: 'Nike Running Shoes',
-      price: 2999,
-      imageUrl: 'https://via.placeholder.com/150',
-      isWishlist: true,
-    },
-    {
-      id: 2,
-      name: 'Apple iPhone 13',
-      price: 79999,
-      imageUrl: 'https://via.placeholder.com/150',
-      isWishlist: true,
-    },
-    {
-      id: 3,
-      name: 'Samsung 4K TV',
-      price: 49999,
-      imageUrl: 'https://via.placeholder.com/150',
-      isWishlist: true,
-    },
-    {
-      id: 4,
-      name: 'Sony Headphones',
-      price: 8999,
-      imageUrl: 'https://via.placeholder.com/150',
-      isWishlist: true,
-    },
-  ]);
+  const {user} = useContext(UserContext);
+  const productContext = useContext(pContext);
+  const [wishlist, setWishlist] = useState([]);
+  console.log('whislist', wishlist);
+  const [removingItem, setRemovingItem] = useState(null);
 
-  const moveToCart = itemId => {
-    Alert.alert('Success', 'Item moved to cart');
-    // Logic to add the item to cart
+  useEffect(() => {
+    if (user?.id) {
+      const data = {
+        requestId: user.id,
+        exclusive: true,
+      };
+      productContext?.fetchFavoriteItems(data);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (productContext?.favoriteItems?.data) {
+      setWishlist(productContext.favoriteItems.data);
+    }
+  }, [productContext?.favoriteItems]);
+
+  const addToCarts = async selectedItem => {
+    const defaultItem = {
+      id: selectedItem?.id,
+      userId: user?.id,
+      productId: selectedItem?.id,
+      category: selectedItem?.availabilityId,
+      subCategory: selectedItem?.productCategoryId,
+      productCategory: selectedItem?.productCategoryId,
+      brand: selectedItem?.brandId,
+      color: selectedItem?.colorId,
+      unit: selectedItem?.unitId,
+      productSize:
+        parseFloat(selectedItem?.productSize?.replace(/[^\d.-]/g, '')) || 0,
+      quantity: 1,
+      active: true,
+    };
+
+    try {
+      const cartResponse = await addToCart(defaultItem);
+
+      if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
+        productContext?.addToCart(defaultItem);
+
+        Snackbar.show({
+          text: 'Product added to cart successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+
+        await removeFromWishlist(selectedItem);
+
+        Alert.alert('Success', 'Item moved to cart');
+
+        setTimeout(() => {
+          navigation.navigate('Cart', {
+            selectedItem,
+          });
+        }, 2000);
+      } else {
+        throw new Error('Failed to add product to cart');
+      }
+    } catch (error) {
+      Snackbar.show({
+        text: error?.message || 'Something went wrong!',
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
   };
 
-  const removeFromWishlist = itemId => {
-    setWishlist(prevWishlist =>
-      prevWishlist.filter(item => item.id !== itemId),
-    );
-    Alert.alert('Success', 'Item removed from wishlist');
+  const removeFromWishlist = async item => {
+    setRemovingItem(item.productId);
+
+    try {
+      const data = {
+        userId: user?.id,
+        productId: item?.productId,
+        exclusive: true,
+      };
+
+      await productContext?.removeFromFavorite?.(data);
+      console.log('Item removed from favorite');
+
+      setWishlist(prevWishlist => {
+        const updatedWishlist = prevWishlist.filter(
+          wishlistItem => wishlistItem.productId !== item.productId,
+        );
+        console.log('Updated wishlist:', updatedWishlist);
+        return updatedWishlist;
+      });
+
+      Alert.alert('Success', 'Item removed from wishlist');
+    } catch (error) {
+      console.error('Error removing item from wishlist:', error);
+      Alert.alert('Error', 'An error occurred while removing the item');
+    } finally {
+      setRemovingItem(null);
+    }
   };
+
   const navigation = useNavigation();
   const renderItem = ({item}) => (
     <View>
       <View style={styles.productCard}>
-        <Image source={{uri: item.imageUrl}} style={styles.productImage} />
+        <Image source={{uri: item.productImage}} style={styles.productImage} />
         <View style={styles.productDetails}>
-          <Text style={styles.productName}>{item.name}</Text>
-          <Text style={styles.productPrice}>₹{item.price}</Text>
+          <Text style={styles.productName}>{item.productName}</Text>
+          <Text style={styles.productPrice}>₹{item.priceWithGst}</Text>
           <View style={styles.starWrapper}>
             <Icon name="star" size={20} color="orange" />
             <Icon name="star" size={20} color="orange" />
@@ -71,12 +135,16 @@ const WishlistPage = () => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.moveButton}
-              onPress={() => moveToCart(item.id)}>
+              onPress={() => addToCarts(item)}>
               <Text style={styles.buttonText}>Move to Cart</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeFromWishlist(item.id)}>
+              style={[
+                styles.removeButton,
+                removingItem === item.productId && {opacity: 0.5},
+              ]}
+              onPress={() => removeFromWishlist(item)}
+              disabled={removingItem === item.productId}>
               <Text style={styles.buttonText}>Remove</Text>
             </TouchableOpacity>
           </View>
@@ -160,7 +228,6 @@ const styles = StyleSheet.create({
   productCard: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    // marginBottom: 15,
     shadowColor: '#000',
     padding: 10,
   },

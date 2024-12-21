@@ -23,6 +23,8 @@ const ProductDetails = ({
   similarItem,
   onSelectSimilarItem,
 }) => {
+  console.log('favorites', favorites);
+  console.log('selectedItem', selectedItem);
   const navigation = useNavigation();
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
@@ -74,7 +76,21 @@ const ProductDetails = ({
       setShowPopup(false);
     }
   };
+  const handleFavoriteToggle = item => {
+    const favoriteObject = {
+      userId: user?.id || 0,
+      productId: item?.id || 0,
+      category: item?.availabilityId || 0,
+      subCategory: item?.productCategoryId || 0,
+      productCategory: item?.productCategoryId || 0,
+      brand: item?.brandId || 0,
+      color: item?.colorId || 0,
+      unit: item?.unitId || 0,
+      productSize: parseFloat(item?.productSize?.replace(/[^\d.-]/g, '')) || 0,
+    };
 
+    productContext?.addToFavorite(favoriteObject);
+  };
   return (
     <ScrollView style={styles.detailsContainer}>
       <View style={styles.imageContainer}>
@@ -121,14 +137,19 @@ const ProductDetails = ({
             color="gray"
             style={styles.icon}
           />
-          <TouchableOpacity onPress={() => toggleFavorite(selectedItem?.id)}>
+          <TouchableOpacity onPress={() => handleFavoriteToggle(selectedItem)}>
             <Icon
               name={
-                favorites.includes(selectedItem?.id) ? 'heart' : 'heart-outline'
+                favorites.some(fav => fav.productId === selectedItem?.id)
+                  ? 'heart'
+                  : 'heart-outline'
               }
               size={30}
-              color={favorites.includes(selectedItem?.id) ? 'red' : 'gray'}
-              style={styles.icon}
+              color={
+                favorites.some(fav => fav.productId === selectedItem?.id)
+                  ? 'red'
+                  : 'gray'
+              }
             />
           </TouchableOpacity>
         </View>
@@ -167,13 +188,20 @@ const ProductDetails = ({
               <Image source={{uri: item?.mainImage}} style={styles.cardImage} />
               <View style={styles.shirtInfo}>
                 <Text style={styles.cardTitle}>{item?.productCategory}</Text>
-                <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
+                <TouchableOpacity
+                  onPress={() => handleFavoriteToggle(selectedItem)}>
                   <Icon
                     name={
-                      favorites.includes(item.id) ? 'heart' : 'heart-outline'
+                      favorites.some(fav => fav.productId === selectedItem?.id)
+                        ? 'heart'
+                        : 'heart-outline'
                     }
-                    size={24}
-                    color={favorites.includes(item.id) ? 'red' : '#ccc'}
+                    size={30}
+                    color={
+                      favorites.some(fav => fav.productId === selectedItem?.id)
+                        ? 'red'
+                        : 'gray'
+                    }
                   />
                 </TouchableOpacity>
               </View>
@@ -197,11 +225,18 @@ const ProductListView = ({route}) => {
   const [currentSimilarItems, setCurrentSimilarItems] = useState(similarItem);
   const [favoriteItems, setFavoriteItems] = useState([]);
 
-  const handleFavoriteToggle = id => {
-    const updatedFavorites = favoriteItems.includes(id)
-      ? favoriteItems.filter(item => item !== id)
-      : [...favoriteItems, id];
-    setFavoriteItems(updatedFavorites);
+  const toggleFavorite = item => {
+    const isFavorite = favoriteItems.some(
+      fav => fav.productId === item.productId,
+    );
+
+    if (isFavorite) {
+      setFavoriteItems(prevFavorites =>
+        prevFavorites.filter(fav => fav.productId !== item.productId),
+      );
+    } else {
+      setFavoriteItems(prevFavorites => [...prevFavorites, item]);
+    }
   };
 
   const handleSelectSimilarItem = item => {
@@ -240,7 +275,7 @@ const ProductListView = ({route}) => {
       <ProductDetails
         selectedItem={currentItem}
         favorites={favoriteItems}
-        toggleFavorite={handleFavoriteToggle}
+        toggleFavorite={toggleFavorite}
         similarItem={currentSimilarItems}
         onSelectSimilarItem={handleSelectSimilarItem}
       />

@@ -98,3 +98,40 @@ export const getAllCartItems = (requestId: number) => {
       throw error;
     });
 };
+export const getAllFavorite = (requestId: any) => {
+  return AxiosConfig.post('favourite/getAllFavourite', requestId)
+    .then(response => {
+      console.log('List of all favorite Items:', response?.data?.data);
+      return response.data;
+    })
+    .catch(error => {
+      console.error('Error retrieving favorite list:', error);
+      throw error;
+    });
+};
+export const deleteFavorite = (data: any) => {
+  return AxiosConfig.post('favourite/deleteFavourite', data)
+    .then(response => {
+      console.log('deleted succesfully:', response?.data);
+      return response.data;
+    })
+    .catch(error => {
+      console.error('Error in deleting:', error);
+      throw error;
+    });
+};
+export const addFavorite = async (bodyData: any) => {
+  try {
+    const response = await AxiosConfig.post('favourite/addFavourite', bodyData);
+    console.log('Favorite item added successfully:', response.data);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error('Invalid response from server');
+    }
+  } catch (error) {
+    console.error('Error in adding favorite:', error);
+    throw error;
+  }
+};
