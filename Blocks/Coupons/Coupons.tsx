@@ -1,6 +1,4 @@
-//@ts-nocheck
-import {useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -11,12 +9,21 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {getAllCoupons} from '../../Networking/CouponPageService';
+import {useNavigation} from '@react-navigation/native';
+import {
+  applyCoupons,
+  getAllCoupons,
+  updateCoupons,
+} from '../../Networking/CouponPageService';
+import {CouponContext} from '../../Context/CouponContext';
+import {UserContext} from '../../Context/UserContext';
 
 const CouponsPage = () => {
   const navigation = useNavigation();
   const [coupon, setCoupon] = useState([]);
-  console.log('coupon', coupon);
+  const {user} = useContext(UserContext);
+  const {applyCoupon} = useContext(CouponContext);
+
   useEffect(() => {
     const getAllCoupon = async () => {
       try {
@@ -25,26 +32,74 @@ const CouponsPage = () => {
           couponsResponse?.code === 200 &&
           couponsResponse?.status === 'Success'
         ) {
-          console.log('Details retrieved successfully:', couponsResponse);
           setCoupon(couponsResponse?.data);
         } else {
-          throw new Error('Failed to retrieve product details');
+          throw new Error('Failed to retrieve coupon details');
         }
       } catch (error) {
-        console.error('Error fetching cart details:', error);
+        console.error('Error fetching coupons:', error);
       }
     };
 
     getAllCoupon();
   }, []);
-  const applyCoupon = () => {
-    if (coupon.status === 'active') {
-      Alert.alert(
-        'Coupon Applied',
-        `You have successfully applied ${coupon.code}`,
-      );
-    } else {
-      Alert.alert('Coupon Expired', 'Sorry, this coupon has expired');
+
+  const applyCouponFor = async _item => {
+    try {
+      if (!_item?.active) {
+        Alert.alert('Coupon Expired', 'Sorry, this coupon has expired');
+        return;
+      }
+
+      const couponCode = _item?.couponCode;
+      const purchaseAmount = _item?.minimumPurchaseAmount;
+
+      if (!couponCode || !purchaseAmount) {
+        Alert.alert('Error', 'Invalid coupon or purchase amount.');
+        return;
+      }
+
+      const couponResponse = await applyCoupons({couponCode, purchaseAmount});
+
+      if (
+        couponResponse?.code === 200 &&
+        couponResponse?.status === 'Success'
+      ) {
+        applyCoupon({couponCode, purchaseAmount});
+
+        const userId = user?.id;
+        const updateResponse = await updateCoupons({
+          requestUserId: userId,
+          requestCouponCode: couponCode,
+        });
+
+        if (
+          updateResponse?.code === 200 &&
+          updateResponse?.status === 'Success'
+        ) {
+          // Update the coupon state to reflect the coupon is no longer active
+          setCoupon(prevCoupons =>
+            prevCoupons.map(item =>
+              item.couponCode === couponCode ? {...item, active: false} : item,
+            ),
+          );
+
+          Alert.alert(
+            'Coupon Applied',
+            `You have successfully applied ${couponCode}`,
+          );
+        } else {
+          Alert.alert('Error', 'Failed to update coupon in the backend.');
+        }
+      } else {
+        Alert.alert(
+          'Error',
+          couponResponse?.message || 'Failed to apply coupon',
+        );
+      }
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      Alert.alert('Error', 'An error occurred while applying the coupon.');
     }
   };
 
@@ -92,28 +147,28 @@ const CouponsPage = () => {
                   {_item?.description}
                 </Text>
                 <Text style={styles.couponDescription}>
-                  Coupon code : {_item?.couponCode }
+                  Coupon code : {_item?.couponCode}
                 </Text>
                 <Text style={styles.expiryText}>Expires: {_item?.endDate}</Text>
                 <Text style={styles.minPurchase}>
                   Min Purchase: ₹{_item?.minimumPurchaseAmount}
                 </Text>
-                <Text
+                {/* <Text
                   style={
-                    coupon.status === 'active'
+                    _item.active === true
                       ? styles.activeText
                       : styles.expiredText
                   }>
-                  {coupon.active === 'active' ? 'Active' : 'Expired'}
-                </Text>
+                  {_item.active === true ? 'Active' : 'Expired'}
+                </Text> */}
                 <TouchableOpacity
                   style={
-                    coupon.status === 'active'
+                    _item.active === true
                       ? styles.applyButton
                       : styles.disabledButton
                   }
-                  onPress={applyCoupon}
-                  disabled={coupon.status !== 'active'}>
+                  onPress={() => applyCouponFor(_item)}
+                  disabled={_item.active !== true}>
                   <Text style={styles.buttonText}>Apply Coupon</Text>
                 </TouchableOpacity>
               </View>
