@@ -221,8 +221,6 @@ const SavedAddressesPage = () => {
   };
 
   const handleDeleteAddress = addressId => {
-    debugger;
-
     deleteAddress(addressId)
       .then(() => {
         setSavedAddresses(prevAddresses =>

@@ -120,7 +120,7 @@ const HomeScreen = props => {
             height: 800,
           }}>
           <View style={{height: 160, width: '100%'}}>
-            {productContext.sliderItems.length > 0 && (
+            {productContext?.sliderItems.length > 0 && (
               <Carousel
                 width={width - 30}
                 height={160}

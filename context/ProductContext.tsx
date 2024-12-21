@@ -2,7 +2,11 @@ import React, {createContext, useState, useEffect} from 'react';
 import {
   getAllCartItems,
   getSearchProducts,
+  getAllFavorite,
+  addFavorite,
+  deleteFavorite,
 } from '../Networking/HomePageService';
+import Snackbar from 'react-native-snackbar';
 
 interface ValueProviders {
   products: any[];
@@ -14,6 +18,7 @@ interface ValueProviders {
   cartItems: any[];
   homeItems: any[];
   searchResults: any[];
+  favoriteItems: any[];
   updateSliderItems: (data: any[]) => void;
   updateCategories: (data: any[]) => void;
   updateProductList: (data: any[]) => void;
@@ -27,6 +32,9 @@ interface ValueProviders {
   getCartDetails: () => any[];
   fetchCartItems: (requestId: number) => void;
   updateQuantity: (productId: string, increment: boolean) => void;
+  fetchFavoriteItems: (requestId: number) => void;
+  addToFavorite: (product: any) => void;
+  removeFromFavorite: (productId: string) => void;
 }
 
 const pContext = createContext<ValueProviders | null | undefined>(undefined);
@@ -40,7 +48,9 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const [newArrival, setNewArrival] = useState<any[]>([]);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [homeItems, setHomeItems] = useState<any[]>([]);
-  const [searchResults, setSearchResults] = useState<any[]>([]); 
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [favoriteItems, setFavoriteItems] = useState<any[]>([]);
+
   const fetchCartItems = async (requestId: number) => {
     try {
       const response = await getAllCartItems(requestId);
@@ -52,10 +62,21 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
     }
   };
 
+  const fetchFavoriteItems = async (requestId: number) => {
+    try {
+      const response = await getAllFavorite(requestId);
+      if (response) {
+        setFavoriteItems(response);
+      }
+    } catch (error) {
+      console.error('Error fetching favorite items:', error);
+    }
+  };
+
   const searchProducts = async (query: string) => {
     try {
       const response = await getSearchProducts(query);
-      setSearchResults(response.data); 
+      setSearchResults(response.data);
     } catch (error) {
       console.error('Error fetching search results:', error);
     }
@@ -65,11 +86,11 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
     setSearchResults(data);
   };
 
-  const updateQuantity = updatedCart => {
+  const updateQuantity = (updatedCart: any[]) => {
     setCartItems(updatedCart);
   };
 
-  const updateHomeItems = updateItem => {
+  const updateHomeItems = (updateItem: any[]) => {
     setHomeItems(updateItem);
   };
 
@@ -116,6 +137,78 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
     return cartItems;
   };
 
+  const addToFavorite = async (product: any) => {
+    try {
+      const response = await addFavorite(product);
+
+      console.log('API response:', response);
+
+      if (response && response.status === 'Success') {
+        setFavoriteItems(prevItems => {
+          const updatedItems = Array.isArray(prevItems)
+            ? [...prevItems, product]
+            : [product];
+          console.log('updatedItems', updatedItems);
+          return updatedItems;
+        });
+
+        Snackbar.show({
+          text: 'Product added to favorites successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      }
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+
+      Snackbar.show({
+        text: `Failed to add to favorites: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
+  const removeFromFavorite = async (productId: string) => {
+    try {
+      const response = await deleteFavorite(productId);
+
+      if (response?.status === 'Success') {
+        setFavoriteItems(prevItems => {
+          const updatedItems = Array.isArray(prevItems?.data)
+            ? prevItems?.data
+            : [];
+
+          const itemToRemove = updatedItems.find(
+            item => item.productId === productId?.productId,
+          );
+
+          if (itemToRemove) {
+            return updatedItems.filter(
+              item => item.productId !== productId?.productId,
+            );
+          }
+
+          return updatedItems;
+        });
+
+        Snackbar.show({
+          text: 'Product removed from favorites successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      }
+    } catch (error) {
+      console.error('Error removing from favorites:', error);
+
+      Snackbar.show({
+        text: `Failed to remove from favorites: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
   return (
     <pContext.Provider
       value={{
@@ -141,6 +234,10 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         searchResults,
         updateSearchResults,
         searchProducts,
+        favoriteItems,
+        fetchFavoriteItems,
+        addToFavorite,
+        removeFromFavorite,
       }}>
       {children}
     </pContext.Provider>
