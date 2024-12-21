@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
@@ -31,6 +32,7 @@ const ProductDetails = ({
   const [showPopup, setShowPopup] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [comment, setComment] = useState('');
   console.log('user', user);
 
   const addToCarts = async defaultItem => {
@@ -77,6 +79,10 @@ const ProductDetails = ({
       setShowPopup(false);
     }
   };
+  const handleMouseMove = e => {
+    // Implement logic for mouse move handling here if needed.
+  };
+
   const handleFavoriteToggle = item => {
     const favoriteObject = {
       userId: user?.id || 0,
@@ -173,6 +179,66 @@ const ProductDetails = ({
 
       <Text style={styles.sectionTitle}>Product Description:</Text>
       <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
+      <View style={styles.containers}>
+        <View style={styles.headers}>
+          <Text style={styles.title}>Review Product</Text>
+        </View>
+
+        <View style={styles.ratingContainer}>
+          <View style={styles.stars}>
+            {[...Array(5)].map((_, index) => {
+              const isHalf = 'rating > index && rating < index + 1';
+              const isFull = 'rating >= index + 1';
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.starWrapper}
+                  onPress={() => handleStarClick(index, handleMouseMove)}
+                  onMouseMove={handleMouseMove}>
+                  <Icon
+                    name="star"
+                    size={30}
+                    color={isFull || isHalf ? '#FFD700' : '#B0B0B0'}
+                  />
+                  {isHalf && (
+                    <Icon
+                      name="star-half"
+                      size={30}
+                      color="#FFD700" // Half star color
+                      style={styles.starOverlay}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          {/* {error && <Text style={styles.errorText}>{error}</Text>} */}
+        </View>
+
+        <Text style={styles.feedbackText}>
+          Share your thoughts,{' '}
+          <Text style={styles.userName}>{'userData.name'}!</Text> We'd love to
+          hear your feedback on this product.
+        </Text>
+
+        <TextInput
+          style={styles.textarea}
+          multiline
+          numberOfLines={4}
+          placeholder="Add your comments here..."
+          value={comment}
+          onChangeText={text => setComment(text)}
+        />
+
+        <View style={styles.submitButtonContainer}>
+          <TouchableOpacity
+            style={styles.submitButton}
+            // onPress={handleSubmit}
+          >
+            <Text style={styles.submitButtonText}>Submit Review</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <Text style={styles.sectionTitle}>Similar Products:</Text>
       <ScrollView
@@ -421,6 +487,91 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     textTransform: 'uppercase',
+  },
+  containers: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 20,
+  },
+  headers: {
+    paddingVertical: 10,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: 'Inter', // Ensure you have this font or replace with your choice
+    fontWeight: '600',
+    color: '#5D3A00', // Dark brown color
+    textAlign: 'center',
+  },
+  ratingContainer: {
+    alignItems: 'center',
+    marginVertical: 15,
+  },
+  stars: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  starWrapper: {
+    position: 'relative',
+    width: 30,
+    height: 30,
+    cursor: 'pointer',
+  },
+  starIcon: {
+    width: '100%',
+    height: '100%',
+    tintColor: '#B0B0B0', // Gray color for the empty star
+  },
+  starFull: {
+    tintColor: '#FFD700', // Full star color
+  },
+  starOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+  },
+  errorText: {
+    color: '#FF0000', // Red color for error messages
+    fontSize: 12,
+  },
+  feedbackText: {
+    fontSize: 14,
+    fontWeight: '500',
+    paddingVertical: 8,
+    color: '#333',
+    textAlign: 'center',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#5D3A00',
+  },
+  textarea: {
+    width: '100%',
+    height: 100,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    backgroundColor: '#F9F9F9',
+    marginBottom: 15,
+    textAlignVertical: 'top',
+  },
+  submitButtonContainer: {
+    alignItems: 'center',
+  },
+  submitButton: {
+    backgroundColor: '#5D3A00', // Dark brown color
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
 
