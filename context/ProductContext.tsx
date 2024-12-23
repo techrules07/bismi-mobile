@@ -5,6 +5,10 @@ import {
   getAllFavorite,
   addFavorite,
   deleteFavorite,
+  getProductRating,
+  addProductRating,
+  editProductRating,
+  deleteProductRating,
 } from '../Networking/HomePageService';
 import Snackbar from 'react-native-snackbar';
 
@@ -35,6 +39,10 @@ interface ValueProviders {
   fetchFavoriteItems: (requestId: number) => void;
   addToFavorite: (product: any) => void;
   removeFromFavorite: (productId: string) => void;
+  fetchRatings: (productId: string) => Promise<void>;
+  addRating: (ratingData: any) => Promise<void>;
+  editRating: (ratingData: any) => Promise<void>;
+  deleteRating: (ratingId: string) => Promise<void>;
 }
 
 const pContext = createContext<ValueProviders | null | undefined>(undefined);
@@ -50,7 +58,8 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const [homeItems, setHomeItems] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [favoriteItems, setFavoriteItems] = useState<any[]>([]);
-
+  const [ratings, setRatings] = useState<any[]>([]);
+  console.log('ratings', ratings);
   const fetchCartItems = async (requestId: number) => {
     try {
       const response = await getAllCartItems(requestId);
@@ -208,7 +217,89 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
       });
     }
   };
+  const fetchRatings = async (requestId: any, userId: any) => {
+    debugger
+    try {
+      const response = await getProductRating({requestId, userId});
+      if (response?.data) {
+        setRatings(response?.data);
+      }
+    } catch (error) {
+      console.error('Error fetching ratings:', error);
+    }
+  };
 
+  const addRating = async (ratingData: any) => {
+    try {
+      const response = await addProductRating(ratingData);
+      console.log('Full Response:', response);
+
+      if (response) {
+        setRatings(response);
+
+        Snackbar.show({
+          text: response.message || 'Rating added successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      }
+    } catch (error) {
+      console.error('Error adding rating:', error);
+      Snackbar.show({
+        text: `Failed to add rating: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
+  const editRating = async (ratingData: any) => {
+    try {
+      const response = await editProductRating(ratingData);
+      if (response) {
+        setRatings(prevRatings =>
+          prevRatings.map(rating =>
+            rating.id === response.id ? response : rating,
+          ),
+        );
+        Snackbar.show({
+          text: 'Rating updated successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      }
+    } catch (error) {
+      console.error('Error editing rating:', error);
+      Snackbar.show({
+        text: `Failed to edit rating: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
+  const deleteRating = async (ratingId: string) => {
+    try {
+      const response = await deleteProductRating({ratingId});
+      if (response) {
+        setRatings(prevRatings =>
+          prevRatings.filter(rating => rating.id !== ratingId),
+        );
+        Snackbar.show({
+          text: 'Rating deleted successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting rating:', error);
+      Snackbar.show({
+        text: `Failed to delete rating: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
   return (
     <pContext.Provider
       value={{
@@ -238,6 +329,11 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         fetchFavoriteItems,
         addToFavorite,
         removeFromFavorite,
+        ratings,
+        fetchRatings,
+        addRating,
+        editRating,
+        deleteRating,
       }}>
       {children}
     </pContext.Provider>

@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {pContext} from '../Context/ProductContext';
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import SuccessScreen from './SuccessScreen';
+import CustomerReviews from './Reviews';
 
 const ProductDetails = ({
   selectedItem,
@@ -27,6 +28,7 @@ const ProductDetails = ({
   console.log('favorites', favorites);
   console.log('selectedItem', selectedItem);
   const navigation = useNavigation();
+  const [rating, setRating] = useState(0);
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
   const [showPopup, setShowPopup] = useState(false);
@@ -79,10 +81,29 @@ const ProductDetails = ({
       setShowPopup(false);
     }
   };
-  const handleMouseMove = e => {
-    // Implement logic for mouse move handling here if needed.
-  };
 
+  const handleStarClick = index => {
+    setRating(index + 1);
+  };
+  const handleSubmit = selectedItem => {
+    const ratingData = {
+      id: selectedItem?.id,
+      productId: selectedItem?.id,
+      rating: rating,
+      comments: comment,
+      userId: user?.id,
+    };
+
+    productContext?.addRating(ratingData);
+  };
+  useEffect(() => {
+    if (selectedItem?.id && user?.id) {
+      const requestId = selectedItem.id;
+      const userId = user.id;
+
+      productContext?.fetchRatings(requestId, userId);
+    }
+  }, [selectedItem?.id, user?.id, productContext]);
   const handleFavoriteToggle = item => {
     const favoriteObject = {
       userId: user?.id || 0,
@@ -161,12 +182,15 @@ const ProductDetails = ({
       </View>
       <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
         <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
-        {/* <TouchableOpacity
-          style={styles.addToCartButton}
-          onPress={() => addToCart(item)}>
-          <Text style={styles.addToCartText}>Add to Cart</Text>
-        </TouchableOpacity> */}
       </View>
+
+      <View style={styles.ratingBox}>
+        <Icon name="star" size={26} color={'gray'} />
+        <Text style={styles.ratingText}>
+          {productContext?.ratings?.avgRating || 0.0}
+        </Text>
+      </View>
+
       <Text style={styles.sectionTitle}>Product Details:</Text>
       <View style={styles.detailsSection}>
         <Text style={styles.detailsText}>Brand: {selectedItem?.brandName}</Text>
@@ -187,32 +211,36 @@ const ProductDetails = ({
         <View style={styles.ratingContainer}>
           <View style={styles.stars}>
             {[...Array(5)].map((_, index) => {
-              const isHalf = 'rating > index && rating < index + 1';
-              const isFull = 'rating >= index + 1';
+              const isFull = rating >= index + 1;
+
               return (
                 <TouchableOpacity
                   key={index}
                   style={styles.starWrapper}
-                  onPress={() => handleStarClick(index, handleMouseMove)}
-                  onMouseMove={handleMouseMove}>
+                  onPress={() => handleStarClick(index)}>
                   <Icon
                     name="star"
                     size={30}
-                    color={isFull || isHalf ? '#FFD700' : '#B0B0B0'}
+                    color={isFull ? '#FFD700' : '#B0B0B0'}
                   />
-                  {isHalf && (
-                    <Icon
-                      name="star-half"
-                      size={30}
-                      color="#FFD700" // Half star color
-                      style={styles.starOverlay}
-                    />
-                  )}
                 </TouchableOpacity>
               );
             })}
           </View>
-          {/* {error && <Text style={styles.errorText}>{error}</Text>} */}
+          <View style={{flexDirection: 'row', gap: 20, marginTop: 20}}>
+            <TouchableOpacity
+              style={[styles.button, styles.deleteButton]}
+              onPress={() => setRating(0)}>
+              <Text style={styles.buttonText}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.buttons, styles.editButton]}
+              onPress={() => {
+                // Add your edit logic here
+              }}>
+              <Text style={styles.buttonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Text style={styles.feedbackText}>
@@ -233,13 +261,12 @@ const ProductDetails = ({
         <View style={styles.submitButtonContainer}>
           <TouchableOpacity
             style={styles.submitButton}
-            // onPress={handleSubmit}
-          >
+            onPress={() => handleSubmit(selectedItem)}>
             <Text style={styles.submitButtonText}>Submit Review</Text>
           </TouchableOpacity>
         </View>
       </View>
-
+      <CustomerReviews reviews={productContext?.ratings?.ratings} />
       <Text style={styles.sectionTitle}>Similar Products:</Text>
       <ScrollView
         horizontal
@@ -267,9 +294,6 @@ const ProductDetails = ({
           </TouchableOpacity>
         ))}
       </ScrollView>
-      {/* {showPopup && (
-        <SuccessScreen />
-      )} */}
     </ScrollView>
   );
 };
@@ -474,8 +498,6 @@ const styles = StyleSheet.create({
   addToCartButton: {
     backgroundColor: '#703F07',
     borderRadius: 30,
-    // paddingVertical: 10,
-    // paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
@@ -498,9 +520,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontFamily: 'Inter', // Ensure you have this font or replace with your choice
+    fontFamily: 'Inter',
     fontWeight: '600',
-    color: '#5D3A00', // Dark brown color
+    color: '#5D3A00',
     textAlign: 'center',
   },
   ratingContainer: {
@@ -520,10 +542,10 @@ const styles = StyleSheet.create({
   starIcon: {
     width: '100%',
     height: '100%',
-    tintColor: '#B0B0B0', // Gray color for the empty star
+    tintColor: '#B0B0B0',
   },
   starFull: {
-    tintColor: '#FFD700', // Full star color
+    tintColor: '#FFD700',
   },
   starOverlay: {
     position: 'absolute',
@@ -533,7 +555,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   errorText: {
-    color: '#FF0000', // Red color for error messages
+    color: '#FF0000',
     fontSize: 12,
   },
   feedbackText: {
@@ -563,7 +585,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitButton: {
-    backgroundColor: '#5D3A00', // Dark brown color
+    backgroundColor: '#5D3A00',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -572,6 +594,63 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 16,
+  },
+  resetButton: {
+    right: 10,
+    top: 5,
+  },
+  resetButtons: {
+    right: 10,
+    top: 5,
+  },
+  deleteIcon: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+  },
+  button: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttons: {
+    paddingVertical: 8,
+    paddingHorizontal: 17,
+    borderRadius: 5,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButton: {
+    borderColor: '#5D3A00',
+    backgroundColor: '#5D3A00',
+  },
+  editButton: {
+    borderColor: '#5D3A00',
+    backgroundColor: '#5D3A00',
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  ratingBox: {
+    backgroundColor: '#d3f9d8',
+    padding: 15,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    width: 100,
+    marginLeft: 5,
+  },
+  ratingText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 10,
   },
 });
 

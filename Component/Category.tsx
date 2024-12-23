@@ -141,7 +141,7 @@ const Category = props => {
             style={styles.sidebar}
             contentContainerStyle={styles.sidebarContent}
             showsVerticalScrollIndicator={false}>
-            {productContext.categories.map(category => (
+            {productContext?.categories.map(category => (
               <View
                 key={category.id}
                 style={[
@@ -177,7 +177,7 @@ const Category = props => {
               horizontal
               style={styles.horizontalScroll}
               showsHorizontalScrollIndicator={false}>
-              {productContext.productList.map(item => (
+              {productContext?.productList.map(item => (
                 <TouchableOpacity
                   key={item.id}
                   style={styles.recentItem}
@@ -222,10 +222,10 @@ const Category = props => {
               {productContext?.newArrival.map(item => (
                 <View key={item.id} style={styles.recentItem}>
                   <Image
-                    source={{uri: item?.mainImageUrl }}
+                    source={{uri: item?.mainImageUrl}}
                     style={styles.roundedImage}
                   />
-                  <Text style={styles.recentText}>{item?.productName }</Text>
+                  <Text style={styles.recentText}>{item?.productName}</Text>
                 </View>
               ))}
             </ScrollView>

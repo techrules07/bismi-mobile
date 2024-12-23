@@ -59,7 +59,7 @@ const ProductList = () => {
         </View>
       </View>
       <View style={{paddingLeft: 5, paddingRight: 5}}>
-        {productContext.productList.length > 0 && (
+        {productContext?.productList.length > 0 && (
           <FlatList
             data={productContext.productList}
             keyExtractor={item => item.id}
