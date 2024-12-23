@@ -56,19 +56,17 @@ const LoginScreen = () => {
           userLoginResponse?.status === 'Success' &&
           userLoginResponse?.code === 200
         ) {
-          const userData = userLoginResponse.data;
-          console.log('userData', userData);
-          await AsyncStorage.setItem('user', JSON.stringify(userData));
+          const user_data = userLoginResponse.data;
 
-          if (userData?.registered === true) {
+          if (user_data?.registered === true) {
             setIsOtpVisible(true);
-            setUserData(userData);
+            setUserData(user_data);
           } else {
             setErrorMessage({
               ...errorMessage,
               mobile: 'Your number is not registered yet.',
             });
-            navigation.navigate('SignUp', {userData: userLoginResponse?.data});
+            navigation.navigate('SignUp', {userData: user_data});
           }
         } else {
           setErrorMessage(prev => ({
