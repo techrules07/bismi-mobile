@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
@@ -16,6 +17,7 @@ import {pContext} from '../Context/ProductContext';
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import SuccessScreen from './SuccessScreen';
+import ToastMessage from './toast_message/toast_message';
 
 const ProductDetails = ({
   selectedItem,
@@ -33,18 +35,19 @@ const ProductDetails = ({
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [comment, setComment] = useState('');
-  console.log('user', user);
+  const [toast, setToast] = useState(false);
 
   const addToCarts = async defaultItem => {
     try {
       const cartResponse = await addToCart(defaultItem);
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
-        Snackbar.show({
-          text: 'Product added to cart successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Product added to cart successfully!',
+        //   duration: Snackbar.LENGTH_LONG,
+        //   backgroundColor: 'green',
+        // });
+        setToast(true);
         setIsAddedToCart(true);
         setShowPopup(true);
         const requestId = defaultItem?.id;
@@ -60,12 +63,12 @@ const ProductDetails = ({
         } else {
           throw new Error('Failed to retrieve product details');
         }
-
-        setTimeout(() => {
-          navigation.navigate('Cart', {
-            selectedItem,
-          });
-        }, 2000);
+        setToast(true);
+        // setTimeout(() => {
+        //   navigation.navigate('Cart', {
+        //     selectedItem,
+        //   });
+        // }, 2000);
       } else {
         throw new Error('Failed to add product to cart');
       }
@@ -81,6 +84,12 @@ const ProductDetails = ({
   };
   const handleMouseMove = e => {
     // Implement logic for mouse move handling here if needed.
+  };
+
+  const navigateToCart = () => {
+    navigation.navigate('Cart', {
+      selectedItem,
+    });
   };
 
   const handleFavoriteToggle = item => {
@@ -105,172 +114,193 @@ const ProductDetails = ({
     setIsFavorite(prevState => !prevState);
   };
   return (
-    <ScrollView style={styles.detailsContainer}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{uri: selectedItem?.mainImage}}
-          style={styles.selectedImage}
+    <SafeAreaView style={{flex: 1, alignItems: 'center'}}>
+      {toast && (
+        <ToastMessage
+          text1Press={() => {}}
+          text2Press={() => navigateToCart()}
+          text1={'Item added to cart'}
+          text2={'Go to cart'}
+          setToast={setToast}
         />
-      </View>
-
-      <View style={styles.iconContainer}>
-        <Text style={styles.shirtTitle}>{selectedItem?.productCategory}</Text>
-        <View style={styles.iconView}>
-          <TouchableOpacity
-            onPress={() => {
-              const defaultItem = {
-                id: selectedItem?.id,
-                userId: user?.id,
-                productId: selectedItem?.id,
-                category: selectedItem?.availabilityId,
-                subCategory: selectedItem?.productCategoryId,
-                productCategory: selectedItem?.productCategoryId,
-                brand: selectedItem?.brandId,
-                color: selectedItem?.colorId,
-                unit: selectedItem?.unitId,
-                productSize:
-                  parseFloat(
-                    selectedItem?.productSize?.replace(/[^\d.-]/g, ''),
-                  ) || 0,
-                quantity: 1,
-                active: true,
-              };
-              addToCarts(defaultItem);
-            }}>
-            {isAddedToCart ? (
-              <Icon name="cart-check" size={30} color="green" />
-            ) : (
-              <Icon name="cart" size={30} color="gray" />
-            )}
-          </TouchableOpacity>
-
-          <Icon
-            name="share-variant"
-            size={30}
-            color="gray"
-            style={styles.icon}
+      )}
+      <ScrollView style={styles.detailsContainer}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={{uri: selectedItem?.mainImage}}
+            style={styles.selectedImage}
           />
-          <TouchableOpacity onPress={() => handleFavoriteToggle(selectedItem)}>
-            <Icon
-              name={isFavorite ? 'heart' : 'heart-outline'}
-              size={30}
-              color={isFavorite ? 'red' : 'gray'}
-            />
-          </TouchableOpacity>
         </View>
-      </View>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
-        {/* <TouchableOpacity
+
+        <View style={styles.iconContainer}>
+          <Text style={styles.shirtTitle}>{selectedItem?.productCategory}</Text>
+          <View style={styles.iconView}>
+            <TouchableOpacity
+              onPress={() => {
+                const defaultItem = {
+                  id: selectedItem?.id,
+                  userId: user?.id,
+                  productId: selectedItem?.id,
+                  category: selectedItem?.availabilityId,
+                  subCategory: selectedItem?.productCategoryId,
+                  productCategory: selectedItem?.productCategoryId,
+                  brand: selectedItem?.brandId,
+                  color: selectedItem?.colorId,
+                  unit: selectedItem?.unitId,
+                  productSize:
+                    parseFloat(
+                      selectedItem?.productSize?.replace(/[^\d.-]/g, ''),
+                    ) || 0,
+                  quantity: 1,
+                  active: true,
+                };
+                addToCarts(defaultItem);
+              }}>
+              {isAddedToCart ? (
+                <Icon name="cart-check" size={30} color="green" />
+              ) : (
+                <Icon name="cart" size={30} color="gray" />
+              )}
+            </TouchableOpacity>
+
+            <Icon
+              name="share-variant"
+              size={30}
+              color="gray"
+              style={styles.icon}
+            />
+            <TouchableOpacity
+              onPress={() => handleFavoriteToggle(selectedItem)}>
+              <Icon
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={30}
+                color={isFavorite ? 'red' : 'gray'}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
+          {/* <TouchableOpacity
           style={styles.addToCartButton}
           onPress={() => addToCart(item)}>
           <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity> */}
-      </View>
-      <Text style={styles.sectionTitle}>Product Details:</Text>
-      <View style={styles.detailsSection}>
-        <Text style={styles.detailsText}>Brand: {selectedItem?.brandName}</Text>
-        <Text style={styles.detailsText}>
-          Material: {selectedItem?.subCatName}
-        </Text>
-        <Text style={styles.detailsText}>Product: {selectedItem?.product}</Text>
-        <Text style={styles.detailsText}>Color: {selectedItem?.colorName}</Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Product Description:</Text>
-      <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
-      <View style={styles.containers}>
-        <View style={styles.headers}>
-          <Text style={styles.title}>Review Product</Text>
+        </View>
+        <Text style={styles.sectionTitle}>Product Details:</Text>
+        <View style={styles.detailsSection}>
+          <Text style={styles.detailsText}>
+            Brand: {selectedItem?.brandName}
+          </Text>
+          <Text style={styles.detailsText}>
+            Material: {selectedItem?.subCatName}
+          </Text>
+          <Text style={styles.detailsText}>
+            Product: {selectedItem?.product}
+          </Text>
+          <Text style={styles.detailsText}>
+            Color: {selectedItem?.colorName}
+          </Text>
         </View>
 
-        <View style={styles.ratingContainer}>
-          <View style={styles.stars}>
-            {[...Array(5)].map((_, index) => {
-              const isHalf = 'rating > index && rating < index + 1';
-              const isFull = 'rating >= index + 1';
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.starWrapper}
-                  onPress={() => handleStarClick(index, handleMouseMove)}
-                  onMouseMove={handleMouseMove}>
-                  <Icon
-                    name="star"
-                    size={30}
-                    color={isFull || isHalf ? '#FFD700' : '#B0B0B0'}
-                  />
-                  {isHalf && (
-                    <Icon
-                      name="star-half"
-                      size={30}
-                      color="#FFD700" // Half star color
-                      style={styles.starOverlay}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+        <Text style={styles.sectionTitle}>Product Description:</Text>
+        <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
+        <View style={styles.containers}>
+          <View style={styles.headers}>
+            <Text style={styles.title}>Review Product</Text>
           </View>
-          {/* {error && <Text style={styles.errorText}>{error}</Text>} */}
-        </View>
 
-        <Text style={styles.feedbackText}>
-          Share your thoughts,{' '}
-          <Text style={styles.userName}>{'userData.name'}!</Text> We'd love to
-          hear your feedback on this product.
-        </Text>
-
-        <TextInput
-          style={styles.textarea}
-          multiline
-          numberOfLines={4}
-          placeholder="Add your comments here..."
-          value={comment}
-          onChangeText={text => setComment(text)}
-        />
-
-        <View style={styles.submitButtonContainer}>
-          <TouchableOpacity
-            style={styles.submitButton}
-            // onPress={handleSubmit}
-          >
-            <Text style={styles.submitButtonText}>Submit Review</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>Similar Products:</Text>
-      <ScrollView
-        horizontal
-        style={styles.similarItemsContainer}
-        showsHorizontalScrollIndicator={false}>
-        {similarItem?.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => onSelectSimilarItem(item)}>
-            <View style={styles.card}>
-              <Image source={{uri: item?.mainImage}} style={styles.cardImage} />
-              <View style={styles.shirtInfo}>
-                <Text style={styles.cardTitle}>{item?.productCategory}</Text>
-                <TouchableOpacity
-                  onPress={() => handleFavoriteToggle(selectedItem)}>
-                  <Icon
-                    name={isFavorite ? 'heart' : 'heart-outline'}
-                    size={30}
-                    color={isFavorite ? 'red' : 'gray'}
-                  />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.cardPrice}>{item?.unitPrice}</Text>
+          <View style={styles.ratingContainer}>
+            <View style={styles.stars}>
+              {[...Array(5)].map((_, index) => {
+                const isHalf = 'rating > index && rating < index + 1';
+                const isFull = 'rating >= index + 1';
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.starWrapper}
+                    onPress={() => handleStarClick(index, handleMouseMove)}
+                    onMouseMove={handleMouseMove}>
+                    <Icon
+                      name="star"
+                      size={30}
+                      color={isFull || isHalf ? '#FFD700' : '#B0B0B0'}
+                    />
+                    {isHalf && (
+                      <Icon
+                        name="star-half"
+                        size={30}
+                        color="#FFD700" // Half star color
+                        style={styles.starOverlay}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-      {/* {showPopup && (
+            {/* {error && <Text style={styles.errorText}>{error}</Text>} */}
+          </View>
+
+          <Text style={styles.feedbackText}>
+            Share your thoughts,{' '}
+            <Text style={styles.userName}>{'userData.name'}!</Text> We'd love to
+            hear your feedback on this product.
+          </Text>
+
+          <TextInput
+            style={styles.textarea}
+            multiline
+            numberOfLines={4}
+            placeholder="Add your comments here..."
+            value={comment}
+            onChangeText={text => setComment(text)}
+          />
+
+          <View style={styles.submitButtonContainer}>
+            <TouchableOpacity
+              style={styles.submitButton}
+              // onPress={handleSubmit}
+            >
+              <Text style={styles.submitButtonText}>Submit Review</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Text style={styles.sectionTitle}>Similar Products:</Text>
+        <ScrollView
+          horizontal
+          style={styles.similarItemsContainer}
+          showsHorizontalScrollIndicator={false}>
+          {similarItem?.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => onSelectSimilarItem(item)}>
+              <View style={styles.card}>
+                <Image
+                  source={{uri: item?.mainImage}}
+                  style={styles.cardImage}
+                />
+                <View style={styles.shirtInfo}>
+                  <Text style={styles.cardTitle}>{item?.productCategory}</Text>
+                  <TouchableOpacity
+                    onPress={() => handleFavoriteToggle(selectedItem)}>
+                    <Icon
+                      name={isFavorite ? 'heart' : 'heart-outline'}
+                      size={30}
+                      color={isFavorite ? 'red' : 'gray'}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.cardPrice}>{item?.unitPrice}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        {/* {showPopup && (
         <SuccessScreen />
       )} */}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
