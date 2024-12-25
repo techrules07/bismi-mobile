@@ -222,10 +222,10 @@ const Category = props => {
               {productContext?.newArrival.map(item => (
                 <View key={item.id} style={styles.recentItem}>
                   <Image
-                    source={{uri: item?.mainImageUrl }}
+                    source={{uri: item?.mainImageUrl}}
                     style={styles.roundedImage}
                   />
-                  <Text style={styles.recentText}>{item?.productName }</Text>
+                  <Text style={styles.recentText}>{item?.productName}</Text>
                 </View>
               ))}
             </ScrollView>
@@ -296,6 +296,8 @@ const styles = StyleSheet.create({
   },
   activeSidebarItem: {
     backgroundColor: 'white',
+    borderLeftWidth: 5,
+    marginLeft: 1,
   },
 
   sidebarItem: {
