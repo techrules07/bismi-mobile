@@ -11,8 +11,15 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
-import {addToCart, getDetails} from '../Networking/HomePageService';
-import {pContext} from '../Context/ProductContext';
+import {
+  addProductRating,
+  addToCart,
+  deleteProductRating,
+  editProductRating,
+  getDetails,
+  getProductRating,
+} from '../Networking/HomePageService';
+import {pContext, ProductContext} from '../Context/ProductContext';
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import SuccessScreen from './SuccessScreen';
@@ -25,6 +32,7 @@ const ProductDetails = ({
   similarItem,
   onSelectSimilarItem,
 }) => {
+  const shouldRenderReviews = true;
   console.log('favorites', favorites);
   console.log('selectedItem', selectedItem);
   const navigation = useNavigation();
@@ -36,7 +44,7 @@ const ProductDetails = ({
   const [isFavorite, setIsFavorite] = useState(false);
   const [comment, setComment] = useState('');
   console.log('user', user);
-
+  console.log('productContext?.ratings', productContext?.ratings);
   const addToCarts = async defaultItem => {
     try {
       const cartResponse = await addToCart(defaultItem);
@@ -85,7 +93,12 @@ const ProductDetails = ({
   const handleStarClick = index => {
     setRating(index + 1);
   };
-  const handleSubmit = selectedItem => {
+  const handleEdit = review => {
+    setEditingItemId(review.id);
+    setComment(review.comments);
+    setRating(review.rating);
+  };
+  const handleSubmit = async () => {
     const ratingData = {
       id: selectedItem?.id,
       productId: selectedItem?.id,
@@ -94,16 +107,85 @@ const ProductDetails = ({
       userId: user?.id,
     };
 
-    productContext?.addRating(ratingData);
-  };
-  useEffect(() => {
-    if (selectedItem?.id && user?.id) {
-      const requestId = selectedItem.id;
-      const userId = user.id;
+    try {
+      let response;
+      if (editingItemId) {
+        response = await editProductRating(ratingData);
+      } else {
+        response = await addProductRating(ratingData);
+      }
 
-      productContext?.fetchRatings(requestId, userId);
+      console.log('Full Response:', response);
+
+      if (response) {
+        if (editingItemId) {
+          console.log('Editing item with ID:', editingItemId);
+
+          productContext?.setRatings(prevRatings =>
+            prevRatings.map(review => {
+              if (review.id === editingItemId) {
+                console.log('Updating rating:', {...review, ...response});
+                return {...review, ...response};
+              }
+              return review;
+            }),
+          );
+        } else {
+          productContext?.setRatings(prevRatings => [...prevRatings, response]);
+          Snackbar.show({
+            text: response.message || 'Rating added successfully!',
+            duration: Snackbar.LENGTH_LONG,
+            backgroundColor: 'green',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+
+      Snackbar.show({
+        text: `Failed to submit rating: ${error?.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
     }
-  }, [selectedItem?.id, user?.id, productContext]);
+  };
+
+  useEffect(() => {
+    const fetchRating = async (requestId, userId) => {
+      try {
+        console.log('Fetching ratings with:', {requestId, userId});
+
+        const response = await getProductRating({requestId, userId});
+        console.log('API Response:', response);
+
+        const ratingsArray = response?.data?.ratings;
+
+        if (Array.isArray(ratingsArray)) {
+          console.log('Setting Ratings:', ratingsArray);
+          productContext?.fetchRatings(ratingsArray);
+        } else {
+          console.warn(
+            'Unexpected data format, resetting to empty array:',
+            ratingsArray,
+          );
+          productContext?.fetchRatings([]);
+        }
+      } catch (error) {
+        console.error(
+          'Error fetching ratings:',
+          error?.response || error?.message || error,
+        );
+        productContext?.fetchRatings([]);
+      }
+    };
+
+    const requestId = selectedItem?.id;
+    const userId = user?.id;
+
+    if (requestId && userId) {
+      fetchRating(requestId, userId);
+    }
+  }, [selectedItem, user]);
   const handleFavoriteToggle = item => {
     const favoriteObject = {
       userId: user?.id || 0,
@@ -125,6 +207,48 @@ const ProductDetails = ({
 
     setIsFavorite(prevState => !prevState);
   };
+  const [visibleReviews, setVisibleReviews] = useState(5);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+
+  const handleViewMore = () => {
+    setShowAllReviews(true);
+    setVisibleReviews(productContext?.ratings?.length || 0);
+  };
+  const [editingItemId, setEditingItemId] = useState(null);
+
+  const handleDelete = async item => {
+    const requestId = item?.id;
+    const userId = item?.userId;
+
+    try {
+      const response = await deleteProductRating({requestId, userId});
+
+      if (response?.code === 200 && response?.status === 'Success') {
+        const updatedRatings = productContext?.ratings.filter(
+          review => review.id !== requestId,
+        );
+
+        productContext?.setRatings(updatedRatings);
+
+        Snackbar.show({
+          text: 'Review deleted successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      } else {
+        throw new Error('Failed to delete review');
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error);
+
+      Snackbar.show({
+        text: error?.message || 'Something went wrong!',
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
   return (
     <ScrollView style={styles.detailsContainer}>
       <View style={styles.imageContainer}>
@@ -187,7 +311,12 @@ const ProductDetails = ({
       <View style={styles.ratingBox}>
         <Icon name="star" size={26} color={'gray'} />
         <Text style={styles.ratingText}>
-          {productContext?.ratings?.avgRating || 0.0}
+          {productContext &&
+          productContext.ratings &&
+          productContext.ratings.length > 0
+            ? productContext.ratings[productContext.ratings.length - 1]
+                ?.rating || 0.0
+            : 0.0}
         </Text>
       </View>
 
@@ -227,26 +356,12 @@ const ProductDetails = ({
               );
             })}
           </View>
-          <View style={{flexDirection: 'row', gap: 20, marginTop: 20}}>
-            <TouchableOpacity
-              style={[styles.button, styles.deleteButton]}
-              onPress={() => setRating(0)}>
-              <Text style={styles.buttonText}>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.buttons, styles.editButton]}
-              onPress={() => {
-                // Add your edit logic here
-              }}>
-              <Text style={styles.buttonText}>Edit</Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
         <Text style={styles.feedbackText}>
           Share your thoughts,{' '}
-          <Text style={styles.userName}>{'userData.name'}!</Text> We'd love to
-          hear your feedback on this product.
+          <Text style={styles.userName}>{user?.name}!</Text> We'd love to hear
+          your feedback on this product.
         </Text>
 
         <TextInput
@@ -262,11 +377,66 @@ const ProductDetails = ({
           <TouchableOpacity
             style={styles.submitButton}
             onPress={() => handleSubmit(selectedItem)}>
-            <Text style={styles.submitButtonText}>Submit Review</Text>
+            <Text style={styles.submitButtonText}>
+              {editingItemId ? 'Update Review' : 'Submit Review'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
-      <CustomerReviews reviews={productContext?.ratings?.ratings} />
+
+      <Text style={styles.titles}>Customer Reviews</Text>
+      <ScrollView
+        style={[styles.reviewContainer, {maxHeight: 500}]}
+        nestedScrollEnabled={true}
+        showsVerticalScrollIndicator={false}>
+        {productContext?.ratings && productContext?.ratings.length > 0 ? (
+          productContext?.ratings
+            .slice(
+              0,
+              showAllReviews ? productContext?.ratings?.length : visibleReviews,
+            )
+            .map(item => (
+              <View key={item.id} style={styles.reviewCard}>
+                <View style={styles.reviewHeader}>
+                  <Text style={styles.username}>{item.username}</Text>
+                  <View style={styles.stars}>
+                    {Array.from({length: item.rating}).map((_, index) => (
+                      <Icon key={index} name="star" size={16} color="#78350f" />
+                    ))}
+                  </View>
+                </View>
+                <Text style={styles.comment}>
+                  {item?.comments || 'No comment'}
+                </Text>
+                {item.userId === user?.id && (
+                  <View style={styles.commentActions}>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => handleEdit(item)}>
+                      <Icon name="square-edit-outline" size={20} color="gray" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDelete(item)}>
+                      <Icon name="delete-outline" size={20} color="gray" />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            ))
+        ) : (
+          <Text style={styles.noReviewsText}>No reviews yet.</Text>
+        )}
+      </ScrollView>
+      {productContext?.ratings?.length > visibleReviews && !showAllReviews && (
+        <View style={styles.viewMoreButtonContainer}>
+          <TouchableOpacity
+            onPress={handleViewMore}
+            style={styles.viewMoreButton}>
+            <Text style={styles.viewMoreButtonText}>View More</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       <Text style={styles.sectionTitle}>Similar Products:</Text>
       <ScrollView
         horizontal
@@ -525,6 +695,14 @@ const styles = StyleSheet.create({
     color: '#5D3A00',
     textAlign: 'center',
   },
+  titles: {
+    fontSize: 16,
+    fontFamily: 'Inter',
+    fontWeight: '600',
+    color: 'black',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
   ratingContainer: {
     alignItems: 'center',
     marginVertical: 15,
@@ -639,18 +817,105 @@ const styles = StyleSheet.create({
   },
   ratingBox: {
     backgroundColor: '#d3f9d8',
-    padding: 15,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    width: 100,
+    width: 70,
     marginLeft: 5,
   },
   ratingText: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginRight: 10,
+    // marginRight: 15,
+  },
+  reviewContainer: {
+    maxHeight: 600,
+    overflowY: 'auto',
+  },
+  reviewCard: {
+    flexDirection: 'column',
+    padding: 16,
+    marginBottom: 16,
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4e2a00',
+    marginRight: 8,
+  },
+  stars: {
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  score: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6b6b6b',
+  },
+  comment: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    marginTop: 8,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  footerText: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#6b6b6b',
+  },
+  noReviewsText: {
+    textAlign: 'center',
+    color: '#888',
+  },
+  viewMoreButtonContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  viewMoreButton: {
+    backgroundColor: '#78350f',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+  },
+  viewMoreButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  commentActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 10,
+  },
+  editButton: {
+    padding: 5,
+  },
+  deleteButton: {
+    padding: 5,
   },
 });
 

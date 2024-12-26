@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,12 @@ import {
   ScrollView,
 } from 'react-native';
 import {MaterialIcons} from 'react-native-vector-icons/MaterialCommunityIcons'; // For the star icon (could use other icon libraries too)
+import {UserContext} from '../Context/UserContext';
 
 const CustomerReviews = ({reviews}) => {
   console.log('reviews', reviews);
   const [visibleReviews, setVisibleReviews] = useState(5);
-
+  const {user} = useContext(UserContext);
   const handleViewMore = () => {
     setVisibleReviews(prevVisibleReviews => prevVisibleReviews + 5);
   };
@@ -27,18 +28,18 @@ const CustomerReviews = ({reviews}) => {
               <View style={styles.reviewHeader}>
                 <Text style={styles.username}>{item.username}</Text>
                 <View style={styles.stars}>
-                  {Array.from({length: item.rating}).map((_, index) => (
+                  {/* {Array.from({length: item.rating}).map((_, index) => (
                     <MaterialIcons
                       key={index}
                       name="star"
                       size={16}
                       color="#78350f"
                     />
-                  ))}
+                  ))} */}
                 </View>
-                <Text style={styles.score}>{item.score || null}</Text>
+                <Text style={styles.score}>{item?.score || null}</Text>
               </View>
-              <Text style={styles.comment}>{item.comments || null}</Text>
+              <Text style={styles.comment}>{item?.comments || null}</Text>
               <View style={styles.footer}>
                 <MaterialIcons name="check-circle" size={16} color="black" />
                 <Text style={styles.footerText}>

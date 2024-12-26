@@ -58,7 +58,8 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const [homeItems, setHomeItems] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [favoriteItems, setFavoriteItems] = useState<any[]>([]);
-  const [ratings, setRatings] = useState<any[]>([]);
+  const [ratings, setRatings] = useState([]);
+
   console.log('ratings', ratings);
   const fetchCartItems = async (requestId: number) => {
     try {
@@ -217,40 +218,14 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
       });
     }
   };
-  const fetchRatings = async (requestId: any, userId: any) => {
-    debugger
-    try {
-      const response = await getProductRating({requestId, userId});
-      if (response?.data) {
-        setRatings(response?.data);
-      }
-    } catch (error) {
-      console.error('Error fetching ratings:', error);
-    }
+  const fetchRatings = async (data: any) => {
+    setRatings(data);
   };
 
-  const addRating = async (ratingData: any) => {
-    try {
-      const response = await addProductRating(ratingData);
-      console.log('Full Response:', response);
-
-      if (response) {
-        setRatings(response);
-
-        Snackbar.show({
-          text: response.message || 'Rating added successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
-      }
-    } catch (error) {
-      console.error('Error adding rating:', error);
-      Snackbar.show({
-        text: `Failed to add rating: ${error.message}`,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
-    }
+  const addRating = (ratingData: any) => {
+    setRatings(prevRatings => {
+      return [...prevRatings, ratingData];
+    });
   };
 
   const editRating = async (ratingData: any) => {
@@ -334,6 +309,7 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         addRating,
         editRating,
         deleteRating,
+        setRatings
       }}>
       {children}
     </pContext.Provider>

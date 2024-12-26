@@ -154,7 +154,7 @@ export const addProductRating = async (bodyData: any) => {
   }
 };
 export const getProductRating = async (bodyData: any) => {
-  debugger
+  
   try {
     const response = await AxiosConfig.post(
       `/ratings/getRatings?requestId=${bodyData?.requestId}&userId=${bodyData?.userId}`
@@ -168,23 +168,23 @@ export const getProductRating = async (bodyData: any) => {
       throw new Error('Invalid response from server');
     }
   } catch (error) {
-    // Checking if the error is an object and if it contains a response property
+   
     if (error.response) {
       console.error('Error in getting rating:', error.response.data);
-      // You can also check for status codes here to provide more details
+   
       console.error('Status code:', error.response.status);
     } else if (error.request) {
       console.error('No response was received:', error.request);
     } else {
       console.error('Error setting up the request:', error.message);
     }
-    throw error;  // Re-throw the error so the caller can handle it
+    throw error;  
   }
 };
 
 
 export const editProductRating = async (bodyData: any) => {
-  debugger;
+
   try {
     const response = await AxiosConfig.post(
       'ratings/editProductRating',
@@ -203,7 +203,7 @@ export const editProductRating = async (bodyData: any) => {
   }
 };
 export const deleteProductRating = async (bodyData: any) => {
-  debugger;
+
   try {
     const response = await AxiosConfig.post(
       'ratings/deleteProductRating',

@@ -63,8 +63,8 @@ const Category = props => {
   console.log(productContext?.categories);
   async function fetchAllOffers() {
     const response = await getAllOffers();
-    if (response.status == 200 && response.data.code == 200) {
-      productContext.updateSliderItems(response.data.data);
+    if (response?.status == 200 && response?.data?.code == 200) {
+      productContext.updateSliderItems(response?.data?.data);
     }
   }
   async function getPremiumProductsApi(
@@ -99,8 +99,8 @@ const Category = props => {
   async function getAllCategoriesApi() {
     const categoriesResponse = await getAllCategories();
     if (
-      categoriesResponse.status == 200 &&
-      categoriesResponse.data.code == 200
+      categoriesResponse?.status == 200 &&
+      categoriesResponse?.data?.code == 200
     ) {
       productContext.updateCategories(categoriesResponse.data.data);
     }
@@ -109,7 +109,7 @@ const Category = props => {
   async function getProducts(section) {
     try {
       const productsListResponse = await getAllProducts(section);
-      console.log(productsListResponse.data);
+      console.log(productsListResponse?.data);
 
       if (
         productsListResponse?.status === 200 &&
@@ -141,7 +141,7 @@ const Category = props => {
             style={styles.sidebar}
             contentContainerStyle={styles.sidebarContent}
             showsVerticalScrollIndicator={false}>
-            {productContext?.categories.map(category => (
+            {productContext?.categories?.map(category => (
               <View
                 key={category.id}
                 style={[
@@ -257,7 +257,6 @@ const Category = props => {
             </View>
           </ScrollView>
         )}
-        {/* {selectedSection === 'Fashion' && <CategoryForMens />} */}
       </View>
     </View>
   );
