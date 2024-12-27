@@ -39,7 +39,7 @@ interface ValueProviders {
   fetchFavoriteItems: (requestId: number) => void;
   addToFavorite: (product: any) => void;
   removeFromFavorite: (productId: string) => void;
-  fetchRatings: (productId: string) => Promise<void>;
+  fetchRatings: (requestId: string, userId: string) => Promise<void>;
   addRating: (ratingData: any) => Promise<void>;
   editRating: (ratingData: any) => Promise<void>;
   deleteRating: (ratingId: string) => Promise<void>;
@@ -89,6 +89,91 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
       setSearchResults(response.data);
     } catch (error) {
       console.error('Error fetching search results:', error);
+    }
+  };
+
+  const fetchRatings = async (requestId: any, userId: any) => {
+    try {
+      let payload = {
+        requestId: requestId,
+        userId: userId,
+      };
+      const ratingsResponse = await getProductRating(payload);
+      const ratingsArray = ratingsResponse?.data?.ratings;
+      if (Array.isArray(ratingsArray)) {
+        let ratings_array =
+          Array.isArray(ratingsArray) && ratingsArray.length > 0
+            ? ratingsArray
+            : [];
+        //@ts-ignore
+        setRatings(ratings_array);
+        return true;
+      } else {
+        console.warn(
+          'Unexpected data format, resetting to empty array:',
+          ratingsArray,
+        );
+        setRatings([]);
+        return true;
+      }
+    } catch (error) {
+      setRatings([]);
+      console.log('Error at fetchRatings');
+      return true;
+    }
+  };
+
+  const addRating = (ratingData: any) => {
+    setRatings(prevRatings => {
+      return [...prevRatings, ratingData];
+    });
+  };
+
+  const editRating = async (ratingData: any) => {
+    try {
+      const response = await editProductRating(ratingData);
+      if (response) {
+        setRatings(prevRatings =>
+          prevRatings.map(rating =>
+            rating.id === response.id ? response : rating,
+          ),
+        );
+        Snackbar.show({
+          text: 'Rating updated successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      }
+    } catch (error) {
+      console.error('Error editing rating:', error);
+      Snackbar.show({
+        text: `Failed to edit rating: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
+  const deleteRating = async (ratingId: string) => {
+    try {
+      const response = await deleteProductRating({ratingId});
+      if (response) {
+        setRatings(prevRatings =>
+          prevRatings.filter(rating => rating.id !== ratingId),
+        );
+        Snackbar.show({
+          text: 'Rating deleted successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting rating:', error);
+      Snackbar.show({
+        text: `Failed to delete rating: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
     }
   };
 

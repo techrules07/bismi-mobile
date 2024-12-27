@@ -190,7 +190,7 @@ const Category = props => {
                     })
                   }>
                   <Image
-                    source={{uri: item?.mainImage}}
+                    source={{uri: item?.mainImageUrl}}
                     style={styles.recentImage}
                   />
                   <Text style={styles.recentText} numberOfLines={1}>
@@ -295,6 +295,8 @@ const styles = StyleSheet.create({
   },
   activeSidebarItem: {
     backgroundColor: 'white',
+    borderLeftWidth: 5,
+    marginLeft: 1,
   },
 
   sidebarItem: {

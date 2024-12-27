@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
@@ -24,6 +25,8 @@ import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import SuccessScreen from './SuccessScreen';
 import CustomerReviews from './Reviews';
+import uuid from 'react-native-uuid';
+import ToastMessage from './toast_message/toast_message';
 
 const ProductDetails = ({
   selectedItem,
@@ -33,8 +36,6 @@ const ProductDetails = ({
   onSelectSimilarItem,
 }) => {
   const shouldRenderReviews = true;
-  console.log('favorites', favorites);
-  console.log('selectedItem', selectedItem);
   const navigation = useNavigation();
   const [rating, setRating] = useState(0);
   const productContext = useContext(pContext);
@@ -43,18 +44,40 @@ const ProductDetails = ({
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [comment, setComment] = useState('');
-  console.log('user', user);
-  console.log('productContext?.ratings', productContext?.ratings);
+  const [ratingsFetched, setRatingsFetched] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [visibleReviews, setVisibleReviews] = useState(5);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+
+  const scrollViewRef = useRef(null);
+  const targetViewRef = useRef(null);
+
+  useEffect(() => {
+    const requestId = selectedItem?.id;
+    const userId = user?.id;
+    if (requestId && userId && !ratingsFetched) {
+      fetchRating(requestId, userId);
+      setRatingsFetched(true);
+    }
+  }, [selectedItem, user]);
+
+  const scrollToTarget = () => {
+    targetViewRef.current.measure((fx, fy, width, height, px, py) => {
+      console.log(fx, fy, width, height, px, py, 'from target Ref');
+      scrollViewRef.current.scrollTo({
+        x: 0,
+        y: -py + 70, // Dynamically calculated y-position
+        animated: true,
+      });
+    });
+  };
+
   const addToCarts = async defaultItem => {
     try {
       const cartResponse = await addToCart(defaultItem);
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
-        Snackbar.show({
-          text: 'Product added to cart successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        setShowToast(true);
         setIsAddedToCart(true);
         setShowPopup(true);
         const requestId = defaultItem?.id;
@@ -70,12 +93,6 @@ const ProductDetails = ({
         } else {
           throw new Error('Failed to retrieve product details');
         }
-
-        setTimeout(() => {
-          navigation.navigate('Cart', {
-            selectedItem,
-          });
-        }, 2000);
       } else {
         throw new Error('Failed to add product to cart');
       }
@@ -99,93 +116,63 @@ const ProductDetails = ({
     setRating(review.rating);
   };
   const handleSubmit = async () => {
-    const ratingData = {
-      id: selectedItem?.id,
-      productId: selectedItem?.id,
-      rating: rating,
-      comments: comment,
-      userId: user?.id,
-    };
-
     try {
-      let response;
+      let requestId = selectedItem?.id;
+      let userId = user?.id;
+      const ratingData = {
+        productId: requestId,
+        rating: rating,
+        comments: comment,
+        userId: userId,
+      };
+
       if (editingItemId) {
-        response = await editProductRating(ratingData);
-      } else {
-        response = await addProductRating(ratingData);
+        ratingData.id = editingItemId;
       }
 
-      console.log('Full Response:', response);
-
-      if (response) {
+      try {
+        let response;
         if (editingItemId) {
-          console.log('Editing item with ID:', editingItemId);
-
-          productContext?.setRatings(prevRatings =>
-            prevRatings.map(review => {
-              if (review.id === editingItemId) {
-                console.log('Updating rating:', {...review, ...response});
-                return {...review, ...response};
-              }
-              return review;
-            }),
-          );
+          response = await editProductRating(ratingData);
         } else {
-          productContext?.setRatings(prevRatings => [...prevRatings, response]);
+          response = await addProductRating(ratingData);
+        }
+
+        console.log('Full Response:', response);
+
+        if (response) {
+          productContext?.fetchRatings(requestId, userId);
+          setRating(0);
+          setComment('');
           Snackbar.show({
             text: response.message || 'Rating added successfully!',
             duration: Snackbar.LENGTH_LONG,
             backgroundColor: 'green',
           });
         }
+      } catch (error) {
+        let _error = error;
+        console.error('Error submitting rating:', _error);
+
+        Snackbar.show({
+          text: `Failed to submit rating: ${error?.message}`,
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'red',
+        });
       }
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      let _error = error;
+      console.log(_error);
+    }
+  };
+  const fetchRating = async (requestId, userId) => {
+    const response = await productContext?.fetchRatings(requestId, userId);
 
-      Snackbar.show({
-        text: `Failed to submit rating: ${error?.message}`,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+    if (response) {
+      setRatingsFetched(true); //only for initial we need to use useEffect
     }
   };
 
-  useEffect(() => {
-    const fetchRating = async (requestId, userId) => {
-      try {
-        console.log('Fetching ratings with:', {requestId, userId});
-
-        const response = await getProductRating({requestId, userId});
-        console.log('API Response:', response);
-
-        const ratingsArray = response?.data?.ratings;
-
-        if (Array.isArray(ratingsArray)) {
-          console.log('Setting Ratings:', ratingsArray);
-          productContext?.fetchRatings(ratingsArray);
-        } else {
-          console.warn(
-            'Unexpected data format, resetting to empty array:',
-            ratingsArray,
-          );
-          productContext?.fetchRatings([]);
-        }
-      } catch (error) {
-        console.error(
-          'Error fetching ratings:',
-          error?.response || error?.message || error,
-        );
-        productContext?.fetchRatings([]);
-      }
-    };
-
-    const requestId = selectedItem?.id;
-    const userId = user?.id;
-
-    if (requestId && userId) {
-      fetchRating(requestId, userId);
-    }
-  }, [selectedItem, user]);
   const handleFavoriteToggle = item => {
     const favoriteObject = {
       userId: user?.id || 0,
@@ -207,8 +194,6 @@ const ProductDetails = ({
 
     setIsFavorite(prevState => !prevState);
   };
-  const [visibleReviews, setVisibleReviews] = useState(5);
-  const [showAllReviews, setShowAllReviews] = useState(false);
 
   const handleViewMore = () => {
     setShowAllReviews(true);
@@ -218,17 +203,14 @@ const ProductDetails = ({
 
   const handleDelete = async item => {
     const requestId = item?.id;
+    const itemId = selectedItem?.id;
     const userId = item?.userId;
 
     try {
       const response = await deleteProductRating({requestId, userId});
 
       if (response?.code === 200 && response?.status === 'Success') {
-        const updatedRatings = productContext?.ratings.filter(
-          review => review.id !== requestId,
-        );
-
-        productContext?.setRatings(updatedRatings);
+        productContext?.fetchRatings(itemId, userId);
 
         Snackbar.show({
           text: 'Review deleted successfully!',
@@ -249,222 +231,264 @@ const ProductDetails = ({
     }
   };
 
+  const navigateToCart = () => {
+    navigation.navigate('Cart', {
+      selectedItem,
+    });
+  };
+
   return (
-    <ScrollView style={styles.detailsContainer}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{uri: selectedItem?.mainImage}}
-          style={styles.selectedImage}
+    <SafeAreaView style={{flex: 1, alignItems: 'center'}}>
+      {showToast && (
+        <ToastMessage
+          text1Press={() => {}}
+          text2Press={() => navigateToCart()}
+          text1={'Item added to cart'}
+          text2={'Go to cart'}
+          setToast={setShowToast}
         />
-      </View>
-
-      <View style={styles.iconContainer}>
-        <Text style={styles.shirtTitle}>{selectedItem?.productCategory}</Text>
-        <View style={styles.iconView}>
-          <TouchableOpacity
-            onPress={() => {
-              const defaultItem = {
-                id: selectedItem?.id,
-                userId: user?.id,
-                productId: selectedItem?.id,
-                category: selectedItem?.availabilityId,
-                subCategory: selectedItem?.productCategoryId,
-                productCategory: selectedItem?.productCategoryId,
-                brand: selectedItem?.brandId,
-                color: selectedItem?.colorId,
-                unit: selectedItem?.unitId,
-                productSize:
-                  parseFloat(
-                    selectedItem?.productSize?.replace(/[^\d.-]/g, ''),
-                  ) || 0,
-                quantity: 1,
-                active: true,
-              };
-              addToCarts(defaultItem);
-            }}>
-            {isAddedToCart ? (
-              <Icon name="cart-check" size={30} color="green" />
-            ) : (
-              <Icon name="cart" size={30} color="gray" />
-            )}
-          </TouchableOpacity>
-
-          <Icon
-            name="share-variant"
-            size={30}
-            color="gray"
-            style={styles.icon}
+      )}
+      <ScrollView ref={scrollViewRef} style={styles.detailsContainer}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={{uri: selectedItem?.mainImage}}
+            style={styles.selectedImage}
           />
-          <TouchableOpacity onPress={() => handleFavoriteToggle(selectedItem)}>
+        </View>
+
+        <View style={styles.iconContainer}>
+          <Text style={styles.shirtTitle}>{selectedItem?.productCategory}</Text>
+          <View style={styles.iconView}>
+            <TouchableOpacity
+              onPress={() => {
+                const defaultItem = {
+                  id: selectedItem?.id,
+                  userId: user?.id,
+                  productId: selectedItem?.id,
+                  category: selectedItem?.availabilityId,
+                  subCategory: selectedItem?.productCategoryId,
+                  productCategory: selectedItem?.productCategoryId,
+                  brand: selectedItem?.brandId,
+                  color: selectedItem?.colorId,
+                  unit: selectedItem?.unitId,
+                  productSize:
+                    parseFloat(
+                      selectedItem?.productSize?.replace(/[^\d.-]/g, ''),
+                    ) || 0,
+                  quantity: 1,
+                  active: true,
+                };
+                addToCarts(defaultItem);
+              }}>
+              {isAddedToCart ? (
+                <Icon name="cart-check" size={30} color="green" />
+              ) : (
+                <Icon name="cart" size={30} color="gray" />
+              )}
+            </TouchableOpacity>
+
             <Icon
-              name={isFavorite ? 'heart' : 'heart-outline'}
+              name="share-variant"
               size={30}
-              color={isFavorite ? 'red' : 'gray'}
+              color="gray"
+              style={styles.icon}
             />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleFavoriteToggle(selectedItem)}>
+              <Icon
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={30}
+                color={isFavorite ? 'red' : 'gray'}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
-      </View>
-
-      <View style={styles.ratingBox}>
-        <Icon name="star" size={26} color={'gray'} />
-        <Text style={styles.ratingText}>
-          {productContext &&
-          productContext.ratings &&
-          productContext.ratings.length > 0
-            ? productContext.ratings[productContext.ratings.length - 1]
-                ?.rating || 0.0
-            : 0.0}
-        </Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Product Details:</Text>
-      <View style={styles.detailsSection}>
-        <Text style={styles.detailsText}>Brand: {selectedItem?.brandName}</Text>
-        <Text style={styles.detailsText}>
-          Material: {selectedItem?.subCatName}
-        </Text>
-        <Text style={styles.detailsText}>Product: {selectedItem?.product}</Text>
-        <Text style={styles.detailsText}>Color: {selectedItem?.colorName}</Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Product Description:</Text>
-      <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
-      <View style={styles.containers}>
-        <View style={styles.headers}>
-          <Text style={styles.title}>Review Product</Text>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
         </View>
 
-        <View style={styles.ratingContainer}>
-          <View style={styles.stars}>
-            {[...Array(5)].map((_, index) => {
-              const isFull = rating >= index + 1;
+        <View style={styles.ratingBox}>
+          <Icon name="star" size={26} color={'gray'} />
+          <Text style={styles.ratingText}>
+            {productContext &&
+            productContext.ratings &&
+            productContext.ratings.length > 0
+              ? productContext.ratings[productContext.ratings.length - 1]
+                  ?.rating || 0.0
+              : 0.0}
+          </Text>
+        </View>
 
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.starWrapper}
-                  onPress={() => handleStarClick(index)}>
-                  <Icon
-                    name="star"
-                    size={30}
-                    color={isFull ? '#FFD700' : '#B0B0B0'}
-                  />
-                </TouchableOpacity>
-              );
-            })}
+        <Text style={styles.sectionTitle}>Product Details:</Text>
+        <View style={styles.detailsSection}>
+          <Text style={styles.detailsText}>
+            Brand: {selectedItem?.brandName}
+          </Text>
+          <Text style={styles.detailsText}>
+            Material: {selectedItem?.subCatName}
+          </Text>
+          <Text style={styles.detailsText}>
+            Product: {selectedItem?.product}
+          </Text>
+          <Text style={styles.detailsText}>
+            Color: {selectedItem?.colorName}
+          </Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>Product Description:</Text>
+        <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
+        <View style={styles.containers} collapsable={false} ref={targetViewRef}>
+          <View style={styles.headers}>
+            <Text style={styles.title}>Review Product</Text>
+          </View>
+
+          <View style={styles.ratingContainer}>
+            <View style={styles.stars}>
+              {[...Array(5)].map((_, index) => {
+                const isFull = rating >= index + 1;
+
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.starWrapper}
+                    onPress={() => handleStarClick(index)}>
+                    <Icon
+                      name="star"
+                      size={30}
+                      color={isFull ? '#FFD700' : '#B0B0B0'}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          <Text style={styles.feedbackText}>
+            Share your thoughts,{' '}
+            <Text style={styles.userName}>{user?.name}!</Text> We'd love to hear
+            your feedback on this product.
+          </Text>
+
+          <TextInput
+            style={styles.textarea}
+            multiline
+            numberOfLines={4}
+            placeholder="Add your comments here..."
+            value={comment}
+            onChangeText={text => setComment(text)}
+          />
+
+          <View style={styles.submitButtonContainer}>
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={() => handleSubmit(selectedItem)}>
+              <Text style={styles.submitButtonText}>
+                {editingItemId ? 'Update Review' : 'Submit Review'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <Text style={styles.feedbackText}>
-          Share your thoughts,{' '}
-          <Text style={styles.userName}>{user?.name}!</Text> We'd love to hear
-          your feedback on this product.
-        </Text>
-
-        <TextInput
-          style={styles.textarea}
-          multiline
-          numberOfLines={4}
-          placeholder="Add your comments here..."
-          value={comment}
-          onChangeText={text => setComment(text)}
-        />
-
-        <View style={styles.submitButtonContainer}>
-          <TouchableOpacity
-            style={styles.submitButton}
-            onPress={() => handleSubmit(selectedItem)}>
-            <Text style={styles.submitButtonText}>
-              {editingItemId ? 'Update Review' : 'Submit Review'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Text style={styles.titles}>Customer Reviews</Text>
-      <ScrollView
-        style={[styles.reviewContainer, {maxHeight: 500}]}
-        nestedScrollEnabled={true}
-        showsVerticalScrollIndicator={false}>
-        {productContext?.ratings && productContext?.ratings.length > 0 ? (
-          productContext?.ratings
-            .slice(
-              0,
-              showAllReviews ? productContext?.ratings?.length : visibleReviews,
-            )
-            .map(item => (
-              <View key={item.id} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <Text style={styles.username}>{item.username}</Text>
-                  <View style={styles.stars}>
-                    {Array.from({length: item.rating}).map((_, index) => (
-                      <Icon key={index} name="star" size={16} color="#78350f" />
-                    ))}
+        <Text style={styles.titles}>Customer Reviews</Text>
+        <ScrollView
+          style={[styles.reviewContainer, {maxHeight: 500}]}
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}>
+          {productContext?.ratings && productContext?.ratings.length > 0 ? (
+            productContext?.ratings
+              .slice(
+                0,
+                showAllReviews
+                  ? productContext?.ratings?.length
+                  : visibleReviews,
+              )
+              .map(item => (
+                <View key={item.id} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <Text style={styles.username}>{item.username}</Text>
+                    <View style={styles.stars}>
+                      {Array.from({length: item.rating}).map((_, index) => (
+                        <Icon
+                          key={index}
+                          name="star"
+                          size={16}
+                          color="#78350f"
+                        />
+                      ))}
+                    </View>
                   </View>
+                  <Text style={styles.comment}>
+                    {item?.comments || 'No comment'}
+                  </Text>
+                  {item.userId === user?.id && (
+                    <View style={styles.commentActions}>
+                      <TouchableOpacity
+                        style={styles.editButton}
+                        onPress={() => {
+                          scrollToTarget();
+                          handleEdit(item);
+                        }}>
+                        <Icon
+                          name="square-edit-outline"
+                          size={20}
+                          color="gray"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDelete(item)}>
+                        <Icon name="delete-outline" size={20} color="gray" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
-                <Text style={styles.comment}>
-                  {item?.comments || 'No comment'}
-                </Text>
-                {item.userId === user?.id && (
-                  <View style={styles.commentActions}>
-                    <TouchableOpacity
-                      style={styles.editButton}
-                      onPress={() => handleEdit(item)}>
-                      <Icon name="square-edit-outline" size={20} color="gray" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => handleDelete(item)}>
-                      <Icon name="delete-outline" size={20} color="gray" />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            ))
-        ) : (
-          <Text style={styles.noReviewsText}>No reviews yet.</Text>
-        )}
-      </ScrollView>
-      {productContext?.ratings?.length > visibleReviews && !showAllReviews && (
-        <View style={styles.viewMoreButtonContainer}>
-          <TouchableOpacity
-            onPress={handleViewMore}
-            style={styles.viewMoreButton}>
-            <Text style={styles.viewMoreButtonText}>View More</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      <Text style={styles.sectionTitle}>Similar Products:</Text>
-      <ScrollView
-        horizontal
-        style={styles.similarItemsContainer}
-        showsHorizontalScrollIndicator={false}>
-        {similarItem?.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => onSelectSimilarItem(item)}>
-            <View style={styles.card}>
-              <Image source={{uri: item?.mainImage}} style={styles.cardImage} />
-              <View style={styles.shirtInfo}>
-                <Text style={styles.cardTitle}>{item?.productCategory}</Text>
-                <TouchableOpacity
-                  onPress={() => handleFavoriteToggle(selectedItem)}>
-                  <Icon
-                    name={isFavorite ? 'heart' : 'heart-outline'}
-                    size={30}
-                    color={isFavorite ? 'red' : 'gray'}
-                  />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.cardPrice}>{item?.unitPrice}</Text>
+              ))
+          ) : (
+            <Text style={styles.noReviewsText}>No reviews yet.</Text>
+          )}
+        </ScrollView>
+        {productContext?.ratings?.length > visibleReviews &&
+          !showAllReviews && (
+            <View style={styles.viewMoreButtonContainer}>
+              <TouchableOpacity
+                onPress={handleViewMore}
+                style={styles.viewMoreButton}>
+                <Text style={styles.viewMoreButtonText}>View More</Text>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        ))}
+          )}
+        <Text style={styles.sectionTitle}>Similar Products:</Text>
+        <ScrollView
+          horizontal
+          style={styles.similarItemsContainer}
+          showsHorizontalScrollIndicator={false}>
+          {similarItem?.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => onSelectSimilarItem(item)}>
+              <View style={styles.card}>
+                <Image
+                  source={{uri: item?.mainImage}}
+                  style={styles.cardImage}
+                />
+                <View style={styles.shirtInfo}>
+                  <Text style={styles.cardTitle}>{item?.productCategory}</Text>
+                  <TouchableOpacity
+                    onPress={() => handleFavoriteToggle(selectedItem)}>
+                    <Icon
+                      name={isFavorite ? 'heart' : 'heart-outline'}
+                      size={30}
+                      color={isFavorite ? 'red' : 'gray'}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.cardPrice}>{item?.unitPrice}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </ScrollView>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 

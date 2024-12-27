@@ -203,7 +203,6 @@ export const editProductRating = async (bodyData: any) => {
   }
 };
 export const deleteProductRating = async (bodyData: any) => {
-
   try {
     const response = await AxiosConfig.post(
       'ratings/deleteProductRating',
