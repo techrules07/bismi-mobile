@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,20 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
-import {addToCart, getDetails} from '../Networking/HomePageService';
-import {pContext} from '../Context/ProductContext';
+import {
+  addProductRating,
+  addToCart,
+  deleteProductRating,
+  editProductRating,
+  getDetails,
+  getProductRating,
+} from '../Networking/HomePageService';
+import {pContext, ProductContext} from '../Context/ProductContext';
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import SuccessScreen from './SuccessScreen';
+import CustomerReviews from './Reviews';
+import uuid from 'react-native-uuid';
 import ToastMessage from './toast_message/toast_message';
 
 const ProductDetails = ({
@@ -26,28 +35,49 @@ const ProductDetails = ({
   similarItem,
   onSelectSimilarItem,
 }) => {
-  console.log('favorites', favorites);
-  console.log('selectedItem', selectedItem);
+  const shouldRenderReviews = true;
   const navigation = useNavigation();
+  const [rating, setRating] = useState(0);
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
   const [showPopup, setShowPopup] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [comment, setComment] = useState('');
-  const [toast, setToast] = useState(false);
+  const [ratingsFetched, setRatingsFetched] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [visibleReviews, setVisibleReviews] = useState(5);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+
+  const scrollViewRef = useRef(null);
+  const targetViewRef = useRef(null);
+
+  useEffect(() => {
+    const requestId = selectedItem?.id;
+    const userId = user?.id;
+    if (requestId && userId && !ratingsFetched) {
+      fetchRating(requestId, userId);
+      setRatingsFetched(true);
+    }
+  }, [selectedItem, user]);
+
+  const scrollToTarget = () => {
+    targetViewRef.current.measure((fx, fy, width, height, px, py) => {
+      console.log(fx, fy, width, height, px, py, 'from target Ref');
+      scrollViewRef.current.scrollTo({
+        x: 0,
+        y: -py + 70, // Dynamically calculated y-position
+        animated: true,
+      });
+    });
+  };
 
   const addToCarts = async defaultItem => {
     try {
       const cartResponse = await addToCart(defaultItem);
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
-        // Snackbar.show({
-        //   text: 'Product added to cart successfully!',
-        //   duration: Snackbar.LENGTH_LONG,
-        //   backgroundColor: 'green',
-        // });
-        setToast(true);
+        setShowToast(true);
         setIsAddedToCart(true);
         setShowPopup(true);
         const requestId = defaultItem?.id;
@@ -63,12 +93,6 @@ const ProductDetails = ({
         } else {
           throw new Error('Failed to retrieve product details');
         }
-        setToast(true);
-        // setTimeout(() => {
-        //   navigation.navigate('Cart', {
-        //     selectedItem,
-        //   });
-        // }, 2000);
       } else {
         throw new Error('Failed to add product to cart');
       }
@@ -82,14 +106,71 @@ const ProductDetails = ({
       setShowPopup(false);
     }
   };
-  const handleMouseMove = e => {
-    // Implement logic for mouse move handling here if needed.
-  };
 
-  const navigateToCart = () => {
-    navigation.navigate('Cart', {
-      selectedItem,
-    });
+  const handleStarClick = index => {
+    setRating(index + 1);
+  };
+  const handleEdit = review => {
+    setEditingItemId(review.id);
+    setComment(review.comments);
+    setRating(review.rating);
+  };
+  const handleSubmit = async () => {
+    try {
+      let requestId = selectedItem?.id;
+      let userId = user?.id;
+      const ratingData = {
+        productId: requestId,
+        rating: rating,
+        comments: comment,
+        userId: userId,
+      };
+
+      if (editingItemId) {
+        ratingData.id = editingItemId;
+      }
+
+      try {
+        let response;
+        if (editingItemId) {
+          response = await editProductRating(ratingData);
+        } else {
+          response = await addProductRating(ratingData);
+        }
+
+        console.log('Full Response:', response);
+
+        if (response) {
+          productContext?.fetchRatings(requestId, userId);
+          setRating(0);
+          setComment('');
+          Snackbar.show({
+            text: response.message || 'Rating added successfully!',
+            duration: Snackbar.LENGTH_LONG,
+            backgroundColor: 'green',
+          });
+        }
+      } catch (error) {
+        let _error = error;
+        console.error('Error submitting rating:', _error);
+
+        Snackbar.show({
+          text: `Failed to submit rating: ${error?.message}`,
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'red',
+        });
+      }
+    } catch (error) {
+      let _error = error;
+      console.log(_error);
+    }
+  };
+  const fetchRating = async (requestId, userId) => {
+    const response = await productContext?.fetchRatings(requestId, userId);
+
+    if (response) {
+      setRatingsFetched(true); //only for initial we need to use useEffect
+    }
   };
 
   const handleFavoriteToggle = item => {
@@ -113,18 +194,61 @@ const ProductDetails = ({
 
     setIsFavorite(prevState => !prevState);
   };
+
+  const handleViewMore = () => {
+    setShowAllReviews(true);
+    setVisibleReviews(productContext?.ratings?.length || 0);
+  };
+  const [editingItemId, setEditingItemId] = useState(null);
+
+  const handleDelete = async item => {
+    const requestId = item?.id;
+    const itemId = selectedItem?.id;
+    const userId = item?.userId;
+
+    try {
+      const response = await deleteProductRating({requestId, userId});
+
+      if (response?.code === 200 && response?.status === 'Success') {
+        productContext?.fetchRatings(itemId, userId);
+
+        Snackbar.show({
+          text: 'Review deleted successfully!',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'green',
+        });
+      } else {
+        throw new Error('Failed to delete review');
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error);
+
+      Snackbar.show({
+        text: error?.message || 'Something went wrong!',
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
+  const navigateToCart = () => {
+    navigation.navigate('Cart', {
+      selectedItem,
+    });
+  };
+
   return (
     <SafeAreaView style={{flex: 1, alignItems: 'center'}}>
-      {toast && (
+      {showToast && (
         <ToastMessage
           text1Press={() => {}}
           text2Press={() => navigateToCart()}
           text1={'Item added to cart'}
           text2={'Go to cart'}
-          setToast={setToast}
+          setToast={setShowToast}
         />
       )}
-      <ScrollView style={styles.detailsContainer}>
+      <ScrollView ref={scrollViewRef} style={styles.detailsContainer}>
         <View style={styles.imageContainer}>
           <Image
             source={{uri: selectedItem?.mainImage}}
@@ -181,12 +305,20 @@ const ProductDetails = ({
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
-          {/* <TouchableOpacity
-          style={styles.addToCartButton}
-          onPress={() => addToCart(item)}>
-          <Text style={styles.addToCartText}>Add to Cart</Text>
-        </TouchableOpacity> */}
         </View>
+
+        <View style={styles.ratingBox}>
+          <Icon name="star" size={26} color={'gray'} />
+          <Text style={styles.ratingText}>
+            {productContext &&
+            productContext.ratings &&
+            productContext.ratings.length > 0
+              ? productContext.ratings[productContext.ratings.length - 1]
+                  ?.rating || 0.0
+              : 0.0}
+          </Text>
+        </View>
+
         <Text style={styles.sectionTitle}>Product Details:</Text>
         <View style={styles.detailsSection}>
           <Text style={styles.detailsText}>
@@ -205,7 +337,7 @@ const ProductDetails = ({
 
         <Text style={styles.sectionTitle}>Product Description:</Text>
         <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
-        <View style={styles.containers}>
+        <View style={styles.containers} collapsable={false} ref={targetViewRef}>
           <View style={styles.headers}>
             <Text style={styles.title}>Review Product</Text>
           </View>
@@ -213,38 +345,28 @@ const ProductDetails = ({
           <View style={styles.ratingContainer}>
             <View style={styles.stars}>
               {[...Array(5)].map((_, index) => {
-                const isHalf = 'rating > index && rating < index + 1';
-                const isFull = 'rating >= index + 1';
+                const isFull = rating >= index + 1;
+
                 return (
                   <TouchableOpacity
                     key={index}
                     style={styles.starWrapper}
-                    onPress={() => handleStarClick(index, handleMouseMove)}
-                    onMouseMove={handleMouseMove}>
+                    onPress={() => handleStarClick(index)}>
                     <Icon
                       name="star"
                       size={30}
-                      color={isFull || isHalf ? '#FFD700' : '#B0B0B0'}
+                      color={isFull ? '#FFD700' : '#B0B0B0'}
                     />
-                    {isHalf && (
-                      <Icon
-                        name="star-half"
-                        size={30}
-                        color="#FFD700" // Half star color
-                        style={styles.starOverlay}
-                      />
-                    )}
                   </TouchableOpacity>
                 );
               })}
             </View>
-            {/* {error && <Text style={styles.errorText}>{error}</Text>} */}
           </View>
 
           <Text style={styles.feedbackText}>
             Share your thoughts,{' '}
-            <Text style={styles.userName}>{'userData.name'}!</Text> We'd love to
-            hear your feedback on this product.
+            <Text style={styles.userName}>{user?.name}!</Text> We'd love to hear
+            your feedback on this product.
           </Text>
 
           <TextInput
@@ -259,13 +381,82 @@ const ProductDetails = ({
           <View style={styles.submitButtonContainer}>
             <TouchableOpacity
               style={styles.submitButton}
-              // onPress={handleSubmit}
-            >
-              <Text style={styles.submitButtonText}>Submit Review</Text>
+              onPress={() => handleSubmit(selectedItem)}>
+              <Text style={styles.submitButtonText}>
+                {editingItemId ? 'Update Review' : 'Submit Review'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
 
+        <Text style={styles.titles}>Customer Reviews</Text>
+        <ScrollView
+          style={[styles.reviewContainer, {maxHeight: 500}]}
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}>
+          {productContext?.ratings && productContext?.ratings.length > 0 ? (
+            productContext?.ratings
+              .slice(
+                0,
+                showAllReviews
+                  ? productContext?.ratings?.length
+                  : visibleReviews,
+              )
+              .map(item => (
+                <View key={item.id} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <Text style={styles.username}>{item.username}</Text>
+                    <View style={styles.stars}>
+                      {Array.from({length: item.rating}).map((_, index) => (
+                        <Icon
+                          key={index}
+                          name="star"
+                          size={16}
+                          color="#78350f"
+                        />
+                      ))}
+                    </View>
+                  </View>
+                  <Text style={styles.comment}>
+                    {item?.comments || 'No comment'}
+                  </Text>
+                  {item.userId === user?.id && (
+                    <View style={styles.commentActions}>
+                      <TouchableOpacity
+                        style={styles.editButton}
+                        onPress={() => {
+                          scrollToTarget();
+                          handleEdit(item);
+                        }}>
+                        <Icon
+                          name="square-edit-outline"
+                          size={20}
+                          color="gray"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDelete(item)}>
+                        <Icon name="delete-outline" size={20} color="gray" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              ))
+          ) : (
+            <Text style={styles.noReviewsText}>No reviews yet.</Text>
+          )}
+        </ScrollView>
+        {productContext?.ratings?.length > visibleReviews &&
+          !showAllReviews && (
+            <View style={styles.viewMoreButtonContainer}>
+              <TouchableOpacity
+                onPress={handleViewMore}
+                style={styles.viewMoreButton}>
+                <Text style={styles.viewMoreButtonText}>View More</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         <Text style={styles.sectionTitle}>Similar Products:</Text>
         <ScrollView
           horizontal
@@ -296,9 +487,6 @@ const ProductDetails = ({
             </TouchableOpacity>
           ))}
         </ScrollView>
-        {/* {showPopup && (
-        <SuccessScreen />
-      )} */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -504,8 +692,6 @@ const styles = StyleSheet.create({
   addToCartButton: {
     backgroundColor: '#703F07',
     borderRadius: 30,
-    // paddingVertical: 10,
-    // paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
@@ -528,10 +714,18 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontFamily: 'Inter', // Ensure you have this font or replace with your choice
+    fontFamily: 'Inter',
     fontWeight: '600',
-    color: '#5D3A00', // Dark brown color
+    color: '#5D3A00',
     textAlign: 'center',
+  },
+  titles: {
+    fontSize: 16,
+    fontFamily: 'Inter',
+    fontWeight: '600',
+    color: 'black',
+    textAlign: 'center',
+    marginBottom: 16,
   },
   ratingContainer: {
     alignItems: 'center',
@@ -550,10 +744,10 @@ const styles = StyleSheet.create({
   starIcon: {
     width: '100%',
     height: '100%',
-    tintColor: '#B0B0B0', // Gray color for the empty star
+    tintColor: '#B0B0B0',
   },
   starFull: {
-    tintColor: '#FFD700', // Full star color
+    tintColor: '#FFD700',
   },
   starOverlay: {
     position: 'absolute',
@@ -563,7 +757,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   errorText: {
-    color: '#FF0000', // Red color for error messages
+    color: '#FF0000',
     fontSize: 12,
   },
   feedbackText: {
@@ -593,7 +787,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitButton: {
-    backgroundColor: '#5D3A00', // Dark brown color
+    backgroundColor: '#5D3A00',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -602,6 +796,150 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 16,
+  },
+  resetButton: {
+    right: 10,
+    top: 5,
+  },
+  resetButtons: {
+    right: 10,
+    top: 5,
+  },
+  deleteIcon: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+  },
+  button: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttons: {
+    paddingVertical: 8,
+    paddingHorizontal: 17,
+    borderRadius: 5,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButton: {
+    borderColor: '#5D3A00',
+    backgroundColor: '#5D3A00',
+  },
+  editButton: {
+    borderColor: '#5D3A00',
+    backgroundColor: '#5D3A00',
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  ratingBox: {
+    backgroundColor: '#d3f9d8',
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    width: 70,
+    marginLeft: 5,
+  },
+  ratingText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    // marginRight: 15,
+  },
+  reviewContainer: {
+    maxHeight: 600,
+    overflowY: 'auto',
+  },
+  reviewCard: {
+    flexDirection: 'column',
+    padding: 16,
+    marginBottom: 16,
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4e2a00',
+    marginRight: 8,
+  },
+  stars: {
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  score: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6b6b6b',
+  },
+  comment: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    marginTop: 8,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  footerText: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#6b6b6b',
+  },
+  noReviewsText: {
+    textAlign: 'center',
+    color: '#888',
+  },
+  viewMoreButtonContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  viewMoreButton: {
+    backgroundColor: '#78350f',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+  },
+  viewMoreButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  commentActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 10,
+  },
+  editButton: {
+    padding: 5,
+  },
+  deleteButton: {
+    padding: 5,
   },
 });
 

@@ -65,7 +65,7 @@ const CartPage = () => {
             item.id === id ? {...item, quantity: item.quantity + 1} : item,
           ),
         );
-        productContext.updateQuantity(cartItems);
+        productContext?.updateQuantity(cartItems);
         Snackbar.show({
           text: 'Quantity increased successfully!',
           duration: Snackbar.LENGTH_SHORT,
