@@ -40,7 +40,6 @@ const WishlistPage = () => {
 
   const addToCarts = async selectedItem => {
     const defaultItem = {
-      id: selectedItem?.id,
       userId: user?.id,
       productId: selectedItem?.id,
       category: selectedItem?.availabilityId,
@@ -71,11 +70,9 @@ const WishlistPage = () => {
 
         Alert.alert('Success', 'Item moved to cart');
 
-        setTimeout(() => {
-          navigation.navigate('Cart', {
-            selectedItem,
-          });
-        }, 2000);
+        navigation.navigate('Cart', {
+          selectedItem,
+        });
       } else {
         throw new Error('Failed to add product to cart');
       }
@@ -124,7 +121,9 @@ const WishlistPage = () => {
       <View style={styles.productCard}>
         <Image source={{uri: item.productImage}} style={styles.productImage} />
         <View style={styles.productDetails}>
-          <Text style={styles.productName}>{item.productName}</Text>
+          <Text style={styles.productName}>
+            {item.productName || item.productCategory}
+          </Text>
           <Text style={styles.productPrice}>₹{item.priceWithGst}</Text>
           <View style={styles.starWrapper}>
             <Icon name="star" size={20} color="orange" />

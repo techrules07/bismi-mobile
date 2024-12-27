@@ -129,8 +129,19 @@ const CartPage = () => {
     }
   };
 
-  const moveToWishlist = id => {
-    alert(`Item with ID ${id} moved to wishlist!`);
+  const moveToWishlist = item => {
+    const favoriteObject = {
+      userId: user?.id || 0,
+      productId: item?.productId || 0,
+      category: item?.availabilityId || 0,
+      subCategory: item?.productCategoryId || 0,
+      productCategory: item?.productCategoryId || 0,
+      brand: item?.brandId || 0,
+      color: item?.colorId || 0,
+      unit: item?.unitId || 0,
+      productSize: item?.productSizeId,
+    };
+    productContext?.addToFavorite(favoriteObject);
   };
 
   const shippingCost = 50;
@@ -179,7 +190,7 @@ const CartPage = () => {
                 style={styles.itemImage}
               />
               <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item?.productCategoryName}</Text>
+                <Text style={styles.itemName}>{item?.productName}</Text>
                 <Text style={styles.itemPrice}>₹{item?.priceWithGst}</Text>
               </View>
             </View>
@@ -206,7 +217,7 @@ const CartPage = () => {
                 <Text style={styles.actionText}>Remove</Text>
               </TouchableOpacity>
               <View style={styles.verticalDivider} />
-              <TouchableOpacity onPress={() => moveToWishlist(item?.id)}>
+              <TouchableOpacity onPress={() => moveToWishlist(item)}>
                 <Text style={styles.actionText}>Move to Wishlist</Text>
               </TouchableOpacity>
             </View>
