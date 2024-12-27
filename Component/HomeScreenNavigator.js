@@ -6,6 +6,7 @@ import ProductList from './ProductList';
 import ProductListView from './ProductListView';
 import CartPage from './Cart';
 import Category from './Category';
+import SavedAddressesPage from '../Blocks/Address/Address';
 
 const HomeScreenNavigator = () => {
   const stack = createStackNavigator();
@@ -20,6 +21,7 @@ const HomeScreenNavigator = () => {
       <stack.Screen name="ProductListView" component={ProductListView} />
       <stack.Screen name="Cart" component={CartPage} />
       <stack.Screen name="Category" component={Category} />
+      <stack.Screen name="Address" component={SavedAddressesPage} />
     </stack.Navigator>
   );
 };

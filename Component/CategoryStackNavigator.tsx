@@ -7,6 +7,7 @@ import CartPage from './Cart';
 import FilterPage from '../Blocks/Category/ProductList/Filter';
 import Category from './Category';
 import OrderList from '../Container/OrderList';
+import SavedAddressesPage from '../Blocks/Address/Address';
 
 const CategoryStack = createStackNavigator();
 
@@ -29,6 +30,7 @@ const CategoryStackNavigator = () => {
       <CategoryStack.Screen name="Cart" component={CartPage} />
       <CategoryStack.Screen name="FilterPage" component={FilterPage} />
       <CategoryStack.Screen name="OrderList" component={OrderList} />
+      <CategoryStack.Screen name="Address" component={SavedAddressesPage} />
     </CategoryStack.Navigator>
   );
 };

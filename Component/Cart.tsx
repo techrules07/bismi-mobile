@@ -252,7 +252,9 @@ const CartPage = () => {
       setCouponError(error?.message || 'Failed to apply coupon');
     }
   };
-
+  const handleNavigate = () => {
+    navigation.navigate('Address');
+  };
   const handlePlaceOrder = async item => {
     try {
       const bodyData = {
@@ -313,7 +315,9 @@ const CartPage = () => {
           <Text style={styles.addressText}>
             Delivery to : {selectedAddress?.name}
           </Text>
-          <Text style={styles.addressText}>CHANGE</Text>
+          <Text style={styles.addressText} onPress={handleNavigate}>
+            CHANGE
+          </Text>
         </View>
         <Text style={styles.addressTexts}>
           {selectedAddress?.addressLine1}
