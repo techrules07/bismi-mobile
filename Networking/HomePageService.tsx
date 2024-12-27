@@ -216,3 +216,18 @@ export const deleteProductRating = async (bodyData: any) => {
     throw error;
   }
 };
+export const placeOrder = async (bodyData: any) => {
+  try {
+    const response = await AxiosConfig.post('orders/placeOrder', bodyData);
+    console.log('Order placed successfully:', response.data);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error('Invalid response from server');
+    }
+  } catch (error) {
+    console.error('Error in deleting rating:', error);
+    throw error;
+  }
+};

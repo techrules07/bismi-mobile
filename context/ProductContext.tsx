@@ -43,6 +43,7 @@ interface ValueProviders {
   addRating: (ratingData: any) => Promise<void>;
   editRating: (ratingData: any) => Promise<void>;
   deleteRating: (ratingId: string) => Promise<void>;
+  placeOrder: (data: any) => Promise<void>;
 }
 
 const pContext = createContext<ValueProviders | null | undefined>(undefined);
@@ -59,7 +60,7 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [favoriteItems, setFavoriteItems] = useState<any[]>([]);
   const [ratings, setRatings] = useState([]);
-
+  const [placeOrders, setPlaceOrder] = useState([]);
   const fetchCartItems = async (requestId: number) => {
     try {
       const response = await getAllCartItems(requestId);
@@ -207,7 +208,9 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
   const updateNewArrival = (data: any[]) => {
     setNewArrival(data);
   };
-
+  const placeOrder = (data: any[]) => {
+    setPlaceOrder(data);
+  };
   const addToCart = (product: any) => {
     setCartItems(prevItems => {
       const itemExists = prevItems.find(item => item.id === product.id);
@@ -338,6 +341,8 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         editRating,
         deleteRating,
         setRatings,
+        placeOrder,
+        placeOrders,
       }}>
       {children}
     </pContext.Provider>
