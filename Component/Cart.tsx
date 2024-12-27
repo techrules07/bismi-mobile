@@ -8,18 +8,22 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  TextInput,
+  Button,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {pContext} from '../Context/ProductContext';
 import {
   getAllCartItems,
   getDetails,
+  placeOrder,
   quantity,
   removeCart,
 } from '../Networking/HomePageService';
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import {getAddress} from '../Networking/AddressPageService';
+import {applyCoupons} from '../Networking/CouponPageService';
 const CartPage = () => {
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
@@ -30,8 +34,14 @@ const CartPage = () => {
   console.log('defaultAddress', defaultAddress);
   const [cartItems, setCartItems] = useState([]);
   console.log('cartItems', cartItems);
+  const [couponCode, setCouponCode] = useState('');
+  const [allCoupons, setAllCoupons] = useState([]);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState('');
   const [productDetails, setProductDetails] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isCouponContainerVisible, setCouponContainerVisible] = useState(true);
+
   useEffect(() => {
     const fetchCartDetails = async () => {
       const requestId = user?.id;
@@ -94,8 +104,7 @@ const CartPage = () => {
       );
 
       if (selectedAddr) {
-        // Set the selected address in the state
-        setSelectedAddress(selectedAddr); // Now the full address data is available in selectedAddress
+        setSelectedAddress(selectedAddr);
       }
     }
   }, [defaultAddress, address]);
@@ -192,13 +201,96 @@ const CartPage = () => {
   const shippingCost = 50;
 
   const totalPrice = cartItems?.reduce(
-    (acc, item) => acc + item.unitPrice * item.quantity,
+    (acc, item) => acc + item?.priceWithGst * item.quantity,
     0,
   );
   const cartWithDetails = cartItems.map(item => {
     const productDetail = productDetails.find(detail => detail.id === item.id);
     return productDetail ? {...item, ...productDetail} : item;
   });
+  useEffect(() => {
+    const fetchCartDetails = async () => {
+      try {
+        const requestId = user?.id;
+        if (!requestId) throw new Error('User information is missing');
+
+        const detailsResponse = await getAllCartItems(requestId);
+        if (detailsResponse?.code === 200) {
+          setCartItems(detailsResponse?.data || []);
+        } else {
+          throw new Error('Failed to retrieve cart items');
+        }
+      } catch (error) {
+        console.error('Error fetching cart details:', error);
+      }
+    };
+    fetchCartDetails();
+  }, [user]);
+  const handleApplyCoupon = async () => {
+    if (!couponCode) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    try {
+      const purchaseAmount = totalPrice;
+      const response = await applyCoupons({couponCode, purchaseAmount});
+      if (response?.code === 200 && response?.status === 'Success') {
+        setAllCoupons(response?.data);
+        setCouponDiscount(response?.data?.discount || 0);
+        Snackbar.show({
+          text: 'Coupon applied successfully!',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'green',
+        });
+        setCouponError('');
+        setCouponContainerVisible(false);
+      } else {
+        throw new Error(response?.message || 'Invalid coupon');
+      }
+    } catch (error) {
+      setCouponError(error?.message || 'Failed to apply coupon');
+    }
+  };
+
+  const handlePlaceOrder = async item => {
+    try {
+      const bodyData = {
+        orderId: '',
+        userId: user?.id,
+        couponId: allCoupons?.couponId || 0,
+        addressId: defaultAddress,
+        paymentType: 1,
+        orderItems: cartItems,
+      };
+
+      const response = await placeOrder(bodyData);
+
+      if (response?.status === 'Success' && response?.code === 200) {
+        Snackbar.show({
+          text: 'Order placed successfully!',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'green',
+        });
+        navigation.navigate('OrderList');
+      } else {
+        Snackbar.show({
+          text: 'Failed to place order. Please try again.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'red',
+        });
+      }
+
+      console.log('Placing order with data:', bodyData);
+    } catch (error) {
+      console.error('Error placing order:', error);
+      Snackbar.show({
+        text: 'An error occurred while placing the order.',
+        duration: Snackbar.LENGTH_SHORT,
+        backgroundColor: 'red',
+      });
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -291,9 +383,29 @@ const CartPage = () => {
         </View>
         <View style={styles.dividers} />
       </View>
+
+      {isCouponContainerVisible && (
+        <View style={styles.couponContainer}>
+          <View style={{flexDirection: 'row'}}>
+            <TextInput
+              style={styles.couponInput}
+              placeholder="Enter Coupon Code"
+              value={couponCode}
+              onChangeText={setCouponCode}
+            />
+            <Button title="Apply" color="#5b3428" onPress={handleApplyCoupon} />
+          </View>
+          {couponError ? (
+            <Text style={styles.errorText}>{couponError}</Text>
+          ) : null}
+        </View>
+      )}
+
       <View style={styles.checkoutContainer}>
         <Text style={styles.totalAmountText}>₹{totalPrice + shippingCost}</Text>
-        <TouchableOpacity style={styles.checkoutButton}>
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={() => handlePlaceOrder(cartItems)}>
           <Text style={styles.checkoutButtonText}>Place Order</Text>
         </TouchableOpacity>
       </View>
@@ -471,6 +583,24 @@ const styles = StyleSheet.create({
   },
   addressTexts: {
     color: 'black',
+  },
+  couponContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+  },
+  couponInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginRight: 10,
+    height: 40,
+  },
+  errorText: {
+    color: 'red',
   },
 });
 

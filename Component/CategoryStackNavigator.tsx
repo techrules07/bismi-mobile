@@ -6,6 +6,7 @@ import ProductListView from './ProductListView';
 import CartPage from './Cart';
 import FilterPage from '../Blocks/Category/ProductList/Filter';
 import Category from './Category';
+import OrderList from '../Container/OrderList';
 
 const CategoryStack = createStackNavigator();
 
@@ -27,6 +28,7 @@ const CategoryStackNavigator = () => {
       />
       <CategoryStack.Screen name="Cart" component={CartPage} />
       <CategoryStack.Screen name="FilterPage" component={FilterPage} />
+      <CategoryStack.Screen name="OrderList" component={OrderList} />
     </CategoryStack.Navigator>
   );
 };

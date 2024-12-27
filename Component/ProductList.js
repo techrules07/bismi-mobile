@@ -59,7 +59,7 @@ const ProductList = () => {
         </View>
       </View>
       <View style={{paddingLeft: 5, paddingRight: 5}}>
-      {productContext?.productList?.length > 0 && (
+        {productContext?.productList?.length > 0 && (
           <FlatList
             data={productContext.productList}
             keyExtractor={item => item.id}
@@ -81,11 +81,7 @@ const ProductList = () => {
                       ),
                     })
                   }>
-                  <Image
-                    source={{uri: item.mainImage}}
-                   
-                    style={{height: 180}}
-                  />
+                  <Image source={{uri: item.mainImage}} style={{height: 180}} />
                   <Text
                     style={{fontWeight: 700, marginTop: 8, color: '#000000'}}
                     numberOfLines={1}>
