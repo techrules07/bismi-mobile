@@ -19,13 +19,19 @@ import {
 } from '../Networking/HomePageService';
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
+import {getAddress} from '../Networking/AddressPageService';
 const CartPage = () => {
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
   const navigation = useNavigation();
+  const [address, setAddress] = useState(null);
+  console.log('address', address);
+  const [defaultAddress, setDefaultAddress] = useState(null);
+  console.log('defaultAddress', defaultAddress);
   const [cartItems, setCartItems] = useState([]);
   console.log('cartItems', cartItems);
   const [productDetails, setProductDetails] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   useEffect(() => {
     const fetchCartDetails = async () => {
       const requestId = user?.id;
@@ -54,6 +60,45 @@ const CartPage = () => {
 
     fetchCartDetails();
   }, [user]);
+  useEffect(() => {
+    if (user?.id) {
+      const requestId = user.id;
+      const userId = user.id;
+
+      getAddress(requestId, userId)
+        .then(data => {
+          const addresses = data?.data;
+          const defaultAddress = addresses?.find(address => address.default);
+
+          if (!defaultAddress && addresses?.length > 0) {
+            addresses[0].default = true;
+          }
+
+          setAddress(addresses);
+
+          if (defaultAddress) {
+            setDefaultAddress(defaultAddress?.id);
+          } else {
+            setDefaultAddress(addresses[0]?.id);
+          }
+        })
+        .catch(error => {
+          console.log('Failed to fetch addresses:', error);
+        });
+    }
+  }, [user]);
+  useEffect(() => {
+    if (defaultAddress && address?.length > 0) {
+      const selectedAddr = address.find(
+        addressItem => addressItem.id === defaultAddress,
+      );
+
+      if (selectedAddr) {
+        // Set the selected address in the state
+        setSelectedAddress(selectedAddr); // Now the full address data is available in selectedAddress
+      }
+    }
+  }, [defaultAddress, address]);
 
   const handleAddQuantity = async id => {
     const data = {requestId: id, type: 1};
@@ -173,10 +218,15 @@ const CartPage = () => {
       </View>
       <View style={styles.addressDetails}>
         <View style={styles.address}>
-          <Text style={styles.addressText}>Delivery to : Danish20001</Text>
+          <Text style={styles.addressText}>
+            Delivery to : {selectedAddress?.name}
+          </Text>
           <Text style={styles.addressText}>CHANGE</Text>
         </View>
-        <Text style={styles.addressTexts}>John henry street , chennai</Text>
+        <Text style={styles.addressTexts}>
+          {selectedAddress?.addressLine1}
+          {selectedAddress?.addressLine2} , {selectedAddress?.city}
+        </Text>
         <Text style={styles.addressText}>
           Estimated Delivery Date : 05 Oct 2025
         </Text>
