@@ -1,10 +1,14 @@
 //@ts-nocheck
-import React from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
 import Shirts from '../assets/Shirt.jpg';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import StepperComponent from '../Component/Stepper';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {UserContext} from '../Context/UserContext';
+import {getAllOrders} from '../Networking/HomePageService';
+import Snackbar from 'react-native-snackbar';
+
 const OrderDetails = props => {
   const steps = [
     {label: 'Order Placed', value: '12 Dec 2024, 10:30 AM'},
@@ -13,10 +17,52 @@ const OrderDetails = props => {
     {label: 'Out for Delivery', value: '14 Dec 2024 Track'},
     {label: 'Delivered', value: '14 Dec 2024, 12:30 PM'},
   ];
+  const [listOrder, setListOrder] = useState([]);
+  const {user, logout} = useContext(UserContext);
 
   const handleDownload = () => {
     console.log('Invoice download');
   };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const bodyData = {
+          requestId: user?.id,
+          userId: user?.id,
+        };
+
+        const response = await getAllOrders(bodyData);
+
+        if (response?.status === 'Success' && response?.code === 200) {
+          Snackbar.show({
+            text: 'Order Listed successfully!',
+            duration: Snackbar.LENGTH_SHORT,
+            backgroundColor: 'green',
+          });
+          setListOrder(response?.data);
+        } else {
+          Snackbar.show({
+            text: 'Failed to list order. Please try again.',
+            duration: Snackbar.LENGTH_SHORT,
+            backgroundColor: 'red',
+          });
+        }
+
+        console.log('Placing order with data:', bodyData);
+      } catch (error) {
+        console.error('Error placing order:', error);
+        Snackbar.show({
+          text: 'An error occurred while placing the order.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'red',
+        });
+      }
+    };
+
+    fetchOrders();
+  }, [user, props.navigation]);
+
   return (
     <View style={styles.container}>
       <View style={styles.profileHeader}>
@@ -35,52 +81,58 @@ const OrderDetails = props => {
             justifyContent: 'space-between',
             padding: 7,
           }}>
-          <Text style={styles.orderId}>Order ID: #12345</Text>
-          <Text style={styles.orderId}>Date: 05 Dec 2025</Text>
+          <Text style={styles.orderId}>Order ID: {listOrder?.orderId}</Text>
+          <Text style={styles.orderId}>Date: {listOrder?.createdAt}</Text>
         </View>
 
         <View style={styles.card}>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            <View style={styles.cardContent}>
-              <Image source={Shirts} style={styles.productImage} />
-              <View style={{display: 'flex'}}>
-                <View style={{display: 'flex', flexDirection: 'row', gap: 10}}>
-                  <Text style={styles.productName}>Shirt</Text>
-                  <Text style={{marginTop: 3}}>Casual Wear</Text>
-                </View>
-                <View>
-                  <Text style={styles.arrivalText}>Size : XXL</Text>
-                </View>
-                <View>
-                  <Text style={styles.arrivalText}>Qty : 01</Text>
-                </View>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    gap: 50,
-                  }}>
-                  <Text style={styles.productPrice}>₹1500</Text>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleDownload}>
-                    <MaterialIcons
-                      name="file-download"
-                      size={20}
-                      color="#000"
-                    />
-                    <Text style={styles.text}>Download Invoice</Text>
-                  </TouchableOpacity>
+          {listOrder?.orderItems?.map(_item => (
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+              <View style={styles.cardContent}>
+                <Image
+                  source={_item?.productImage}
+                  style={styles.productImage}
+                />
+                <View style={{display: 'flex'}}>
+                  <View
+                    style={{display: 'flex', flexDirection: 'row', gap: 10}}>
+                    <Text style={styles.productName}>{_item?.productName}</Text>
+                    <Text style={{marginTop: 3}}>Casual Wear</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.arrivalText}>Size : XXL</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.arrivalText}>Qty : 01</Text>
+                  </View>
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      gap: 50,
+                    }}>
+                    <Text style={styles.productPrice}>₹1500</Text>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={handleDownload}>
+                      <MaterialIcons
+                        name="file-download"
+                        size={20}
+                        color="#000"
+                      />
+                      <Text style={styles.text}>Download Invoice</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
+          ))}
           <StepperComponent steps={steps} />
         </View>
       </View>
