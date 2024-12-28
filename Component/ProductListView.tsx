@@ -46,9 +46,13 @@ const ProductDetails = ({
   const [comment, setComment] = useState('');
   const [ratingsFetched, setRatingsFetched] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showToastFailure, setShowToastFailure] = useState(false);
   const [visibleReviews, setVisibleReviews] = useState(5);
   const [showAllReviews, setShowAllReviews] = useState(false);
-
+  const [showAdd, setShowAdd] = useState(false);
+  const [showAddFailure, setShowAddFailure] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [showDeleteFailure, setShowDeleteFailure] = useState(false);
   const scrollViewRef = useRef(null);
   const targetViewRef = useRef(null);
 
@@ -66,18 +70,26 @@ const ProductDetails = ({
       console.log(fx, fy, width, height, px, py, 'from target Ref');
       scrollViewRef.current.scrollTo({
         x: 0,
-        y: -py + 70, // Dynamically calculated y-position
+        y: -py + 70,
         animated: true,
       });
     });
   };
 
   const addToCarts = async defaultItem => {
+    if (!user) {
+      console.log('User not logged in! Please log in to continue.');
+      setShowToast(false);
+      setShowToastFailure(true);
+      setShowPopup(false);
+      return;
+    }
     try {
       const cartResponse = await addToCart(defaultItem);
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
         setShowToast(true);
+        setShowToastFailure(false);
         setIsAddedToCart(true);
         setShowPopup(true);
         const requestId = defaultItem?.id;
@@ -97,12 +109,9 @@ const ProductDetails = ({
         throw new Error('Failed to add product to cart');
       }
     } catch (error) {
-      Snackbar.show({
-        text: error?.message || 'Something went wrong!',
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      console.log('Failed to add product to cart');
 
+      setShowToastFailure(true);
       setShowPopup(false);
     }
   };
@@ -144,32 +153,30 @@ const ProductDetails = ({
           productContext?.fetchRatings(requestId, userId);
           setRating(0);
           setComment('');
-          Snackbar.show({
-            text: response.message || 'Rating added successfully!',
-            duration: Snackbar.LENGTH_LONG,
-            backgroundColor: 'green',
-          });
+          setShowAdd(true);
+          setShowAddFailure(false);
+          console.log('Rating added successfully!');
         }
       } catch (error) {
         let _error = error;
         console.error('Error submitting rating:', _error);
-
-        Snackbar.show({
-          text: `Failed to submit rating: ${error?.message}`,
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'red',
-        });
+        console.log('Failed to submit rating');
+        setShowAdd(false);
+        setShowAddFailure(true);
       }
     } catch (error) {
       let _error = error;
       console.log(_error);
+      setShowAdd(false);
+      setShowAddFailure(true);
+      console.log('Failed to submit rating');
     }
   };
   const fetchRating = async (requestId, userId) => {
     const response = await productContext?.fetchRatings(requestId, userId);
 
     if (response) {
-      setRatingsFetched(true); //only for initial we need to use useEffect
+      setRatingsFetched(true);
     }
   };
 
@@ -211,23 +218,16 @@ const ProductDetails = ({
 
       if (response?.code === 200 && response?.status === 'Success') {
         productContext?.fetchRatings(itemId, userId);
-
-        Snackbar.show({
-          text: 'Review deleted successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        setShowDelete(true);
+        setShowDeleteFailure(false);
+        console.log('Review deleted successfully!');
       } else {
         throw new Error('Failed to delete review');
       }
     } catch (error) {
       console.error('Error deleting review:', error);
-
-      Snackbar.show({
-        text: error?.message || 'Something went wrong!',
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      setShowDeleteFailure(true);
+      setShowDelete(false);
     }
   };
 
@@ -236,16 +236,61 @@ const ProductDetails = ({
       selectedItem,
     });
   };
-
+  const navigateToLogin = () => {
+    navigation.navigate('Login');
+  };
   return (
     <SafeAreaView style={{flex: 1, alignItems: 'center'}}>
-      {showToast && (
+      {(showToast || showToastFailure) && (
         <ToastMessage
           text1Press={() => {}}
-          text2Press={() => navigateToCart()}
-          text1={'Item added to cart'}
-          text2={'Go to cart'}
-          setToast={setShowToast}
+          text2Press={() => {
+            if (!showToastFailure) {
+              navigateToCart();
+            } else {
+              navigateToLogin();
+            }
+          }}
+          text1={
+            showToastFailure
+              ? 'Something went wrong,User is not login'
+              : 'Item added to cart'
+          }
+          text2={showToastFailure ? 'Login' : 'Go to cart'}
+          setToast={() => {
+            setShowToast(false);
+            setShowToastFailure(false);
+          }}
+        />
+      )}
+      {(showDelete || showDeleteFailure) && (
+        <ToastMessage
+          text1Press={() => {}}
+          text2Press={() => {}}
+          text1={
+            showDeleteFailure
+              ? 'Something went wrong'
+              : 'Review deleted sucessfully'
+          }
+          text2={''}
+          setToast={() => {
+            setShowDelete(false);
+            setShowDeleteFailure(false);
+          }}
+        />
+      )}
+      {(showAdd || showAddFailure) && (
+        <ToastMessage
+          text1Press={() => {}}
+          text2Press={() => {}}
+          text1={
+            showAddFailure ? 'Something went wrong' : 'Review added sucessfully'
+          }
+          text2={''}
+          setToast={() => {
+            setShowAdd(false);
+            setShowAddFailure(false);
+          }}
         />
       )}
       <ScrollView ref={scrollViewRef} style={styles.detailsContainer}>
@@ -786,6 +831,7 @@ const styles = StyleSheet.create({
   submitButtonContainer: {
     alignItems: 'center',
   },
+
   submitButton: {
     backgroundColor: '#5D3A00',
     paddingVertical: 10,

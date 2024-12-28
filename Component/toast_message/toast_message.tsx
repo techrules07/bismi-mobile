@@ -41,7 +41,7 @@ const ToastMessage = ({
         }}>
         <Text
           onPress={text1Press}
-          style={{color: 'white', fontWeight: 'bold', fontSize: 17}}>
+          style={{color: 'white', fontWeight: 'bold', fontSize: 17,width:250}}>
           {text1}
         </Text>
         <Text onPress={text2Press} style={{color: 'gold', fontSize: 17}}>
