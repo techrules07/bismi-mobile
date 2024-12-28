@@ -1,4 +1,3 @@
-//@ts-nocheck
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   StyleSheet,
@@ -8,11 +7,12 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import Shirts from '../assets/Shirt.jpg';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {getAllOrders} from '../Networking/HomePageService';
+import {getAllOrders, cancelOrderApi} from '../Networking/HomePageService'; // Assuming `cancelOrderApi` is your API call for cancellation
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import ToastMessage from '../Component/toast_message/toast_message';
@@ -20,10 +20,13 @@ import {useNavigation} from '@react-navigation/native';
 
 const OrderList = props => {
   const [listOrder, setListOrder] = useState([]);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
   const {user, logout} = useContext(UserContext);
   const [showToast, setShowToast] = useState(false);
   const scrollViewRef = useRef(null);
   const navigation = useNavigation();
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -36,13 +39,6 @@ const OrderList = props => {
 
         if (response?.status === 'Success' && response?.code === 200) {
           setShowToast(true);
-          // Snackbar.show({
-          //   text: 'Order Listed successfully!',
-          //   duration: Snackbar.LENGTH_SHORT,
-          //   backgroundColor: 'green',
-          // });
-          console.log('Order Listed successfully');
-          console.log(response?.data, 'before setListOrder');
           setListOrder(response?.data);
         } else {
           Snackbar.show({
@@ -51,8 +47,6 @@ const OrderList = props => {
             backgroundColor: 'red',
           });
         }
-
-        console.log('Placing order with data:', bodyData);
       } catch (error) {
         console.error('Error placing order:', error);
         Snackbar.show({
@@ -65,10 +59,51 @@ const OrderList = props => {
 
     fetchOrders();
   }, [user, props.navigation]);
-  console.log(listOrder);
+
+  const handleCancelOrder = async orderId => {
+    if (!cancelReason.trim()) {
+      Snackbar.show({
+        text: 'Please provide a reason for cancellation.',
+        duration: Snackbar.LENGTH_SHORT,
+        backgroundColor: 'red',
+      });
+      return;
+    }
+
+    try {
+      const response = await cancelOrderApi({orderId, reason: cancelReason});
+
+      if (response?.status === 'Success') {
+        Snackbar.show({
+          text: 'Order cancelled successfully!',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'green',
+        });
+        const updatedOrders = listOrder.filter(
+          order => order.orderId !== orderId,
+        );
+        setListOrder(updatedOrders);
+      } else {
+        Snackbar.show({
+          text: 'Failed to cancel the order. Please try again.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'red',
+        });
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      Snackbar.show({
+        text: 'An error occurred while cancelling the order.',
+        duration: Snackbar.LENGTH_SHORT,
+        backgroundColor: 'red',
+      });
+    }
+  };
+
   const navigateToAccount = () => {
     navigation.navigate('Account');
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView ref={scrollViewRef}>
@@ -85,11 +120,13 @@ const OrderList = props => {
               <Text style={styles.OrderText}>My Order</Text>
             </TouchableOpacity>
           </View>
+
           {listOrder.map(_orderItem => (
-            <View style={styles.cardsContainer}>
+            <View style={styles.cardsContainer} key={_orderItem?.orderId}>
               <Text style={styles.orderId}>
                 Order ID: #{_orderItem?.orderId}
               </Text>
+
               <View style={styles.card}>
                 <View
                   style={{
@@ -103,21 +140,18 @@ const OrderList = props => {
                       style={styles.productImage}
                     />
                     <View style={{display: 'flex'}}>
-                      <View style={{display: 'flex', marginBottom: 20}}>
-                        <Text style={styles.productName}>
-                          {_orderItem?.orderItems?.[0]?.productName}
-                        </Text>
-                        <Text style={{marginTop: 3}}>
-                          {_orderItem?.orderItems?.[0]?.productCategory}
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={styles.arrivalText}>
-                          {_orderItem?.orderStatus}
-                        </Text>
-                      </View>
+                      <Text style={styles.productName}>
+                        {_orderItem?.orderItems?.[0]?.productName}
+                      </Text>
+                      <Text style={{marginTop: 3}}>
+                        {_orderItem?.orderItems?.[0]?.productCategory}
+                      </Text>
+                      <Text style={styles.arrivalText}>
+                        {_orderItem?.orderStatus}
+                      </Text>
                     </View>
                   </View>
+
                   <View>
                     <TouchableOpacity
                       style={styles.iconWrapper}
@@ -132,12 +166,46 @@ const OrderList = props => {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <View style={styles.divider} />
+                <View style={styles.dividers} />
+
+                {/* Action Buttons */}
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      props.navigation.navigate('OrderDetails', {_orderItem})
+                    }>
+                    <Text style={styles.actionText}>View Order</Text>
+                  </TouchableOpacity>
+
+                  <View style={styles.verticalDivider} />
+
+                  <TouchableOpacity
+                    onPress={() => setCancelOrderId(_orderItem?.orderId)}>
+                    <Text style={styles.actionText}>Cancel Order</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {cancelOrderId === _orderItem?.orderId && (
+                  <View style={styles.cancelInputContainer}>
+                    <TextInput
+                      style={styles.cancelInput}
+                      placeholder="Enter reason for cancellation"
+                      value={cancelReason}
+                      onChangeText={setCancelReason}
+                    />
+                    <TouchableOpacity
+                      style={styles.submitCancelButton}
+                      onPress={() => handleCancelOrder(_orderItem?.orderId)}>
+                      <Text style={styles.submitCancelText}>Submit</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             </View>
           ))}
         </View>
       </ScrollView>
+
       <View style={{alignItems: 'center'}}>
         {showToast && (
           <ToastMessage
@@ -187,17 +255,53 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
-    // marginBottom: 5,
   },
+  verticalDivider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: '#ddd',
+    marginHorizontal: 10,
+  },
+  dividers: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 5,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  actionText: {
+    color: 'black',
+    fontSize: 14,
+    marginRight: 50,
+    marginLeft: 50,
+  },
+
   arrivalText: {
     fontSize: 14,
     color: 'green',
   },
-  divider: {
-    borderBottomColor: 'black',
-    borderBottomWidth: 1,
+  cancelInputContainer: {
     marginTop: 10,
-    width: '100%',
+    marginBottom: 10,
+  },
+  cancelInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 8,
+    marginBottom: 10,
+    fontSize: 14,
+  },
+  submitCancelButton: {
+    backgroundColor: '#703F07',
+    padding: 10,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  submitCancelText: {
+    color: '#fff',
+    fontSize: 16,
   },
   header: {
     display: 'flex',
