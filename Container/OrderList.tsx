@@ -17,7 +17,7 @@ import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import ToastMessage from '../Component/toast_message/toast_message';
 import {useNavigation} from '@react-navigation/native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const OrderList = props => {
   const [listOrder, setListOrder] = useState([]);
   const [cancelOrderId, setCancelOrderId] = useState(null);
@@ -30,27 +30,38 @@ const OrderList = props => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const bodyData = {
-          requestId: user?.id,
-          userId: user?.id,
-        };
+        const storedOrders = await AsyncStorage.getItem('orders');
 
-        const response = await getAllOrders(bodyData);
-
-        if (response?.status === 'Success' && response?.code === 200) {
-          setShowToast(true);
-          setListOrder(response?.data);
+        if (storedOrders) {
+          setListOrder(JSON.parse(storedOrders));
         } else {
-          Snackbar.show({
-            text: 'Failed to list order. Please try again.',
-            duration: Snackbar.LENGTH_SHORT,
-            backgroundColor: 'red',
-          });
+          const bodyData = {
+            requestId: user?.id,
+            userId: user?.id,
+          };
+
+          const response = await getAllOrders(bodyData);
+
+          if (response?.status === 'Success' && response?.code === 200) {
+            setShowToast(true);
+            setListOrder(response?.data);
+
+            await AsyncStorage.setItem(
+              'orders',
+              JSON.stringify(response?.data),
+            );
+          } else {
+            Snackbar.show({
+              text: 'Failed to list orders. Please try again.',
+              duration: Snackbar.LENGTH_SHORT,
+              backgroundColor: 'red',
+            });
+          }
         }
       } catch (error) {
-        console.error('Error placing order:', error);
+        console.error('Error fetching orders:', error);
         Snackbar.show({
-          text: 'An error occurred while placing the order.',
+          text: 'An error occurred while fetching the orders.',
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: 'red',
         });
@@ -79,10 +90,13 @@ const OrderList = props => {
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: 'green',
         });
+
         const updatedOrders = listOrder.filter(
           order => order.orderId !== orderId,
         );
         setListOrder(updatedOrders);
+
+        await AsyncStorage.setItem('orders', JSON.stringify(updatedOrders));
       } else {
         Snackbar.show({
           text: 'Failed to cancel the order. Please try again.',
@@ -277,7 +291,6 @@ const styles = StyleSheet.create({
     marginRight: 50,
     marginLeft: 50,
   },
-
   arrivalText: {
     fontSize: 14,
     color: 'green',
