@@ -1,15 +1,17 @@
-//@ts-nocheck
 import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
-import Shirts from '../assets/Shirt.jpg';
+import {StyleSheet, View, Text, Image, TouchableOpacity, ScrollView} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import StepperComponent from '../Component/Stepper';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import StepperComponent from '../Component/Stepper';
 import {UserContext} from '../Context/UserContext';
-import {getAllOrders} from '../Networking/HomePageService';
+import {getAllOrdersById} from '../Networking/HomePageService';
 import Snackbar from 'react-native-snackbar';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 const OrderDetails = props => {
+  const route = useRoute();
+  const {_orderItem} = route.params;
+  const {user, logout} = useContext(UserContext);
   const steps = [
     {label: 'Order Placed', value: '12 Dec 2024, 10:30 AM'},
     {label: 'Shipped', value: 'Querier partner tracking id-1234567'},
@@ -17,62 +19,90 @@ const OrderDetails = props => {
     {label: 'Out for Delivery', value: '14 Dec 2024 Track'},
     {label: 'Delivered', value: '14 Dec 2024, 12:30 PM'},
   ];
+  const [listOrder, setListOrder] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchOrdersById = async () => {
+      try {
+        const bodyData = {
+          orderId: _orderItem?.orderId,
+        };
+
+        const response = await getAllOrdersById(bodyData);
+
+        if (response?.status === 'Success' && response?.code === 200) {
+          setShowToast(true);
+          setListOrder(response?.data);
+        } else {
+          Snackbar.show({
+            text: 'Failed to list order. Please try again.',
+            duration: Snackbar.LENGTH_SHORT,
+            backgroundColor: 'red',
+          });
+        }
+      } catch (error) {
+        console.error('Error placing order:', error);
+        Snackbar.show({
+          text: 'An error occurred while placing the order.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'red',
+        });
+      }
+    };
+
+    fetchOrdersById();
+  }, [_orderItem]);
+
+  const handleDownload = () => {};
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.profileHeader}>
         <TouchableOpacity
           style={styles.header}
           onPress={() => props.navigation.navigate('OrderList')}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
-          <Text style={styles.OrderText}>Order Details</Text>
+          <Text style={styles.orderText}>Order Details</Text>
         </TouchableOpacity>
       </View>
+
       <View style={styles.cardsContainer}>
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            padding: 7,
-          }}>
-          {/* <Text style={styles.orderId}>Order ID: {listOrder?.orderId}</Text> */}
-          {/* <Text style={styles.orderId}>Date: {listOrder?.createdAt}</Text> */}
+        <View style={styles.orderHeader}>
+          <Text style={styles.orderId}>Order ID: {listOrder[0]?.orderId}</Text>
+          <Text style={styles.orderId}>Date: {listOrder[0]?.createdAt}</Text>
         </View>
 
         <View style={styles.card}>
-          {/* {listOrder?.orderItems?.map(_item => (
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-              <View style={styles.cardContent}>
+          {listOrder?.map((listOrder, index) => (
+            <View>
+              <View key={index} style={styles.cardContent}>
                 <Image
-                  source={_item?.productImage}
+                  source={{uri: listOrder?.productImage}}
                   style={styles.productImage}
                 />
-                <View style={{display: 'flex'}}>
-                  <View
-                    style={{display: 'flex', flexDirection: 'row', gap: 10}}>
-                    <Text style={styles.productName}>{_item?.productName}</Text>
-                    <Text style={{marginTop: 3}}>Casual Wear</Text>
+
+                <View style={styles.productDetails}>
+                  <View style={styles.productRow}>
+                    <Text style={styles.productName}>
+                      {listOrder?.productName}
+                    </Text>
+                    <Text style={styles.productCategory}>
+                      {listOrder?.productCategory}
+                    </Text>
                   </View>
-                  <View>
-                    <Text style={styles.arrivalText}>Size : XXL</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.arrivalText}>Qty : 01</Text>
-                  </View>
-                  <View
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      gap: 50,
-                    }}>
-                    <Text style={styles.productPrice}>₹1500</Text>
+                  <Text style={styles.arrivalText}>
+                    Brand: {listOrder?.brand}
+                  </Text>
+                  <Text style={styles.arrivalText}>
+                    Size: {listOrder?.size}
+                  </Text>
+                  <Text style={styles.arrivalText}>
+                    Qty: {listOrder?.quantity}
+                  </Text>
+                  <View style={styles.productPriceContainer}>
+                    <Text style={styles.productPrice}>₹{listOrder?.price}</Text>
                     <TouchableOpacity
                       style={styles.button}
                       onPress={handleDownload}>
@@ -81,17 +111,19 @@ const OrderDetails = props => {
                         size={20}
                         color="#000"
                       />
-                      <Text style={styles.text}>Download Invoice</Text>
+                      <Text style={styles.buttonText}>Download Invoice</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               </View>
+              <View style={styles.divider} />
             </View>
-          ))} */}
+          ))}
+
           <StepperComponent steps={steps} />
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -100,46 +132,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#EDE0D4',
   },
-  cardsContainer: {
-    flex: 1,
-  },
-  orderId: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'gray',
-    marginBottom: 5,
-    marginTop: 10,
-  },
-  card: {
-    flex: 1,
-    backgroundColor: '#fff',
-    marginBottom: 10,
-    padding: 10,
-  },
-  productImage: {
-    width: 100,
-    height: 100,
-    marginBottom: 10,
-  },
   profileHeader: {
     backgroundColor: '#703F07',
     height: 50,
-  },
-  productName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 5,
-  },
-  productPrice: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-    marginTop: 5,
-  },
-  arrivalText: {
-    fontSize: 14,
-    color: 'black',
+    justifyContent: 'center',
+    paddingLeft: 15,
   },
   divider: {
     borderBottomColor: 'black',
@@ -148,29 +145,83 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   header: {
-    display: 'flex',
     flexDirection: 'row',
-    gap: 10,
     alignItems: 'center',
-    marginTop: 10,
   },
-  OrderText: {
+  orderText: {
     fontSize: 16,
     color: '#fff',
     fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  cardsContainer: {
+    flex: 1,
+    marginTop: 10,
+  },
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 5,
+    // backgroundColor: '#fff',
+    marginBottom: 10,
+  },
+  orderId: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'gray',
+  },
+  card: {
+    backgroundColor: '#fff',
+    marginBottom: 10,
+    padding: 10,
   },
   cardContent: {
-    display: 'flex',
     flexDirection: 'row',
     gap: 10,
+    padding:10
   },
-  iconWrapper: {
-    marginTop: 40,
+  productImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  productDetails: {
+    flex: 1,
+  },
+  productRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  productName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  productCategory: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  arrivalText: {
+    fontSize: 14,
+    color: 'black',
+    marginBottom: 3,
+  },
+  productPriceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  productPrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderWidth: 1,
@@ -178,8 +229,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#EDE0D4',
   },
-  text: {
-    marginLeft: 5, // Space between icon and text
+  buttonText: {
+    marginLeft: 5,
     fontSize: 16,
     fontWeight: '500',
     color: '#000',

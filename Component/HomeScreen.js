@@ -15,10 +15,12 @@ import Search from '../assets/search.png';
 import {getAllOffers, getAllCategories} from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
 import Carousel from 'react-native-reanimated-carousel';
+import Loader from './Loader';
 
 const HomeScreen = props => {
   const productContext = useContext(pContext);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
   const width = Dimensions.get('window').width;
   const handleSearch = text => {
     if (typeof text === 'string') {
@@ -26,7 +28,7 @@ const HomeScreen = props => {
     }
   };
   let filteredProducts = [];
-  if(searchQuery){
+  if (searchQuery) {
     let search_query = searchQuery?.toLowerCase()?.trim();
     filteredProducts = Array.isArray(productContext?.categories)
       ? productContext?.categories.filter(product =>
@@ -38,31 +40,37 @@ const HomeScreen = props => {
     ? filteredProducts
     : productContext?.categories || [];
   useEffect(() => {
-    async function fetchAllOffers() {
-      const response = await getAllOffers();
-      if (response.status == 200 && response.data.code == 200) {
-        productContext.updateSliderItems(response.data.data);
+    async function fetchData() {
+      try {
+        const [offersResponse, categoriesResponse, homeResponse] =
+          await Promise.all([
+            getAllOffers(),
+            getAllCategories(),
+            getAllCategories(),
+          ]);
+
+        if (offersResponse.status === 200 && offersResponse.data.code === 200) {
+          productContext.updateSliderItems(offersResponse.data.data);
+        }
+
+        if (
+          categoriesResponse.status === 200 &&
+          categoriesResponse.data.code === 200
+        ) {
+          productContext.updateCategories(categoriesResponse.data.data);
+        }
+
+        if (homeResponse.status === 200 && homeResponse.data.code === 200) {
+          productContext.updateHomeItems(homeResponse.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     }
 
-    async function getAllCategoriesApi() {
-      const categoriesResponse = await getAllCategories();
-      if (
-        categoriesResponse.status == 200 &&
-        categoriesResponse.data.code == 200
-      ) {
-        productContext.updateCategories(categoriesResponse.data.data);
-      }
-    }
-    async function getAllHomeApi() {
-      const homeResponse = await getAllCategories();
-      if (homeResponse.status == 200 && homeResponse.data.code == 200) {
-        productContext.updateHomeItems(homeResponse.data.data);
-      }
-    }
-    fetchAllOffers();
-    getAllCategoriesApi();
-    getAllHomeApi();
+    fetchData();
   }, []);
 
   return (
@@ -108,149 +116,155 @@ const HomeScreen = props => {
             />
           </View>
         </View>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: '#EDE0D4',
-            width: '100%',
-            borderTopRightRadius: 16,
-            borderTopLeftRadius: 16,
-            marginTop: 12,
-            padding: 15,
-            height: 800,
-          }}>
-          <View style={{height: 160, width: '100%'}}>
-            {productContext?.sliderItems.length > 0 && (
-              <Carousel
-                width={width - 30}
-                height={160}
-                data={productContext.sliderItems}
-                scrollAnimationDuration={1000}
-                autoPlay={true}
-                autoPlayInterval={1000}
-                renderItem={item => {
-                  return (
-                    <View style={{height: 160, width: '100%'}}>
-                      {item.item.offerImage != null ? (
-                        <Image
-                          source={{uri: item.item.offerImage}}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: 8,
-                          }}
-                        />
-                      ) : (
-                        <Text>Text element</Text>
-                      )}
-                    </View>
-                  );
-                }}
-              />
-            )}
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <Loader />
           </View>
-
-          <View style={{display: 'flex', flexDirection: 'column'}}>
-            <View style={{display: 'flex', flexDirection: 'column'}}>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  width: '100%',
-                  flexWrap: 'wrap',
-                  flex: 1,
-                  paddingTop: 16,
-                  paddingBottom: 16,
-                }}>
-                {productsToDisplay?.map(item => {
-                  return (
-                    <TouchableOpacity
-                      style={{
-                        flexGrow: 0,
-                        flexShrink: 0,
-                        flexBasis: '25%',
-                        flexDirection: 'column',
-                        height: 110,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        paddingBottom: 25,
-                      }}
-                      onPress={() => {
-                        props.navigation.navigate('Products', {
-                          categoryId: item.id,
-                        });
-                      }}>
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                        <Image
-                          source={{uri: item.imageURL}}
-                          style={{width: 56, height: 56, borderRadius: 500}}
-                        />
-                        <Text
-                          style={{
-                            fontWeight: 500,
-                            fontSize: 12,
-                            color: '#703F07',
-                            marginTop: 16,
-                          }}>
-                          {item.categoryName}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          </View>
+        ) : (
           <View
             style={{
-              marginTop: 180,
-              padding: 20,
+              flex: 1,
+              backgroundColor: '#EDE0D4',
+              width: '100%',
+              borderTopRightRadius: 16,
+              borderTopLeftRadius: 16,
+              marginTop: 12,
+              padding: 15,
+              height: 800,
             }}>
-            <Text style={styles.sectionTitle}>More Offers</Text>
-            <ScrollView
-              horizontal
-              style={styles.horizontalScroll}
-              showsHorizontalScrollIndicator={false}>
-              {productContext?.sliderItems?.map(item => (
-                <View key={item.id} style={styles.recentItem}>
-                  <Image
-                    source={{uri: item?.offerImage}}
-                    style={styles.roundedImage}
-                  />
-                  <Text style={styles.recentText}>{item?.offerName}</Text>
+            <View style={{height: 160, width: '100%'}}>
+              {productContext?.sliderItems.length > 0 && (
+                <Carousel
+                  width={width - 30}
+                  height={160}
+                  data={productContext.sliderItems}
+                  scrollAnimationDuration={1000}
+                  autoPlay={true}
+                  autoPlayInterval={1000}
+                  renderItem={item => {
+                    return (
+                      <View style={{height: 160, width: '100%'}}>
+                        {item.item.offerImage != null ? (
+                          <Image
+                            source={{uri: item.item.offerImage}}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              borderRadius: 8,
+                            }}
+                          />
+                        ) : (
+                          <Text>Text element</Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                />
+              )}
+            </View>
+
+            <View style={{display: 'flex', flexDirection: 'column'}}>
+              <View style={{display: 'flex', flexDirection: 'column'}}>
+                <View
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    width: '100%',
+                    flexWrap: 'wrap',
+                    flex: 1,
+                    paddingTop: 16,
+                    paddingBottom: 16,
+                  }}>
+                  {productsToDisplay?.map(item => {
+                    return (
+                      <TouchableOpacity
+                        style={{
+                          flexGrow: 0,
+                          flexShrink: 0,
+                          flexBasis: '25%',
+                          flexDirection: 'column',
+                          height: 110,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          paddingBottom: 25,
+                        }}
+                        onPress={() => {
+                          props.navigation.navigate('Products', {
+                            categoryId: item.id,
+                          });
+                        }}>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                          <Image
+                            source={{uri: item.imageURL}}
+                            style={{width: 56, height: 56, borderRadius: 500}}
+                          />
+                          <Text
+                            style={{
+                              fontWeight: 500,
+                              fontSize: 12,
+                              color: '#703F07',
+                              marginTop: 16,
+                            }}>
+                            {item.categoryName}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
-              ))}
-            </ScrollView>
-          </View>
-          <View style={{paddingLeft: 20}}>
-            <Text style={styles.sectionTitle}>Explore</Text>
-            <ScrollView
-              style={styles.horizontalScroll}
-              horizontal={true}
-              contentContainerStyle={{flexDirection: 'row'}}
-              showsHorizontalScrollIndicator={false}>
-              {productContext?.homeItems?.map(store => (
-                <View key={store.id} style={styles.gridItem}>
-                  <Image
-                    source={{uri: store?.imageURL}}
-                    style={styles.gridImage}
-                  />
-                  <View style={styles.gridText}>
-                    <Text style={{fontWeight: 'bold', color: 'black'}}>
-                      {store?.categoryName}
-                    </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                marginTop: 180,
+                padding: 20,
+              }}>
+              <Text style={styles.sectionTitle}>More Offers</Text>
+              <ScrollView
+                horizontal
+                style={styles.horizontalScroll}
+                showsHorizontalScrollIndicator={false}>
+                {productContext?.sliderItems?.map(item => (
+                  <View key={item.id} style={styles.recentItem}>
+                    <Image
+                      source={{uri: item?.offerImage}}
+                      style={styles.roundedImage}
+                    />
+                    <Text style={styles.recentText}>{item?.offerName}</Text>
                   </View>
-                </View>
-              ))}
-            </ScrollView>
+                ))}
+              </ScrollView>
+            </View>
+            <View style={{paddingLeft: 20}}>
+              <Text style={styles.sectionTitle}>Explore</Text>
+              <ScrollView
+                style={styles.horizontalScroll}
+                horizontal={true}
+                contentContainerStyle={{flexDirection: 'row'}}
+                showsHorizontalScrollIndicator={false}>
+                {productContext?.homeItems?.map(store => (
+                  <View key={store.id} style={styles.gridItem}>
+                    <Image
+                      source={{uri: store?.imageURL}}
+                      style={styles.gridImage}
+                    />
+                    <View style={styles.gridText}>
+                      <Text style={{fontWeight: 'bold', color: 'black'}}>
+                        {store?.categoryName}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -295,6 +309,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 5,
     textAlign: 'center',
+  },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 400,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 export default HomeScreen;

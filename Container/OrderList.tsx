@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import Shirts from '../assets/Shirt.jpg';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -14,10 +15,15 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {getAllOrders} from '../Networking/HomePageService';
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
+import ToastMessage from '../Component/toast_message/toast_message';
+import {useNavigation} from '@react-navigation/native';
 
 const OrderList = props => {
   const [listOrder, setListOrder] = useState([]);
   const {user, logout} = useContext(UserContext);
+  const [showToast, setShowToast] = useState(false);
+  const scrollViewRef = useRef(null);
+  const navigation = useNavigation();
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -29,11 +35,13 @@ const OrderList = props => {
         const response = await getAllOrders(bodyData);
 
         if (response?.status === 'Success' && response?.code === 200) {
-          Snackbar.show({
-            text: 'Order Listed successfully!',
-            duration: Snackbar.LENGTH_SHORT,
-            backgroundColor: 'green',
-          });
+          setShowToast(true);
+          // Snackbar.show({
+          //   text: 'Order Listed successfully!',
+          //   duration: Snackbar.LENGTH_SHORT,
+          //   backgroundColor: 'green',
+          // });
+          console.log('Order Listed successfully');
           console.log(response?.data, 'before setListOrder');
           setListOrder(response?.data);
         } else {
@@ -58,66 +66,90 @@ const OrderList = props => {
     fetchOrders();
   }, [user, props.navigation]);
   console.log(listOrder);
+  const navigateToAccount = () => {
+    navigation.navigate('Account');
+  };
   return (
-    <ScrollView>
-      <View style={styles.container}>
-        <View style={styles.profileHeader}>
-          <TouchableOpacity
-            style={styles.header}
-            onPress={() => props.navigation.navigate('Account')}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
-            <Text style={styles.OrderText}>My Order</Text>
-          </TouchableOpacity>
-        </View>
-        {listOrder.map(_orderItem => (
-          <View style={styles.cardsContainer}>
-            <Text style={styles.orderId}>Order ID: #{_orderItem?.orderId}</Text>
-            <View style={styles.card}>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}>
-                <View style={styles.cardContent}>
-                  <Image
-                    source={{uri: _orderItem?.orderItems?.[0]?.productImage}}
-                    style={styles.productImage}
-                  />
-                  <View style={{display: 'flex'}}>
-                    <View style={{display: 'flex', marginBottom: 20}}>
-                      <Text style={styles.productName}>
-                        {_orderItem?.orderItems?.[0]?.productName}
-                      </Text>
-                      <Text style={{marginTop: 3}}>
-                        {_orderItem?.orderItems?.[0]?.productCategory}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text style={styles.arrivalText}>
-                        {_orderItem?.orderStatus}
-                      </Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView ref={scrollViewRef}>
+        <View>
+          <View style={styles.profileHeader}>
+            <TouchableOpacity
+              style={styles.header}
+              onPress={() => props.navigation.navigate('Account')}>
+              <MaterialCommunityIcons
+                name="arrow-left"
+                size={24}
+                color="white"
+              />
+              <Text style={styles.OrderText}>My Order</Text>
+            </TouchableOpacity>
+          </View>
+          {listOrder.map(_orderItem => (
+            <View style={styles.cardsContainer}>
+              <Text style={styles.orderId}>
+                Order ID: #{_orderItem?.orderId}
+              </Text>
+              <View style={styles.card}>
+                <View
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  <View style={styles.cardContent}>
+                    <Image
+                      source={{uri: _orderItem?.orderItems?.[0]?.productImage}}
+                      style={styles.productImage}
+                    />
+                    <View style={{display: 'flex'}}>
+                      <View style={{display: 'flex', marginBottom: 20}}>
+                        <Text style={styles.productName}>
+                          {_orderItem?.orderItems?.[0]?.productName}
+                        </Text>
+                        <Text style={{marginTop: 3}}>
+                          {_orderItem?.orderItems?.[0]?.productCategory}
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={styles.arrivalText}>
+                          {_orderItem?.orderStatus}
+                        </Text>
+                      </View>
                     </View>
                   </View>
+                  <View>
+                    <TouchableOpacity
+                      style={styles.iconWrapper}
+                      onPress={() =>
+                        props.navigation.navigate('OrderDetails', {_orderItem})
+                      }>
+                      <MaterialIcons
+                        name="arrow-forward"
+                        size={24}
+                        color="black"
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View>
-                  <TouchableOpacity
-                    style={styles.iconWrapper}
-                    onPress={() => props.navigation.navigate('OrderDetails')}>
-                    <MaterialIcons
-                      name="arrow-forward"
-                      size={24}
-                      color="black"
-                    />
-                  </TouchableOpacity>
-                </View>
+                <View style={styles.divider} />
               </View>
-              <View style={styles.divider} />
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
+      </ScrollView>
+      <View style={{alignItems: 'center'}}>
+        {showToast && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => navigateToAccount()}
+            text1={'Order Listed successfully'}
+            text2={'Go to account'}
+            setToast={setShowToast}
+          />
+        )}
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 
