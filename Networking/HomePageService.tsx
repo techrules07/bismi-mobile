@@ -257,3 +257,29 @@ export const getAllOrders = async (bodyData: any) => {
     throw error;
   }
 };
+export const getAllOrdersById = async (bodyData: any) => {
+  try {
+    const response = await AxiosConfig.post(
+      `orders/getOrderItems?orderId=${bodyData?.orderId}`,
+    );
+
+    console.log('Orders retrieved successfully:', response.data);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error('Invalid response from server');
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error('Error in getting rating:', error.response.data);
+
+      console.error('Status code:', error.response.status);
+    } else if (error.request) {
+      console.error('No response was received:', error.request);
+    } else {
+      console.error('Error setting up the request:', error.message);
+    }
+    throw error;
+  }
+};

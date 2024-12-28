@@ -20,96 +20,82 @@ import {
 } from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
 import {useNavigation} from '@react-navigation/native';
-
-const newLaunches = [
-  {
-    id: 1,
-    name: "Women's Skirt",
-    image: 'https://images.pexels.com/photos/688660/pexels-photo-688660.jpeg',
-  },
-  {
-    id: 2,
-    name: "Women's Top",
-    image: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-  },
-  {
-    id: 3,
-    name: 'New Smartwatch',
-    image: 'https://images.pexels.com/photos/4709283/pexels-photo-4709283.jpeg',
-  },
-  {
-    id: 4,
-    name: 'Gaming Laptop',
-    image: 'https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg',
-  },
-];
+import Loader from './Loader';
 
 const Category = props => {
   const [selectedSection, setSelectedSection] = useState(1);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const productContext = useContext(pContext);
+
   const handleSidebarClick = async section => {
     setSelectedSection(section);
     getProducts(section);
   };
-  const productContext = useContext(pContext);
-  console.log('productContext', productContext);
+
   useEffect(() => {
-    fetchAllOffers();
-    getAllCategoriesApi();
-    getProducts(1);
-    getPremiumProductsApi();
-    getNewArrivalApi();
+    fetchData();
   }, []);
-  console.log(productContext?.categories);
-  async function fetchAllOffers() {
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchAllOffers(),
+        getAllCategoriesApi(),
+        getProducts(1),
+        getPremiumProductsApi(),
+        getNewArrivalApi(),
+      ]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAllOffers = async () => {
     const response = await getAllOffers();
-    if (response?.status == 200 && response?.data?.code == 200) {
+    if (response?.status === 200 && response?.data?.code === 200) {
       productContext.updateSliderItems(response?.data?.data);
     }
-  }
-  async function getPremiumProductsApi(
-    updatePremiumProducts: (data: any[]) => void,
-  ) {
+  };
+
+  const getPremiumProductsApi = async () => {
     try {
       const response = await getAllPremiumProducts();
       if (response?.status === 200 && response?.data?.code === 200) {
-        productContext?.updatePremiumProducts(response?.data?.data);
-      } else {
-        console.error(
-          'Failed to fetch premium products: Invalid response structure',
-          response,
-        );
+        productContext.updatePremiumProducts(response?.data?.data);
       }
     } catch (error) {
       console.error('Failed to fetch premium products:', error);
     }
-  }
-  async function getNewArrivalApi(updateNewArrival: (data: any[]) => void) {
+  };
+
+  const getNewArrivalApi = async () => {
     try {
       const response = await getNewArrivalProducts();
       if (response?.status === 200 && response?.data?.code === 200) {
-        productContext?.updateNewArrival(response?.data?.data);
-      } else {
-        console.error('Failed to fetch new arrival', response);
+        productContext.updateNewArrival(response?.data?.data);
       }
     } catch (error) {
       console.error('Failed to fetch arrival products:', error);
     }
-  }
-  async function getAllCategoriesApi() {
+  };
+
+  const getAllCategoriesApi = async () => {
     const categoriesResponse = await getAllCategories();
     if (
-      categoriesResponse?.status == 200 &&
-      categoriesResponse?.data?.code == 200
+      categoriesResponse?.status === 200 &&
+      categoriesResponse?.data?.code === 200
     ) {
       productContext.updateCategories(categoriesResponse.data.data);
     }
-  }
+  };
 
-  async function getProducts(section) {
+  const getProducts = async section => {
     try {
       const productsListResponse = await getAllProducts(section);
-
       if (
         productsListResponse?.status === 200 &&
         productsListResponse?.data?.code === 200
@@ -121,7 +107,8 @@ const Category = props => {
     } catch (error) {
       console.error('Error fetching products:', error);
     }
-  }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -133,131 +120,141 @@ const Category = props => {
           <Icon name="cart" size={24} color="#fff" />
         </View>
       </View>
-
-      <View style={styles.content}>
-        <View style={styles.sidebarContainer}>
-          <ScrollView
-            style={styles.sidebar}
-            contentContainerStyle={styles.sidebarContent}
-            showsVerticalScrollIndicator={false}>
-            {productContext?.categories?.map(category => (
-              <View
-                key={category.id}
-                style={[
-                  styles.sidebarItem,
-                  selectedSection === category?.id && styles.activeSidebarItem,
-                ]}
-                onTouchEnd={() => handleSidebarClick(category?.id)}>
-                <Image
-                  source={{uri: category.imageURL}}
-                  style={[
-                    selectedSection === category?.id
-                      ? styles.roundedImages
-                      : styles.sidebarIcon,
-                    {backgroundColor: 'transparent'},
-                  ]}
-                />
-                <Text style={styles.sidebarText}>{category?.categoryName}</Text>
-                <View
-                  style={
-                    selectedSection === category?.id
-                      ? styles.selectedStyle
-                      : styles.horizontalLine
-                  }
-                />
-              </View>
-            ))}
-          </ScrollView>
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <Loader />
         </View>
-        {selectedSection && (
-          <ScrollView style={styles.mainContent}>
-            <Text style={styles.sectionTitle}>List of Category</Text>
+      ) : (
+        <View style={styles.content}>
+          <View style={styles.sidebarContainer}>
             <ScrollView
-              horizontal
-              style={styles.horizontalScroll}
-              showsHorizontalScrollIndicator={false}>
-              {productContext?.productList.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.recentItem}
-                  onPress={() =>
-                    navigation.navigate('ProductListView', {
-                      selectedItem: item,
-                      similarItem: productContext?.productList?.filter(
-                        otherItem => otherItem?.id !== item?.id,
-                      ),
-                    })
-                  }>
+              style={styles.sidebar}
+              contentContainerStyle={styles.sidebarContent}
+              showsVerticalScrollIndicator={false}>
+              {productContext?.categories?.map(category => (
+                <View
+                  key={category.id}
+                  style={[
+                    styles.sidebarItem,
+                    selectedSection === category?.id &&
+                      styles.activeSidebarItem,
+                  ]}
+                  onTouchEnd={() => handleSidebarClick(category?.id)}>
                   <Image
-                    source={{uri: item?.mainImageUrl}}
-                    style={styles.recentImage}
+                    source={{uri: category.imageURL}}
+                    style={[
+                      selectedSection === category?.id
+                        ? styles.roundedImages
+                        : styles.sidebarIcon,
+                      {backgroundColor: 'transparent'},
+                    ]}
                   />
-                  <Text style={styles.recentText} numberOfLines={1}>
-                    {item?.product}
+                  <Text style={styles.sidebarText}>
+                    {category?.categoryName}
                   </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            <Text style={styles.sectionTitle}>More Offers</Text>
-            <ScrollView
-              horizontal
-              style={styles.horizontalScroll}
-              showsHorizontalScrollIndicator={false}>
-              {productContext?.sliderItems?.map(item => (
-                <View key={item.id} style={styles.recentItem}>
-                  <Image
-                    source={{uri: item?.offerImage}}
-                    style={styles.roundedImage}
+                  <View
+                    style={
+                      selectedSection === category?.id
+                        ? styles.selectedStyle
+                        : styles.horizontalLine
+                    }
                   />
-                  <Text style={styles.recentText}>{item?.offerName}</Text>
                 </View>
               ))}
             </ScrollView>
-            <Text style={styles.sectionTitle}>New Launch</Text>
-            <ScrollView
-              horizontal
-              style={styles.horizontalScroll}
-              showsHorizontalScrollIndicator={false}>
-              {productContext?.newArrival.map(item => (
-                <View key={item.id} style={styles.recentItem}>
-                  <Image
-                    source={{uri: item?.mainImageUrl}}
-                    style={styles.roundedImage}
-                  />
-                  <Text style={styles.recentText}>{item?.productName}</Text>
-                </View>
-              ))}
-            </ScrollView>
-            <Text style={styles.sectionTitle}>Premium Category</Text>
-            <View style={styles.grid}>
+          </View>
+          {selectedSection && (
+            <ScrollView style={styles.mainContent}>
+              <Text style={styles.sectionTitle}>List of Category</Text>
               <ScrollView
                 horizontal
                 style={styles.horizontalScroll}
                 showsHorizontalScrollIndicator={false}>
-                {productContext?.premiumProducts?.map(store => (
-                  <View key={store.id} style={styles.gridItem}>
+                {productContext?.productList.map(item => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.recentItem}
+                    onPress={() =>
+                      navigation.navigate('ProductListView', {
+                        selectedItem: item,
+                        similarItem: productContext?.productList?.filter(
+                          otherItem => otherItem?.id !== item?.id,
+                        ),
+                      })
+                    }>
                     <Image
-                      source={{uri: store?.mainImageUrl}}
-                      style={styles.gridImage}
+                      source={{uri: item?.mainImageUrl}}
+                      style={styles.recentImage}
                     />
-                    <View style={styles.gridText}>
-                      <View style={{flexDirection: 'row'}}>
-                        <Text style={{fontWeight: 'bold', color: 'black'}}>
-                          {store?.subCategoryName}
-                        </Text>
-                        {/* <Text>{store?.categoryName }</Text> */}
-                      </View>
-
-                      <Text style={{color: 'black'}}>₹{store?.unitPrice}</Text>
-                    </View>
+                    <Text style={styles.recentText} numberOfLines={1}>
+                      {item?.product}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <Text style={styles.sectionTitle}>More Offers</Text>
+              <ScrollView
+                horizontal
+                style={styles.horizontalScroll}
+                showsHorizontalScrollIndicator={false}>
+                {productContext?.sliderItems?.map(item => (
+                  <View key={item.id} style={styles.recentItem}>
+                    <Image
+                      source={{uri: item?.offerImage}}
+                      style={styles.roundedImage}
+                    />
+                    <Text style={styles.recentText}>{item?.offerName}</Text>
                   </View>
                 ))}
               </ScrollView>
-            </View>
-          </ScrollView>
-        )}
-        {/* {selectedSection === 'Fashion' && <CategoryForMens />} */}
-      </View>
+              <Text style={styles.sectionTitle}>New Launch</Text>
+              <ScrollView
+                horizontal
+                style={styles.horizontalScroll}
+                showsHorizontalScrollIndicator={false}>
+                {productContext?.newArrival.map(item => (
+                  <View key={item.id} style={styles.recentItem}>
+                    <Image
+                      source={{uri: item?.mainImageUrl}}
+                      style={styles.roundedImage}
+                    />
+                    <Text style={styles.recentText}>{item?.productName}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+              <Text style={styles.sectionTitle}>Premium Category</Text>
+              <View style={styles.grid}>
+                <ScrollView
+                  horizontal
+                  style={styles.horizontalScroll}
+                  showsHorizontalScrollIndicator={false}>
+                  {productContext?.premiumProducts?.map(store => (
+                    <View key={store.id} style={styles.gridItem}>
+                      <Image
+                        source={{uri: store?.mainImageUrl}}
+                        style={styles.gridImage}
+                      />
+                      <View style={styles.gridText}>
+                        <View style={{flexDirection: 'row'}}>
+                          <Text style={{fontWeight: 'bold', color: 'black'}}>
+                            {store?.subCategoryName}
+                          </Text>
+                          {/* <Text>{store?.categoryName }</Text> */}
+                        </View>
+
+                        <Text style={{color: 'black'}}>
+                          ₹{store?.unitPrice}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            </ScrollView>
+          )}
+          {/* {selectedSection === 'Fashion' && <CategoryForMens />} */}
+        </View>
+      )}
     </View>
   );
 };
@@ -370,6 +367,15 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#703F07',
     marginTop: 10,
+  },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 400,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 

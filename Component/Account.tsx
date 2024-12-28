@@ -85,7 +85,7 @@ const Account = props => {
               </View>
             </TouchableOpacity>
 
-            <View style={styles.textContainer}>
+            {/* <View style={styles.textContainer}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialIcons name="reviews" size={16} />
@@ -95,14 +95,14 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
+            </View> */}
           </View>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Account Settings</Text>
           <View style={styles.cardContent}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.textContainer}
               onPress={() => props.navigation.navigate('EditProfile')}>
               <View style={styles.textContain}>
@@ -117,7 +117,7 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <TouchableOpacity
               style={styles.textContainer}
               onPress={() => props.navigation.navigate('Payment')}>
@@ -168,7 +168,7 @@ const Account = props => {
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
             </TouchableOpacity>
-            <View style={styles.textContainer}>
+            {/* <View style={styles.textContainer}>
               <View style={styles.textContain}>
                 <View style={{marginTop: 3}}>
                   <MaterialCommunityIcons name="headset" size={16} />
@@ -178,7 +178,7 @@ const Account = props => {
               <View>
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
-            </View>
+            </View> */}
           </View>
         </View>
 
