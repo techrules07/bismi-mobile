@@ -283,3 +283,18 @@ export const getAllOrdersById = async (bodyData: any) => {
     throw error;
   }
 };
+export const cancelOrderApi = async (bodyData: any) => {
+  try {
+    const response = await AxiosConfig.post('orders/cancelOrder', bodyData);
+    console.log('Order cancelled successfully:', response.data);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error('Invalid response from server');
+    }
+  } catch (error) {
+    console.error('Error in deleting rating:', error);
+    throw error;
+  }
+};
