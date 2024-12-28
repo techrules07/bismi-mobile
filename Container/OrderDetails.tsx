@@ -17,51 +17,6 @@ const OrderDetails = props => {
     {label: 'Out for Delivery', value: '14 Dec 2024 Track'},
     {label: 'Delivered', value: '14 Dec 2024, 12:30 PM'},
   ];
-  const [listOrder, setListOrder] = useState([]);
-  const {user, logout} = useContext(UserContext);
-
-  const handleDownload = () => {
-    console.log('Invoice download');
-  };
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const bodyData = {
-          requestId: user?.id,
-          userId: user?.id,
-        };
-
-        const response = await getAllOrders(bodyData);
-
-        if (response?.status === 'Success' && response?.code === 200) {
-          Snackbar.show({
-            text: 'Order Listed successfully!',
-            duration: Snackbar.LENGTH_SHORT,
-            backgroundColor: 'green',
-          });
-          setListOrder(response?.data);
-        } else {
-          Snackbar.show({
-            text: 'Failed to list order. Please try again.',
-            duration: Snackbar.LENGTH_SHORT,
-            backgroundColor: 'red',
-          });
-        }
-
-        console.log('Placing order with data:', bodyData);
-      } catch (error) {
-        console.error('Error placing order:', error);
-        Snackbar.show({
-          text: 'An error occurred while placing the order.',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'red',
-        });
-      }
-    };
-
-    fetchOrders();
-  }, [user, props.navigation]);
 
   return (
     <View style={styles.container}>
@@ -81,12 +36,12 @@ const OrderDetails = props => {
             justifyContent: 'space-between',
             padding: 7,
           }}>
-          <Text style={styles.orderId}>Order ID: {listOrder?.orderId}</Text>
-          <Text style={styles.orderId}>Date: {listOrder?.createdAt}</Text>
+          {/* <Text style={styles.orderId}>Order ID: {listOrder?.orderId}</Text> */}
+          {/* <Text style={styles.orderId}>Date: {listOrder?.createdAt}</Text> */}
         </View>
 
         <View style={styles.card}>
-          {listOrder?.orderItems?.map(_item => (
+          {/* {listOrder?.orderItems?.map(_item => (
             <View
               style={{
                 display: 'flex',
@@ -132,7 +87,7 @@ const OrderDetails = props => {
                 </View>
               </View>
             </View>
-          ))}
+          ))} */}
           <StepperComponent steps={steps} />
         </View>
       </View>

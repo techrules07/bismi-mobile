@@ -1,54 +1,123 @@
 //@ts-nocheck
-import React from 'react';
-import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import Shirts from '../assets/Shirt.jpg';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {getAllOrders} from '../Networking/HomePageService';
+import {UserContext} from '../Context/UserContext';
+import Snackbar from 'react-native-snackbar';
 
 const OrderList = props => {
+  const [listOrder, setListOrder] = useState([]);
+  const {user, logout} = useContext(UserContext);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const bodyData = {
+          requestId: user?.id,
+          userId: user?.id,
+        };
+
+        const response = await getAllOrders(bodyData);
+
+        if (response?.status === 'Success' && response?.code === 200) {
+          Snackbar.show({
+            text: 'Order Listed successfully!',
+            duration: Snackbar.LENGTH_SHORT,
+            backgroundColor: 'green',
+          });
+          console.log(response?.data, 'before setListOrder');
+          setListOrder(response?.data);
+        } else {
+          Snackbar.show({
+            text: 'Failed to list order. Please try again.',
+            duration: Snackbar.LENGTH_SHORT,
+            backgroundColor: 'red',
+          });
+        }
+
+        console.log('Placing order with data:', bodyData);
+      } catch (error) {
+        console.error('Error placing order:', error);
+        Snackbar.show({
+          text: 'An error occurred while placing the order.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: 'red',
+        });
+      }
+    };
+
+    fetchOrders();
+  }, [user, props.navigation]);
+  console.log(listOrder);
   return (
-    <View style={styles.container}>
-      <View style={styles.profileHeader}>
-        <TouchableOpacity
-          style={styles.header}
-          onPress={() => props.navigation.navigate('Account')}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
-          <Text style={styles.OrderText}>My Order</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.cardsContainer}>
-        <Text style={styles.orderId}>Order ID: #12345</Text>
-        <View style={styles.card}>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            <View style={styles.cardContent}>
-              <Image source={Shirts} style={styles.productImage} />
-              <View style={{display: 'flex'}}>
-                <View style={{display: 'flex', flexDirection: 'row', gap: 10}}>
-                  <Text style={styles.productName}>Shirt</Text>
-                  <Text style={{marginTop: 3}}>Casual Wear</Text>
+    <ScrollView>
+      <View style={styles.container}>
+        <View style={styles.profileHeader}>
+          <TouchableOpacity
+            style={styles.header}
+            onPress={() => props.navigation.navigate('Account')}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+            <Text style={styles.OrderText}>My Order</Text>
+          </TouchableOpacity>
+        </View>
+        {listOrder.map(_orderItem => (
+          <View style={styles.cardsContainer}>
+            <Text style={styles.orderId}>Order ID: #{_orderItem?.orderId}</Text>
+            <View style={styles.card}>
+              <View
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <View style={styles.cardContent}>
+                  <Image
+                    source={{uri: _orderItem?.orderItems?.[0]?.productImage}}
+                    style={styles.productImage}
+                  />
+                  <View style={{display: 'flex'}}>
+                    <View style={{display: 'flex', marginBottom: 20}}>
+                      <Text style={styles.productName}>
+                        {_orderItem?.orderItems?.[0]?.productName}
+                      </Text>
+                      <Text style={{marginTop: 3}}>
+                        {_orderItem?.orderItems?.[0]?.productCategory}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text style={styles.arrivalText}>
+                        {_orderItem?.orderStatus}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
                 <View>
-                  <Text style={styles.arrivalText}>Arriving by Today</Text>
+                  <TouchableOpacity
+                    style={styles.iconWrapper}
+                    onPress={() => props.navigation.navigate('OrderDetails')}>
+                    <MaterialIcons
+                      name="arrow-forward"
+                      size={24}
+                      color="black"
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
-            </View>
-            <View>
-              <TouchableOpacity
-                style={styles.iconWrapper}
-                onPress={() => props.navigation.navigate('OrderDetails')}>
-                <MaterialIcons name="arrow-forward" size={24} color="black" />
-              </TouchableOpacity>
+              <View style={styles.divider} />
             </View>
           </View>
-          <View style={styles.divider} />
-        </View>
+        ))}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -86,7 +155,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 5,
+    // marginBottom: 5,
   },
   arrivalText: {
     fontSize: 14,
