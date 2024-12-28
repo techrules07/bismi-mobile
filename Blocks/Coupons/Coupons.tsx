@@ -7,6 +7,7 @@ import {
   Image,
   Alert,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
@@ -17,12 +18,15 @@ import {
 } from '../../Networking/CouponPageService';
 import {CouponContext} from '../../Context/CouponContext';
 import {UserContext} from '../../Context/UserContext';
+import ToastMessage from '../../Component/toast_message/toast_message';
 
 const CouponsPage = () => {
   const navigation = useNavigation();
   const [coupon, setCoupon] = useState([]);
   const {user} = useContext(UserContext);
   const {applyCoupon} = useContext(CouponContext);
+  const [showCoupon, setShowCoupon] = useState(false);
+  const [showCouponFailure, setShowCouponFailure] = useState(false);
 
   useEffect(() => {
     const getAllCoupon = async () => {
@@ -47,7 +51,7 @@ const CouponsPage = () => {
   const applyCouponFor = async _item => {
     try {
       if (!_item?.active) {
-        Alert.alert('Coupon Expired', 'Sorry, this coupon has expired');
+        console.log('Coupon Expired', 'Sorry, this coupon has expired');
         return;
       }
 
@@ -55,7 +59,7 @@ const CouponsPage = () => {
       const purchaseAmount = _item?.minimumPurchaseAmount;
 
       if (!couponCode || !purchaseAmount) {
-        Alert.alert('Error', 'Invalid coupon or purchase amount.');
+        console.log('Error', 'Invalid coupon or purchase amount.');
         return;
       }
 
@@ -77,83 +81,90 @@ const CouponsPage = () => {
           updateResponse?.code === 200 &&
           updateResponse?.status === 'Success'
         ) {
-          // Update the coupon state to reflect the coupon is no longer active
           setCoupon(prevCoupons =>
             prevCoupons.map(item =>
               item.couponCode === couponCode ? {...item, active: false} : item,
             ),
           );
-
-          Alert.alert(
+          setShowCoupon(true);
+          setShowCouponFailure(false);
+          console.log(
             'Coupon Applied',
             `You have successfully applied ${couponCode}`,
           );
         } else {
-          Alert.alert('Error', 'Failed to update coupon in the backend.');
+          setShowCoupon(false);
+          setShowCouponFailure(true);
+          console.log('Error', 'Failed to update coupon in the backend.');
         }
       } else {
-        Alert.alert(
+        setShowCoupon(false);
+        setShowCouponFailure(true);
+        console.log(
           'Error',
           couponResponse?.message || 'Failed to apply coupon',
         );
       }
     } catch (error) {
       console.error('Error applying coupon:', error);
-      Alert.alert('Error', 'An error occurred while applying the coupon.');
+      console.log('Error', 'An error occurred while applying the coupon.');
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Icon
-            name="arrow-left"
-            size={24}
-            color="#fff"
-            onPress={() => navigation.navigate('Account')}
-          />
-          <Text style={styles.headerTitle}>Coupons</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <View style={styles.header}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Icon
+              name="arrow-left"
+              size={24}
+              color="#fff"
+              onPress={() => navigation.navigate('Account')}
+            />
+            <Text style={styles.headerTitle}>Coupons</Text>
+          </View>
+
+          <View style={styles.headerIcons}>
+            <Icon name="magnify" size={24} color="#fff" />
+            <Icon
+              name="cart"
+              size={24}
+              color="#fff"
+              onPress={() => navigation.navigate('Cart')}
+            />
+          </View>
         </View>
 
-        <View style={styles.headerIcons}>
-          <Icon name="magnify" size={24} color="#fff" />
-          <Icon
-            name="cart"
-            size={24}
-            color="#fff"
-            onPress={() => navigation.navigate('Cart')}
-          />
-        </View>
-      </View>
+        <View style={{padding: 10}}>
+          <Text style={styles.pageTitle}>Available Coupon</Text>
+          <View style={styles.circle}></View>
+          <View style={styles.circleRight}></View>
+          {coupon?.map(_item => (
+            <View style={styles.couponCard}>
+              <View style={styles.row}>
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{uri: _item?.couponImage}}
+                    style={styles.couponImage}
+                  />
+                </View>
 
-      <View style={{padding: 10}}>
-        <Text style={styles.pageTitle}>Available Coupon</Text>
-        <View style={styles.circle}></View>
-        <View style={styles.circleRight}></View>
-        {coupon?.map(_item => (
-          <View style={styles.couponCard}>
-            <View style={styles.row}>
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={{uri: _item?.couponImage}}
-                  style={styles.couponImage}
-                />
-              </View>
-
-              <View style={styles.dottedLine}></View>
-              <View style={styles.details}>
-                <Text style={styles.couponDescription}>
-                  {_item?.description}
-                </Text>
-                <Text style={styles.couponDescription}>
-                  Coupon code : {_item?.couponCode}
-                </Text>
-                <Text style={styles.expiryText}>Expires: {_item?.endDate}</Text>
-                <Text style={styles.minPurchase}>
-                  Min Purchase: ₹{_item?.minimumPurchaseAmount}
-                </Text>
-                {/* <Text
+                <View style={styles.dottedLine}></View>
+                <View style={styles.details}>
+                  <Text style={styles.couponDescription}>
+                    {_item?.description}
+                  </Text>
+                  <Text style={styles.couponDescription}>
+                    Coupon code : {_item?.couponCode}
+                  </Text>
+                  <Text style={styles.expiryText}>
+                    Expires: {_item?.endDate}
+                  </Text>
+                  <Text style={styles.minPurchase}>
+                    Min Purchase: ₹{_item?.minimumPurchaseAmount}
+                  </Text>
+                  {/* <Text
                   style={
                     _item.active === true
                       ? styles.activeText
@@ -161,22 +172,41 @@ const CouponsPage = () => {
                   }>
                   {_item.active === true ? 'Active' : 'Expired'}
                 </Text> */}
-                <TouchableOpacity
-                  style={
-                    _item.active === true
-                      ? styles.applyButton
-                      : styles.disabledButton
-                  }
-                  onPress={() => applyCouponFor(_item)}
-                  disabled={_item.active !== true}>
-                  <Text style={styles.buttonText}>Apply Coupon</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={
+                      _item.active === true
+                        ? styles.applyButton
+                        : styles.disabledButton
+                    }
+                    onPress={() => applyCouponFor(_item)}
+                    disabled={_item.active !== true}>
+                    <Text style={styles.buttonText}>Apply Coupon</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
+      </ScrollView>
+      <View style={{alignItems: 'center'}}>
+        {(showCoupon || showCouponFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showCouponFailure
+                ? 'Something went wrong'
+                : 'Coupon applied successfully'
+            }
+            text2={''}
+            setToast={() => {
+              setShowCoupon(false);
+              setShowCouponFailure(false);
+            }}
+          />
+        )}
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 

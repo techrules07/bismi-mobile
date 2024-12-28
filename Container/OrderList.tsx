@@ -24,6 +24,8 @@ const OrderList = props => {
   const [cancelReason, setCancelReason] = useState('');
   const {user, logout} = useContext(UserContext);
   const [showToast, setShowToast] = useState(false);
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [showSubmitFailure, setShowSubmitFailure] = useState(false);
   const scrollViewRef = useRef(null);
   const navigation = useNavigation();
 
@@ -51,20 +53,13 @@ const OrderList = props => {
               JSON.stringify(response?.data),
             );
           } else {
-            Snackbar.show({
-              text: 'Failed to list orders. Please try again.',
-              duration: Snackbar.LENGTH_SHORT,
-              backgroundColor: 'red',
-            });
+            setShowToast(false);
+            console.log('Failed to list orders. Please try again.');
           }
         }
       } catch (error) {
+        setShowToast(false);
         console.error('Error fetching orders:', error);
-        Snackbar.show({
-          text: 'An error occurred while fetching the orders.',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'red',
-        });
       }
     };
 
@@ -85,12 +80,9 @@ const OrderList = props => {
       const response = await cancelOrderApi({orderId, reason: cancelReason});
 
       if (response?.status === 'Success') {
-        Snackbar.show({
-          text: 'Order cancelled successfully!',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'green',
-        });
-
+        setShowSubmit(true);
+        setShowSubmitFailure(false);
+        console.log('Order cancelled successfully!');
         const updatedOrders = listOrder.filter(
           order => order.orderId !== orderId,
         );
@@ -98,19 +90,14 @@ const OrderList = props => {
 
         await AsyncStorage.setItem('orders', JSON.stringify(updatedOrders));
       } else {
-        Snackbar.show({
-          text: 'Failed to cancel the order. Please try again.',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'red',
-        });
+        setShowSubmit(false);
+        setShowSubmitFailure(true);
+        console.error('Error cancelling order:');
       }
     } catch (error) {
+      setShowSubmit(false);
+      setShowSubmitFailure(true);
       console.error('Error cancelling order:', error);
-      Snackbar.show({
-        text: 'An error occurred while cancelling the order.',
-        duration: Snackbar.LENGTH_SHORT,
-        backgroundColor: 'red',
-      });
     }
   };
 
@@ -228,6 +215,22 @@ const OrderList = props => {
             text1={'Order Listed successfully'}
             text2={'Go to account'}
             setToast={setShowToast}
+          />
+        )}
+        {(showSubmit || showSubmitFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showSubmitFailure
+                ? 'Something went wrong'
+                : 'Order cancelled successfully'
+            }
+            text2={''}
+            setToast={() => {
+              setShowSubmit(false);
+              setShowSubmitFailure(false);
+            }}
           />
         )}
       </View>

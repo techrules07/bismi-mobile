@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   card: {
-    width: 150,
+    width: 200,
     marginLeft: 10,
     borderWidth: 0,
     borderRadius: 0,
@@ -728,6 +728,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
+    width: 140,
   },
   cardPrice: {
     fontSize: 16,
