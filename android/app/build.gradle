@@ -87,6 +87,12 @@ android {
         versionName "1.0"
     }
     signingConfigs {
+        release {
+            storeFile file('bismi.keystore')
+            storePassword 'Bismi123'
+            keyAlias 'Bismi'
+            keyPassword 'Bismi123'
+        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
