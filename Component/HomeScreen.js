@@ -9,6 +9,7 @@ import {
   TouchableHighlight,
   StyleSheet,
   ScrollView,
+  StatusBar,
 } from 'react-native';
 import Logo from '../assets/logo-bismi.png';
 import Search from '../assets/search.png';
@@ -16,6 +17,7 @@ import {getAllOffers, getAllCategories} from '../Networking/HomePageService';
 import {pContext} from '../Context/ProductContext';
 import Carousel from 'react-native-reanimated-carousel';
 import Loader from './Loader';
+import themeConfig from '../assets/themes/themeConfig';
 
 const HomeScreen = props => {
   const productContext = useContext(pContext);
@@ -74,245 +76,253 @@ const HomeScreen = props => {
   }, []);
 
   return (
-    <ScrollView>
+    <View style={{flex: 1, backgroundColor: themeConfig.appPrimary}}>
       <View
         style={{
-          backgroundColor: '#703F07',
-          flex: 1,
+          display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          paddingVertical: 16,
+          width: '100%',
+          backgroundColor: themeConfig.appPrimary,
         }}>
+        <View style={{}}>
+          <Image source={Logo} />
+        </View>
+
         <View
           style={{
-            display: 'flex',
-            flexDirection: 'column',
+            backgroundColor: themeConfig.appBackground,
+            paddingTop: 0,
+            paddingBottom: 0,
+            marginTop: 16,
+            borderRadius: 20,
+            width: '80%',
+            flexDirection: 'row',
             alignItems: 'center',
-            paddingTop: 18,
-            paddingBottom: 18,
-            width: '100%',
+            paddingLeft: 10,
+            paddingRight: 10,
           }}>
-          <Image source={Logo} style={{width: 64, height: 42}} />
+          <Image source={Search} style={{width: 15, height: 15}} />
 
-          <View
-            style={{
-              backgroundColor: '#D9D9D9',
-              paddingTop: 0,
-              paddingBottom: 0,
-              marginTop: 20,
-              borderRadius: 7,
-              width: '85%',
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingLeft: 10,
-              paddingRight: 10,
-            }}>
-            <Image source={Search} style={{width: 15, height: 15}} />
-
-            <TextInput
-              placeholder="Search product"
-              value={searchQuery}
-              onChangeText={handleSearch}
-              style={{paddingTop: 5, paddingBottom: 5, paddingLeft: 10}}
-            />
-          </View>
+          <TextInput
+            placeholder="Search product"
+            value={searchQuery}
+            onChangeText={handleSearch}
+            style={{paddingTop: 5, paddingBottom: 5, paddingLeft: 10}}
+          />
         </View>
-        {loading ? (
-          <View style={styles.loaderContainer}>
-            <Loader />
-          </View>
-        ) : (
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: '#EDE0D4',
-              width: '100%',
-              borderTopRightRadius: 16,
-              borderTopLeftRadius: 16,
-              marginTop: 12,
-              padding: 15,
-              height: 800,
-            }}>
-            <View style={{height: 160, width: '100%'}}>
-              {productContext?.sliderItems.length > 0 && (
-                <Carousel
-                  width={width - 30}
-                  height={160}
-                  data={productContext.sliderItems}
-                  scrollAnimationDuration={1000}
-                  autoPlay={true}
-                  autoPlayInterval={1000}
-                  renderItem={item => {
-                    return (
-                      <View style={{height: 160, width: '100%'}}>
-                        {item.item.offerImage != null ? (
-                          <Image
-                            source={{uri: item.item.offerImage}}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              borderRadius: 8,
-                            }}
-                          />
-                        ) : (
-                          <Text>Text element</Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                />
-              )}
-            </View>
+      </View>
 
-            <View style={{display: 'flex', flexDirection: 'column'}}>
-              <View style={{display: 'flex', flexDirection: 'column'}}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    width: '100%',
-                    flexWrap: 'wrap',
-                    flex: 1,
-                    paddingTop: 16,
-                    paddingBottom: 16,
-                  }}>
-                  {productsToDisplay?.map(item => {
-                    return (
-                      <TouchableOpacity
-                        style={{
-                          flexGrow: 0,
-                          flexShrink: 0,
-                          flexBasis: '25%',
-                          flexDirection: 'column',
-                          height: 110,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          paddingBottom: 25,
-                        }}
-                        onPress={() => {
-                          props.navigation.navigate('Products', {
-                            categoryId: item.id,
-                          });
-                        }}>
-                        <View
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}>
-                          <Image
-                            source={{uri: item.imageURL}}
-                            style={{width: 56, height: 56, borderRadius: 500}}
-                          />
-                          <Text
-                            style={{
-                              fontWeight: 500,
-                              fontSize: 12,
-                              color: '#703F07',
-                              marginTop: 16,
-                            }}>
-                            {item.categoryName}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
+      <View
+        style={{
+          flex: 1,
+          borderTopRightRadius: 16,
+          backgroundColor: themeConfig.appBackground,
+          borderTopLeftRadius: 16,
+        }}>
+        <ScrollView
+          contentContainerStyle={{}}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}>
+          {loading ? (
+            <View style={styles.loaderContainer}>
+              <Loader />
             </View>
+          ) : (
             <View
               style={{
-                marginTop: 180,
-                padding: 20,
+                // flex: 1,
+                width: '100%',
+                // borderTopRightRadius: 16,
+                // borderTopLeftRadius: 16,
+                // padding: 16,
+                // height: 800,
               }}>
-              <Text style={styles.sectionTitle}>More Offers</Text>
-              <ScrollView
-                horizontal
-                style={styles.horizontalScroll}
-                showsHorizontalScrollIndicator={false}>
-                {productContext?.sliderItems?.map(item => (
-                  <View key={item.id} style={styles.recentItem}>
-                    <Image
-                      source={{uri: item?.offerImage}}
-                      style={styles.roundedImage}
-                    />
-                    <Text style={styles.recentText}>{item?.offerName}</Text>
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-            <View style={{paddingLeft: 20}}>
-              <Text style={styles.sectionTitle}>Explore</Text>
-              <ScrollView
-                style={styles.horizontalScroll}
-                horizontal={true}
-                contentContainerStyle={{flexDirection: 'row'}}
-                showsHorizontalScrollIndicator={false}>
-                {productContext?.homeItems?.map(store => (
-                  <View key={store.id} style={styles.gridItem}>
-                    <Image
-                      source={{uri: store?.imageURL}}
-                      style={styles.gridImage}
-                    />
-                    <View style={styles.gridText}>
-                      <Text style={{fontWeight: 'bold', color: 'black'}}>
-                        {store?.categoryName}
+              <View style={{width: '100%',padding:16}}>
+                {productContext?.sliderItems.length > 0 && (
+                  <Carousel
+                    width={width - 30}
+                    height={160}
+                    data={productContext.sliderItems}
+                    scrollAnimationDuration={1000}
+                    autoPlay={true}
+                    autoPlayInterval={1000}
+                    renderItem={item => {
+                      return (
+                        <View style={{height: 160, width: '100%'}}>
+                          {item.item.offerImage != null ? (
+                            <Image
+                              source={{uri: item.item.offerImage}}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: 8,
+                              }}
+                            />
+                          ) : (
+                            <Text>Text element</Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                  />
+                )}
+              </View>
+
+              <View
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  width: '100%',
+                  flexWrap: 'wrap',
+                  marginTop: 16,
+                }}>
+                {productsToDisplay?.map(item => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={{
+                      flexBasis: '25%',
+                      // height: 80,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 16,
+                    }}
+                    onPress={() =>
+                      props.navigation.navigate('Products', {
+                        categoryId: item.id,
+                      })
+                    }>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      <Image
+                        source={{uri: item.imageURL}}
+                        style={{width: 56, height: 56, borderRadius: 28}}
+                      />
+                      <Text
+                        style={{
+                          fontWeight: '500', // Fix for React Native fontWeight
+                          fontSize: 12,
+                          color: themeConfig.appPrimary,
+                          marginTop: 4,
+                        }}>
+                        {item.categoryName}
                       </Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </View>
+
+              <View
+                style={{
+
+                }}>
+                <Text style={styles.sectionTitle}>More Offers</Text>
+                <ScrollView
+                  horizontal
+                  style={styles.horizontalScroll}
+                  showsHorizontalScrollIndicator={false}>
+                  {productContext?.sliderItems?.map(item => (
+                    <View key={item.id} style={styles.recentItem}>
+                      <Image
+                        source={{uri: item?.offerImage}}
+                        style={styles.roundedImage}
+                      />
+                      <Text style={styles.recentText}>{item?.offerName}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+              <View style={{}}>
+                <Text style={styles.sectionTitle}>Explore</Text>
+                <ScrollView
+                  style={styles.horizontalScroll}
+                  horizontal={true}
+                  contentContainerStyle={{flexDirection: 'row'}}
+                  showsHorizontalScrollIndicator={false}>
+                  {productContext?.homeItems?.map(store => (
+                    <View key={store.id} style={styles.gridItem}>
+                      <Image
+                        source={{uri: store?.imageURL}}
+                        style={styles.gridImage}
+                      />
+                      <View>
+                        <Text style={styles.gridText}>
+                          {store?.categoryName}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
             </View>
-          </View>
-        )}
+          )}
+        </ScrollView>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginVertical: 10,
-    color: '#703F07',
+    marginBottom: 8,
+    color: themeConfig.appPrimary,
+    paddingHorizontal: 16,
   },
-  horizontalScroll: {marginVertical: 10},
-  recentItem: {marginRight: 10, alignItems: 'center'},
-  recentImage: {width: 80, height: 80, borderRadius: 8},
+  horizontalScroll: {marginVertical: 4, marginBottom: 16},
+  recentItem: {marginLeft: 16, alignItems: 'center'},
+  recentImage: {width: 80, height: 80, borderRadius: 40},
   recentText: {
-    marginTop: 5,
+    marginTop: 4,
     fontSize: 12,
     textAlign: 'center',
-    color: 'black',
-    width: 100,
+    fontWeight: 'bold',
+    color: themeConfig.appPrimary,
+    // width: 100,
   },
   roundedImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
 
   gridItem: {
     width: 120,
-    marginRight: 20,
-    backgroundColor: '#EDE0D4',
-    borderRadius: 8,
+    marginLeft: 16,
+    padding:4,
+    backgroundColor: themeConfig.appSecondary,
+    borderRadius: 16,
+    overflow: 'hidden',
     elevation: 2,
+    shadowColor: themeConfig.appPrimary,
+    shadowRadius: 10,
+    marginVertical: 2,
   },
   gridImage: {
     width: '100%',
     height: 100,
     resizeMode: 'cover',
+    borderTopLeftRadius:12,
+    borderTopRightRadius:12,
   },
   gridText: {
     fontSize: 12,
-    marginTop: 8,
-    padding: 5,
+    // marginTop: 8,
+    color: themeConfig.appPrimary,
+    padding: 4,
     textAlign: 'center',
+    alignItems: 'center',
+    fontWeight:"bold"
   },
   loaderContainer: {
     position: 'absolute',
-    bottom: 400,
+    // bottom: 400,
     left: 0,
     right: 0,
     justifyContent: 'center',
