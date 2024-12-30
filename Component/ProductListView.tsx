@@ -96,30 +96,33 @@ const ProductDetails = ({
       setShowPopup(false);
       return;
     }
-  
+
     try {
       const cartResponse = await addToCart(defaultItem);
-  
+
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
         setShowToast(true);
         setShowToastFailure(false);
         setIsAddedToCart(true);
         setShowPopup(true);
-  
+
         const requestId = defaultItem?.id;
         const userId = user?.id;
-  
+
         try {
           const detailsResponse = await getDetails(requestId, userId);
-  
+
           if (
             detailsResponse?.code === 200 &&
             detailsResponse?.status === 'Success'
           ) {
             console.log('Details retrieved successfully:', detailsResponse);
           } else {
-            console.warn('Failed to retrieve product details:', detailsResponse);
+            console.warn(
+              'Failed to retrieve product details:',
+              detailsResponse,
+            );
           }
         } catch (detailsError) {
           console.error('Error retrieving product details:', detailsError);
@@ -134,7 +137,6 @@ const ProductDetails = ({
       setShowPopup(false);
     }
   };
-  
 
   const handleStarClick = index => {
     setRating(index + 1);
@@ -364,7 +366,10 @@ const ProductDetails = ({
           }}
         />
       )}
-      <ScrollView ref={scrollViewRef} style={styles.detailsContainer}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.detailsContainer}
+        showsVerticalScrollIndicator={false}>
         <View style={styles.imageContainer}>
           <Image
             source={{uri: selectedItem?.image}}
@@ -789,7 +794,7 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   card: {
-    width: 200,
+    width: 180,
     marginLeft: 10,
     borderWidth: 0,
     borderRadius: 0,
