@@ -621,7 +621,7 @@ const SavedAddressesPage = () => {
                   ? showToastMessage || 'Something went wrong'
                   : showToastMessage || 'Address added/update successfully'
               }
-              text2={showToastFailure ? 'Failed to Save' : 'Success'}
+              text2={showToastFailure ? '' : ''}
               setToast={() => {
                 setShowToast(false);
                 setShowToastFailure(false);
@@ -654,7 +654,7 @@ const SavedAddressesPage = () => {
                   ? 'Something went wrong'
                   : 'Address deleted successfully'
               }
-              text2={showToastDeleteFailure ? 'Failed to delete' : 'Success'}
+              text2={showToastDeleteFailure ? 'Failed' : 'Success'}
               setToast={() => {
                 setShowToastDelete(false);
                 setShowToastDeleteFailure(false);
