@@ -619,7 +619,7 @@ const SavedAddressesPage = () => {
               text1={
                 showToastFailure
                   ? showToastMessage || 'Something went wrong'
-                  : showToastMessage || 'Address added/updated successfully'
+                  : showToastMessage || 'Address added/update successfully'
               }
               text2={showToastFailure ? 'Failed to Save' : 'Success'}
               setToast={() => {
@@ -638,7 +638,7 @@ const SavedAddressesPage = () => {
                   ? 'Something went wrong'
                   : 'updated default address successfully'
               }
-              text2={showToastDefaultFailure ? 'Failed to Save' : 'Success'}
+              text2={showToastDefaultFailure ? '' : ''}
               setToast={() => {
                 setShowToastDefault(false);
                 setShowToastDefaultFailure(false);
