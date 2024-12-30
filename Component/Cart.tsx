@@ -55,35 +55,23 @@ const CartPage = () => {
   const [showToastFavorite, setShowFavorite] = useState(false);
   const [showToastFavoriteFailure, setShowToastFavoriteFailure] =
     useState(false);
-  useEffect(() => {
-    const fetchCartDetails = async () => {
-      const requestId = user?.id;
 
+  const fetchCartDetails = async () => {
+    try {
+      const requestId = user?.id;
       if (!requestId) {
-        console.error('User information is missing');
+        console.warn('User ID is missing');
         return;
       }
 
-      try {
-        const detailsResponse = await getAllCartItems(requestId);
+      const cartData = await getAllCartItems(requestId);
+      setCartItems(cartData?.data || []);
+    } catch (error) {
+      console.error('Error fetching cart details:', error.message);
+    }
+  };
 
-        if (
-          detailsResponse?.code === 200 &&
-          detailsResponse?.status === 'Success'
-        ) {
-          console.log('Details retrieved successfully:', detailsResponse);
-          setCartItems(detailsResponse?.data);
-        } else {
-          throw new Error('Failed to retrieve product details');
-        }
-      } catch (error) {
-        console.error('Error fetching cart details:', error);
-      }
-    };
-
-    fetchCartDetails();
-  }, [user]);
-  useEffect(() => {
+  const fetchAddressDetails = async () => {
     if (user?.id) {
       const requestId = user.id;
       const userId = user.id;
@@ -109,7 +97,14 @@ const CartPage = () => {
           console.log('Failed to fetch addresses:', error);
         });
     }
-  }, [user]);
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchCartDetails();
+      fetchAddressDetails();
+    }
+  }, [user?.id]);
   useEffect(() => {
     if (defaultAddress && address?.length > 0) {
       const selectedAddr = address.find(
@@ -234,24 +229,7 @@ const CartPage = () => {
     const productDetail = productDetails.find(detail => detail.id === item.id);
     return productDetail ? {...item, ...productDetail} : item;
   });
-  useEffect(() => {
-    const fetchCartDetails = async () => {
-      try {
-        const requestId = user?.id;
-        if (!requestId) throw new Error('User information is missing');
 
-        const detailsResponse = await getAllCartItems(requestId);
-        if (detailsResponse?.code === 200) {
-          setCartItems(detailsResponse?.data || []);
-        } else {
-          throw new Error('Failed to retrieve cart items');
-        }
-      } catch (error) {
-        console.error('Error fetching cart details:', error);
-      }
-    };
-    fetchCartDetails();
-  }, [user]);
   const handleApplyCoupon = async () => {
     if (!couponCode) {
       setCouponError('Please enter a coupon code');
@@ -306,7 +284,6 @@ const CartPage = () => {
         // });
         setShowToast(true);
         setShowToastFailure(false);
-       
       } else {
         // Snackbar.show({
         //   text: 'Failed to place order. Please try again.',
@@ -329,9 +306,9 @@ const CartPage = () => {
       setShowToastFailure(true);
     }
   };
-const navigateToOrder = () =>{
-  navigation.navigate('OrderList');
-}
+  const navigateToOrder = () => {
+    navigation.navigate('OrderList');
+  };
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -460,7 +437,7 @@ const navigateToOrder = () =>{
               if (!showToastFailure) {
                 navigateToOrder();
               } else {
-                '';
+                ('');
               }
             }}
             text1={

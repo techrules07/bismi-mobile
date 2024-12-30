@@ -71,37 +71,63 @@ export const quantity = (requestId: number) => {
       throw error;
     });
 };
-export const getDetails = (requestId: number, userId: any) => {
+export const getDetails = async (requestId: number, userId: any) => {
   const requestData = {
     requestId,
     userId: userId || 0,
   };
 
-  return AxiosConfig.post('products/get/get-details', requestData)
-    .then(response => {
-      console.log('Product details retrieved:', response?.data);
+  console.log('Requesting product details with data:', requestData);
+
+  try {
+    const response = await AxiosConfig.post(
+      'products/get/get-details',
+      requestData
+    );
+
+    if (response?.status === 200) {
+      console.log('Product details retrieved successfully:', response?.data);
       return response.data;
-    })
-    .catch(error => {
-      console.error('Error retrieving product details:', error);
-      throw error;
+    } else {
+      console.error('Unexpected response status:', response?.status);
+      throw new Error('Unexpected response from server');
+    }
+  } catch (error) {
+    console.error('Error retrieving product details:', {
+      error,
+      requestData,
+      response: error?.response,
     });
+    throw error;
+  }
 };
-export const getAllCartItems = (requestId: number) => {
+
+export const getAllCartItems = async (requestId: number) => {
+  if (!requestId) {
+    console.error('Request ID is missing or invalid');
+    throw new Error('Request ID is required to fetch cart items');
+  }
+
   const requestData = {
     requestId,
+    exclusive: true, // Additional parameter as required
   };
 
-  return AxiosConfig.post('cart/getAllItems', requestData)
-    .then(response => {
-      console.log('List of all cart Items:', response?.data);
+  try {
+    const response = await AxiosConfig.post('cart/getAllItems', requestData);
+
+    // Check if the response is valid and indicates success
+    if (response?.data?.code === 200 && response?.data?.status === 'Success') {
+      console.log('List of all cart Items:', response.data);
       return response.data;
-    })
-    .catch(error => {
-      console.error('Error retrieving cart list:', error);
-      throw error;
-    });
+    } 
+  } catch (error) {
+    // Log and rethrow the error for further handling
+    console.error('Error retrieving cart list:', error);
+    throw new Error(error?.message || 'An unexpected error occurred while fetching cart items');
+  }
 };
+
 export const getAllFavorite = (requestId: any) => {
   return AxiosConfig.post('favourite/getAllFavourite', requestId)
     .then(response => {
