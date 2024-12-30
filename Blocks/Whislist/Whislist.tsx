@@ -73,10 +73,10 @@ const WishlistPage = () => {
         //   duration: Snackbar.LENGTH_LONG,
         //   backgroundColor: 'green',
         // });
+
+        await removeFromWishlist(selectedItem);
         setShowToast(true);
         setShowToastFailure(false);
-        await removeFromWishlist(selectedItem);
-
         // Alert.alert('Success', 'Item moved to cart');
       } else {
         setShowToast(false);
@@ -218,7 +218,7 @@ const WishlistPage = () => {
             text1={
               showToastFailure ? 'Something went wrong' : 'Item move to cart'
             }
-            text2={showToastFailure ? 'Failed to move item' : 'Success'}
+            text2={showToastFailure ? 'Failed' : 'Success'}
             setToast={() => {
               setShowToast(false);
               setShowToastFailure(false);

@@ -445,7 +445,7 @@ const CartPage = () => {
                 ? 'Something went wrong'
                 : 'Order placed successfully'
             }
-            text2={showToastFailure ? 'Login or failed' : 'Go to order'}
+            text2={showToastFailure ? ' failed' : 'Go to order'}
             setToast={() => {
               setShowToast(false);
               setShowToastFailure(false);
