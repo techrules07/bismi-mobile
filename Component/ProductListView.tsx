@@ -56,7 +56,11 @@ const ProductDetails = ({
   const [showDeleteFailure, setShowDeleteFailure] = useState(false);
   const scrollViewRef = useRef(null);
   const targetViewRef = useRef(null);
-
+  const [showAddFavorite, setShowAddFavorite] = useState(false);
+  const [showAddFavoriteFailure, setShowAddFavoriteFailure] = useState(false);
+  const [showRemoveFavorite, setShowRemoveFavorite] = useState(false);
+  const [showRemoveFavoriteFailure, setShowRemoveFavoriteFailure] =
+    useState(false);
   useEffect(() => {
     const requestId = selectedItem?.productId;
     const userId = user?.id;
@@ -118,7 +122,7 @@ const ProductDetails = ({
       }
     } catch (error) {
       console.log('Failed to add product to cart');
-
+      setShowToast(false);
       setShowToastFailure(true);
       setShowPopup(false);
     }
@@ -134,7 +138,7 @@ const ProductDetails = ({
   };
   const handleSubmit = async () => {
     try {
-      let requestId = selectedItem?.id;
+      let requestId = selectedItem?.id || selectedItem?.productId;
       let userId = user?.id;
       const ratingData = {
         productId: requestId,
@@ -209,20 +213,32 @@ const ProductDetails = ({
       productId: item?.id || item?.productId || 0,
     };
 
-    if (item?.favourite) {
-      let removeFavResponse = await productContext?.removeFromFavorite(
-        favouriteRemoveObject,
-      );
-      if (removeFavResponse) {
-        onSelectSimilarItem(item);
+    try {
+      if (item?.favourite) {
+        let removeFavResponse = await productContext?.removeFromFavorite(
+          favouriteRemoveObject,
+        );
+        if (removeFavResponse) {
+          onSelectSimilarItem(item);
+          setShowRemoveFavorite(true);
+          setShowRemoveFavoriteFailure(false);
+        }
+      } else {
+        let addFavResponse = await productContext?.addToFavorite(
+          favouriteAddObject,
+        );
+        if (addFavResponse) {
+          onSelectSimilarItem(item);
+          setShowAddFavorite(true);
+          setShowAddFavoriteFailure(false);
+        }
       }
-    } else {
-      let addFavResponse = await productContext?.addToFavorite(
-        favouriteAddObject,
-      );
-      if (addFavResponse) {
-        onSelectSimilarItem(item);
-      }
+    } catch (error) {
+      console.error('Error handling favorite toggle:', error);
+      setShowAddFavorite(false);
+      setShowRemoveFavorite(false);
+      setShowAddFavoriteFailure(true);
+      setShowRemoveFavoriteFailure(true);
     }
   };
 
@@ -276,11 +292,9 @@ const ProductDetails = ({
             }
           }}
           text1={
-            showToastFailure
-              ? 'Something went wrong,User is not login'
-              : 'Item added to cart'
+            showToastFailure ? 'Something went wrong' : 'Item added to cart'
           }
-          text2={showToastFailure ? 'Login' : 'Go to cart'}
+          text2={showToastFailure ? 'Login or failed' : 'Go to cart'}
           setToast={() => {
             setShowToast(false);
             setShowToastFailure(false);
@@ -300,6 +314,31 @@ const ProductDetails = ({
           setToast={() => {
             setShowDelete(false);
             setShowDeleteFailure(false);
+          }}
+        />
+      )}
+      {(showAddFavorite ||
+        showAddFavoriteFailure ||
+        showRemoveFavorite ||
+        showRemoveFavoriteFailure) && (
+        <ToastMessage
+          text1Press={() => {}}
+          text2Press={() => {}}
+          text1={
+            showAddFavorite
+              ? 'Item added to favorites!'
+              : showRemoveFavorite
+              ? 'Item removed from favorites!'
+              : showAddFavoriteFailure
+              ? 'Error adding item to favorites.'
+              : 'Error removing item from favorites.'
+          }
+          text2={''}
+          setToast={() => {
+            setShowAddFavorite(false);
+            setShowAddFavoriteFailure(false);
+            setShowRemoveFavorite(false);
+            setShowRemoveFavoriteFailure(false);
           }}
         />
       )}
@@ -331,10 +370,11 @@ const ProductDetails = ({
             <TouchableOpacity
               onPress={() => {
                 const defaultItem = {
-                  id: selectedItem?.id,
+                  id: selectedItem?.id || selectedItem?.productId,
                   userId: user?.id,
-                  productId: selectedItem?.id,
-                  category: selectedItem?.availabilityId,
+                  productId: selectedItem?.id || selectedItem?.productId,
+                  category:
+                    selectedItem?.availabilityId || selectedItem?.categoryId,
                   subCategory: selectedItem?.productCategoryId,
                   productCategory: selectedItem?.productCategoryId,
                   brand: selectedItem?.brandId,
@@ -343,7 +383,9 @@ const ProductDetails = ({
                   productSize:
                     parseFloat(
                       selectedItem?.productSize?.replace(/[^\d.-]/g, ''),
-                    ) || 0,
+                    ) ||
+                    selectedItem?.size?.replace(/[^\d.-]/g, '') ||
+                    0,
                   quantity: 1,
                   active: true,
                 };
@@ -610,9 +652,9 @@ const ProductListView = ({route}) => {
         </View>
 
         <View style={styles.headerIcons}>
-          <Icon name="magnify" size={24} color="#fff" />
+          {/* <Icon name="magnify" size={24} color="#fff" />
           <Icon name="microphone" size={24} color="#fff" />
-          <Icon name="camera" size={24} color="#fff" />
+          <Icon name="camera" size={24} color="#fff" /> */}
           <Icon
             name="cart"
             size={24}
@@ -690,6 +732,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     color: 'black',
+    width: 230,
   },
   sectionTitle: {
     fontSize: 18,

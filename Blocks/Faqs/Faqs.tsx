@@ -42,7 +42,7 @@ const FAQsScreen = () => {
         </View>
 
         <View style={styles.headerIcons}>
-          <Icons name="magnify" size={24} color="#fff" />
+          {/* <Icons name="magnify" size={24} color="#fff" /> */}
           <Icons
             name="cart"
             size={24}

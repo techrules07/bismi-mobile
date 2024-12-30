@@ -24,6 +24,7 @@ import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import {getAddress} from '../Networking/AddressPageService';
 import {applyCoupons} from '../Networking/CouponPageService';
+import ToastMessage from './toast_message/toast_message';
 const CartPage = () => {
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
@@ -41,7 +42,19 @@ const CartPage = () => {
   const [productDetails, setProductDetails] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isCouponContainerVisible, setCouponContainerVisible] = useState(true);
-
+  const [showToast, setShowToast] = useState(false);
+  const [showToastFailure, setShowToastFailure] = useState(false);
+  const [showToastRemove, setShowRemove] = useState(false);
+  const [showToastRemoveFailure, setShowToastRemoveFailure] = useState(false);
+  const [showToastAdd, setShowAdd] = useState(false);
+  const [showToastAddFailure, setShowToastAddFailure] = useState(false);
+  const [showItemRemove, setShowItemRemove] = useState(false);
+  const [showItemRemoveFailure, setShowItemRemoveFailure] = useState(false);
+  const [showToastCoupon, setShowCoupon] = useState(false);
+  const [showToastCouponFailure, setShowToastCouponFailure] = useState(false);
+  const [showToastFavorite, setShowFavorite] = useState(false);
+  const [showToastFavoriteFailure, setShowToastFavoriteFailure] =
+    useState(false);
   useEffect(() => {
     const fetchCartDetails = async () => {
       const requestId = user?.id;
@@ -120,15 +133,19 @@ const CartPage = () => {
           ),
         );
         productContext?.updateQuantity(cartItems);
-        Snackbar.show({
-          text: 'Quantity increased successfully!',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Quantity increased successfully!',
+        //   duration: Snackbar.LENGTH_SHORT,
+        //   backgroundColor: 'green',
+        // });
+        setShowAdd(true);
+        setShowToastAddFailure(false);
       } else {
         throw new Error(response?.message || 'Failed to update quantity');
       }
     } catch (error) {
+      setShowAdd(false);
+      setShowToastAddFailure(true);
       console.error('Error increasing quantity:', error);
     }
   };
@@ -146,15 +163,19 @@ const CartPage = () => {
           ),
         );
         productContext.updateQuantity(cartItems); // Update context
-        Snackbar.show({
-          text: 'Quantity decreased successfully!',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Quantity decreased successfully!',
+        //   duration: Snackbar.LENGTH_SHORT,
+        //   backgroundColor: 'green',
+        // });
+        setShowRemove(true);
+        setShowToastRemoveFailure(false);
       } else {
         throw new Error(response?.message || 'Failed to update quantity');
       }
     } catch (error) {
+      setShowRemove(false);
+      setShowToastRemoveFailure(true);
       console.error('Error decreasing quantity:', error);
     }
   };
@@ -166,20 +187,24 @@ const CartPage = () => {
       if (response?.code === 200 && response?.status === 'Success') {
         setCartItems(prev => prev.filter(item => item.id !== id));
         productContext.removeFromCart(id);
-        Snackbar.show({
-          text: 'Product removed successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Product removed successfully!',
+        //   duration: Snackbar.LENGTH_LONG,
+        //   backgroundColor: 'green',
+        // });
+        setShowItemRemove(true);
+        setShowItemRemoveFailure(false);
       } else {
         throw new Error('Failed to remove product from cart');
       }
     } catch (error) {
-      Snackbar.show({
-        text: error?.message || 'Something went wrong!',
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      // Snackbar.show({
+      //   text: error?.message || 'Something went wrong!',
+      //   duration: Snackbar.LENGTH_LONG,
+      //   backgroundColor: 'red',
+      // });
+      setShowItemRemove(false);
+      setShowItemRemoveFailure(true);
     }
   };
 
@@ -196,6 +221,7 @@ const CartPage = () => {
       productSize: item?.productSizeId,
     };
     productContext?.addToFavorite(favoriteObject);
+    setShowFavorite(true);
   };
 
   const shippingCost = 50;
@@ -238,17 +264,21 @@ const CartPage = () => {
       if (response?.code === 200 && response?.status === 'Success') {
         setAllCoupons(response?.data);
         setCouponDiscount(response?.data?.discount || 0);
-        Snackbar.show({
-          text: 'Coupon applied successfully!',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Coupon applied successfully!',
+        //   duration: Snackbar.LENGTH_SHORT,
+        //   backgroundColor: 'green',
+        // });
+        setShowCoupon(true);
+        setShowToastCouponFailure(false);
         setCouponError('');
         setCouponContainerVisible(false);
       } else {
         throw new Error(response?.message || 'Invalid coupon');
       }
     } catch (error) {
+      setShowCoupon(false);
+      setShowToastCouponFailure(true);
       setCouponError(error?.message || 'Failed to apply coupon');
     }
   };
@@ -269,31 +299,39 @@ const CartPage = () => {
       const response = await placeOrder(bodyData);
 
       if (response?.status === 'Success' && response?.code === 200) {
-        Snackbar.show({
-          text: 'Order placed successfully!',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'green',
-        });
-        navigation.navigate('OrderList');
+        // Snackbar.show({
+        //   text: 'Order placed successfully!',
+        //   duration: Snackbar.LENGTH_SHORT,
+        //   backgroundColor: 'green',
+        // });
+        setShowToast(true);
+        setShowToastFailure(false);
+       
       } else {
-        Snackbar.show({
-          text: 'Failed to place order. Please try again.',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'red',
-        });
+        // Snackbar.show({
+        //   text: 'Failed to place order. Please try again.',
+        //   duration: Snackbar.LENGTH_SHORT,
+        //   backgroundColor: 'red',
+        // });
+        setShowToast(false);
+        setShowToastFailure(true);
       }
 
       console.log('Placing order with data:', bodyData);
     } catch (error) {
       console.error('Error placing order:', error);
-      Snackbar.show({
-        text: 'An error occurred while placing the order.',
-        duration: Snackbar.LENGTH_SHORT,
-        backgroundColor: 'red',
-      });
+      // Snackbar.show({
+      //   text: 'An error occurred while placing the order.',
+      //   duration: Snackbar.LENGTH_SHORT,
+      //   backgroundColor: 'red',
+      // });
+      setShowToast(false);
+      setShowToastFailure(true);
     }
   };
-
+const navigateToOrder = () =>{
+  navigation.navigate('OrderList');
+}
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -307,7 +345,7 @@ const CartPage = () => {
           <Text style={styles.headerTitle}>My Cart</Text>
         </View>
         <View style={styles.headerIcons}>
-          <Icon name="magnify" size={24} color="#fff" />
+          {/* <Icon name="magnify" size={24} color="#fff" /> */}
         </View>
       </View>
       <View style={styles.addressDetails}>
@@ -408,10 +446,110 @@ const CartPage = () => {
       <View style={styles.checkoutContainer}>
         <Text style={styles.totalAmountText}>₹{totalPrice + shippingCost}</Text>
         <TouchableOpacity
-          style={styles.checkoutButton}
-          onPress={() => handlePlaceOrder(cartItems)}>
+          style={[styles.checkoutButton, showToast && styles.disabledButton]}
+          onPress={() => handlePlaceOrder(cartItems)}
+          disabled={showToast}>
           <Text style={styles.checkoutButtonText}>Place Order</Text>
         </TouchableOpacity>
+      </View>
+      <View style={{alignItems: 'center'}}>
+        {(showToast || showToastFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {
+              if (!showToastFailure) {
+                navigateToOrder();
+              } else {
+                '';
+              }
+            }}
+            text1={
+              showToastFailure
+                ? 'Something went wrong'
+                : 'Order placed successfully'
+            }
+            text2={showToastFailure ? 'Login or failed' : 'Go to order'}
+            setToast={() => {
+              setShowToast(false);
+              setShowToastFailure(false);
+            }}
+          />
+        )}
+        {(showToastRemove || showToastRemoveFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showToastRemoveFailure
+                ? 'Something went wrong'
+                : 'quantity decresed successfully'
+            }
+            text2={showToastRemoveFailure ? '' : ''}
+            setToast={() => {
+              setShowRemove(false);
+              setShowToastRemoveFailure(false);
+            }}
+          />
+        )}
+        {(showToastAdd || showToastAddFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showToastAddFailure
+                ? 'Something went wrong'
+                : 'quantity increased successfully'
+            }
+            text2={showToastAddFailure ? '' : ''}
+            setToast={() => {
+              setShowAdd(false);
+              setShowToastAddFailure(false);
+            }}
+          />
+        )}
+        {(showItemRemove || showItemRemoveFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showItemRemoveFailure
+                ? 'Something went wrong'
+                : 'Product removed successfully'
+            }
+            text2={showItemRemoveFailure ? '' : ''}
+            setToast={() => {
+              setShowItemRemove(false);
+              setShowItemRemoveFailure(false);
+            }}
+          />
+        )}
+        {showToastFavorite && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={'Product added to favorite successfully'}
+            text2={''}
+            setToast={() => {
+              setShowFavorite(false);
+            }}
+          />
+        )}
+        {(showToastCoupon || showToastCouponFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showToastCouponFailure
+                ? 'Something went wrong'
+                : 'coupon applied successfully'
+            }
+            text2={showToastCouponFailure ? '' : ''}
+            setToast={() => {
+              setShowCoupon(false);
+              setShowToastCouponFailure(false);
+            }}
+          />
+        )}
       </View>
     </View>
   );
@@ -422,8 +560,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  disabledButton: {
+    backgroundColor: 'gray',
+    opacity: 0.6,
+  },
   header: {
-    padding: 15,
+    padding: 10,
     backgroundColor: '#703F07',
     flexDirection: 'row',
     alignItems: 'center',

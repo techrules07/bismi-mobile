@@ -32,6 +32,7 @@ export const addressTypes = async () => {
 
 export const addAddress = async (bodyData: any) => {
   return await AxiosConfig.post('/user/add/new-address', bodyData);
+  
 };
 export const updateAddress = async (bodyData: any) => {
   try {

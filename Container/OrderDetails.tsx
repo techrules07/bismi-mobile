@@ -1,5 +1,12 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, View, Text, Image, TouchableOpacity, ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import StepperComponent from '../Component/Stepper';
@@ -7,6 +14,7 @@ import {UserContext} from '../Context/UserContext';
 import {getAllOrdersById} from '../Networking/HomePageService';
 import Snackbar from 'react-native-snackbar';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import ToastMessage from '../Component/toast_message/toast_message';
 
 const OrderDetails = props => {
   const route = useRoute();
@@ -21,6 +29,7 @@ const OrderDetails = props => {
   ];
   const [listOrder, setListOrder] = useState([]);
   const [showToast, setShowToast] = useState(false);
+  const [showToastFailure, setShowToastFailure] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -34,21 +43,26 @@ const OrderDetails = props => {
 
         if (response?.status === 'Success' && response?.code === 200) {
           setShowToast(true);
+          setShowToastFailure(false);
           setListOrder(response?.data);
         } else {
-          Snackbar.show({
-            text: 'Failed to list order. Please try again.',
-            duration: Snackbar.LENGTH_SHORT,
-            backgroundColor: 'red',
-          });
+          setShowToast(false);
+          setShowToastFailure(true);
+          // Snackbar.show({
+          //   text: 'Failed to list order. Please try again.',
+          //   duration: Snackbar.LENGTH_SHORT,
+          //   backgroundColor: 'red',
+          // });
         }
       } catch (error) {
         console.error('Error placing order:', error);
-        Snackbar.show({
-          text: 'An error occurred while placing the order.',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: 'red',
-        });
+        // Snackbar.show({
+        //   text: 'An error occurred while placing the order.',
+        //   duration: Snackbar.LENGTH_SHORT,
+        //   backgroundColor: 'red',
+        // });
+        setShowToast(false);
+        setShowToastFailure(true);
       }
     };
 
@@ -123,6 +137,24 @@ const OrderDetails = props => {
           <StepperComponent steps={steps} />
         </View>
       </View>
+      {/* <View style={{alignItems: 'center'}}>
+        {(showToast || showToastFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showToastFailure
+                ? 'Something went wrong'
+                : 'Order listed succesfully'
+            }
+            text2={showToastFailure ? 'Failed to list order' : 'Success'}
+            setToast={() => {
+              setShowToast(false);
+              setShowToastFailure(false);
+            }}
+          />
+        )}
+      </View> */}
     </ScrollView>
   );
 };
@@ -178,7 +210,7 @@ const styles = StyleSheet.create({
   cardContent: {
     flexDirection: 'row',
     gap: 10,
-    padding:10
+    padding: 10,
   },
   productImage: {
     width: 100,

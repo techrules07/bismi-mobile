@@ -126,7 +126,7 @@ const CouponsPage = () => {
           </View>
 
           <View style={styles.headerIcons}>
-            <Icon name="magnify" size={24} color="#fff" />
+            {/* <Icon name="magnify" size={24} color="#fff" /> */}
             <Icon
               name="cart"
               size={24}
