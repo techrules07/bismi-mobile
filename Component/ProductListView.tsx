@@ -96,37 +96,45 @@ const ProductDetails = ({
       setShowPopup(false);
       return;
     }
+  
     try {
       const cartResponse = await addToCart(defaultItem);
+  
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
         setShowToast(true);
         setShowToastFailure(false);
         setIsAddedToCart(true);
         setShowPopup(true);
+  
         const requestId = defaultItem?.id;
         const userId = user?.id;
-
-        const detailsResponse = await getDetails(requestId, userId);
-
-        if (
-          detailsResponse?.code === 200 &&
-          detailsResponse?.status === 'Success'
-        ) {
-          console.log('Details retrieved successfully:', detailsResponse);
-        } else {
-          throw new Error('Failed to retrieve product details');
+  
+        try {
+          const detailsResponse = await getDetails(requestId, userId);
+  
+          if (
+            detailsResponse?.code === 200 &&
+            detailsResponse?.status === 'Success'
+          ) {
+            console.log('Details retrieved successfully:', detailsResponse);
+          } else {
+            console.warn('Failed to retrieve product details:', detailsResponse);
+          }
+        } catch (detailsError) {
+          console.error('Error retrieving product details:', detailsError);
         }
       } else {
         throw new Error('Failed to add product to cart');
       }
     } catch (error) {
-      console.log('Failed to add product to cart');
+      console.error('Failed to add product to cart:', error);
       setShowToast(false);
       setShowToastFailure(true);
       setShowPopup(false);
     }
   };
+  
 
   const handleStarClick = index => {
     setRating(index + 1);
