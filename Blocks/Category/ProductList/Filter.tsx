@@ -11,7 +11,7 @@ import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const FilterPage = ({route, navigation}) => {
-  const {shirtsData, applyFilter} = route.params;
+  const {productsData, applyFilter} = route.params;
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [minPrice, setMinPrice] = useState(0);
@@ -21,21 +21,9 @@ const FilterPage = ({route, navigation}) => {
   const brands = ['Nike', 'Adidas', 'Puma', 'Reebok'];
   const sizes = ['S', 'M', 'L', 'XL'];
 
-  const handleBrandSelection = brand => {
-    setSelectedBrands(prevBrands =>
-      prevBrands.includes(brand)
-        ? prevBrands.filter(item => item !== brand)
-        : [...prevBrands, brand],
-    );
-  };
+  const handleBrandSelection = brand => {};
 
-  const handleSizeSelection = size => {
-    setSelectedSizes(prevSizes =>
-      prevSizes.includes(size)
-        ? prevSizes.filter(item => item !== size)
-        : [...prevSizes, size],
-    );
-  };
+  const handleSizeSelection = size => {};
 
   const handleMinPriceChange = value => {
     setMinPrice(value);
@@ -46,25 +34,25 @@ const FilterPage = ({route, navigation}) => {
   };
 
   const applySelectedFilter = () => {
-    let filteredShirts = shirtsData;
+    // let filteredShirts = shirtsData;
 
-    if (selectedBrands.length > 0) {
-      filteredShirts = filteredShirts.filter(shirt =>
-        selectedBrands.includes(shirt.brand),
-      );
-    }
+    // if (selectedBrands.length > 0) {
+    //   filteredShirts = filteredShirts.filter(shirt =>
+    //     selectedBrands.includes(shirt.brand),
+    //   );
+    // }
 
-    if (selectedSizes.length > 0) {
-      filteredShirts = filteredShirts.filter(shirt =>
-        selectedSizes.includes(shirt.size),
-      );
-    }
+    // if (selectedSizes.length > 0) {
+    //   filteredShirts = filteredShirts.filter(shirt =>
+    //     selectedSizes.includes(shirt.size),
+    //   );
+    // }
 
-    filteredShirts = filteredShirts.filter(
-      shirt => shirt.price >= minPrice && shirt.price <= maxPrice,
-    );
+    // filteredShirts = filteredShirts.filter(
+    //   shirt => shirt.price >= minPrice && shirt.price <= maxPrice,
+    // );
 
-    applyFilter(filteredShirts);
+    applyFilter([]);
     navigation.goBack();
   };
 
