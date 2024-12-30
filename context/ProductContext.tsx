@@ -9,6 +9,7 @@ import {
   addProductRating,
   editProductRating,
   deleteProductRating,
+  getAllProducts,
 } from '../Networking/HomePageService';
 import Snackbar from 'react-native-snackbar';
 
@@ -238,71 +239,46 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
     try {
       const response = await addFavorite(product);
 
-      console.log('API response:', response);
-
       if (response && response.status === 'Success') {
-        setFavoriteItems(prevItems => {
-          const updatedItems = Array.isArray(prevItems)
-            ? [...prevItems, product]
-            : [product];
-          console.log('updatedItems', updatedItems);
-          return updatedItems;
-        });
-
         Snackbar.show({
           text: 'Product added to favorites successfully!',
           duration: Snackbar.LENGTH_LONG,
           backgroundColor: 'green',
         });
+        return true;
+      } else {
+        return false;
       }
-    } catch (error) {
-      console.error('Error adding to favorites:', error);
-
+    } catch (error: any) {
       Snackbar.show({
         text: `Failed to add to favorites: ${error.message}`,
         duration: Snackbar.LENGTH_LONG,
         backgroundColor: 'red',
       });
+      return false;
     }
   };
 
   const removeFromFavorite = async (productId: string) => {
     try {
       const response = await deleteFavorite(productId);
-
       if (response?.status === 'Success') {
-        setFavoriteItems(prevItems => {
-          const updatedItems = Array.isArray(prevItems?.data)
-            ? prevItems?.data
-            : [];
-
-          const itemToRemove = updatedItems.find(
-            item => item.productId === productId?.productId,
-          );
-
-          if (itemToRemove) {
-            return updatedItems.filter(
-              item => item.productId !== productId?.productId,
-            );
-          }
-
-          return updatedItems;
-        });
-
         Snackbar.show({
           text: 'Product removed from favorites successfully!',
           duration: Snackbar.LENGTH_LONG,
           backgroundColor: 'green',
         });
+        return true;
+      } else {
+        return false;
       }
-    } catch (error) {
-      console.error('Error removing from favorites:', error);
-
+    } catch (error: any) {
       Snackbar.show({
-        text: `Failed to remove from favorites: ${error.message}`,
+        text: `Failed to remove from favorites: ${error?.message}`,
         duration: Snackbar.LENGTH_LONG,
         backgroundColor: 'red',
       });
+      return false;
     }
   };
 

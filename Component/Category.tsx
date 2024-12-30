@@ -21,16 +21,20 @@ import {
 import {pContext} from '../Context/ProductContext';
 import {useNavigation} from '@react-navigation/native';
 import Loader from './Loader';
+import {UserContext} from '../Context/UserContext';
 
 const Category = props => {
   const [selectedSection, setSelectedSection] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const productContext = useContext(pContext);
+  const userContext = useContext(UserContext);
+  let userInfo = userContext?.user;
+  console.log(UserContext, 'from category');
 
-  const handleSidebarClick = async section => {
-    setSelectedSection(section);
-    getProducts(section);
+  const handleSidebarClick = async (categoryId, userId) => {
+    setSelectedSection(categoryId);
+    getProducts(categoryId, userId);
   };
 
   useEffect(() => {
@@ -93,9 +97,9 @@ const Category = props => {
     }
   };
 
-  const getProducts = async section => {
+  const getProducts = async (categoryId, userId) => {
     try {
-      const productsListResponse = await getAllProducts(section);
+      const productsListResponse = await getAllProducts(categoryId, userId);
       if (
         productsListResponse?.status === 200 &&
         productsListResponse?.data?.code === 200
@@ -108,7 +112,6 @@ const Category = props => {
       console.error('Error fetching products:', error);
     }
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -139,7 +142,9 @@ const Category = props => {
                     selectedSection === category?.id &&
                       styles.activeSidebarItem,
                   ]}
-                  onTouchEnd={() => handleSidebarClick(category?.id)}>
+                  onTouchEnd={() =>
+                    handleSidebarClick(category?.id, userInfo?.id)
+                  }>
                   <Image
                     source={{uri: category.imageURL}}
                     style={[

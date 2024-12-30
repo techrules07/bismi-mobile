@@ -11,6 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {useNavigation} from '@react-navigation/native';
 import {
   addProductRating,
@@ -57,7 +58,7 @@ const ProductDetails = ({
   const targetViewRef = useRef(null);
 
   useEffect(() => {
-    const requestId = selectedItem?.id;
+    const requestId = selectedItem?.productId;
     const userId = user?.id;
     if (requestId && userId && !ratingsFetched) {
       fetchRating(requestId, userId);
@@ -73,6 +74,13 @@ const ProductDetails = ({
         y: -py + 70,
         animated: true,
       });
+    });
+  };
+
+  const scrollToTop = () => {
+    scrollViewRef.current?.scrollTo({
+      y: 0,
+      animated: true,
     });
   };
 
@@ -180,26 +188,42 @@ const ProductDetails = ({
     }
   };
 
-  const handleFavoriteToggle = item => {
-    const favoriteObject = {
-      userId: user?.id || 0,
-      productId: item?.id || 0,
-      category: item?.availabilityId || 0,
-      subCategory: item?.productCategoryId || 0,
+  const handleFavoriteToggle = async item => {
+    if (!user?.id) {
+      //Ask login here
+      return;
+    }
+    let favouriteAddObject = {
+      userId: String(user?.id),
+      productId: item?.id || item?.productId || 0,
+      category: item?.categoryId || 0,
+      subCategory: item?.subCategoryId || 0,
       productCategory: item?.productCategoryId || 0,
       brand: item?.brandId || 0,
       color: item?.colorId || 0,
       unit: item?.unitId || 0,
-      productSize: parseFloat(item?.productSize?.replace(/[^\d.-]/g, '')) || 0,
+      productSize: item?.sizeId || 0,
+    };
+    let favouriteRemoveObject = {
+      userId: String(user?.id),
+      productId: item?.id || item?.productId || 0,
     };
 
-    if (isFavorite) {
-      productContext?.removeFromFavorite(favoriteObject);
+    if (item?.favourite) {
+      let removeFavResponse = await productContext?.removeFromFavorite(
+        favouriteRemoveObject,
+      );
+      if (removeFavResponse) {
+        onSelectSimilarItem(item);
+      }
     } else {
-      productContext?.addToFavorite(favoriteObject);
+      let addFavResponse = await productContext?.addToFavorite(
+        favouriteAddObject,
+      );
+      if (addFavResponse) {
+        onSelectSimilarItem(item);
+      }
     }
-
-    setIsFavorite(prevState => !prevState);
   };
 
   const handleViewMore = () => {
@@ -296,13 +320,13 @@ const ProductDetails = ({
       <ScrollView ref={scrollViewRef} style={styles.detailsContainer}>
         <View style={styles.imageContainer}>
           <Image
-            source={{uri: selectedItem?.mainImage}}
+            source={{uri: selectedItem?.image}}
             style={styles.selectedImage}
           />
         </View>
 
         <View style={styles.iconContainer}>
-          <Text style={styles.shirtTitle}>{selectedItem?.productCategory}</Text>
+          <Text style={styles.shirtTitle}>{selectedItem?.productName}</Text>
           <View style={styles.iconView}>
             <TouchableOpacity
               onPress={() => {
@@ -326,24 +350,23 @@ const ProductDetails = ({
                 addToCarts(defaultItem);
               }}>
               {isAddedToCart ? (
-                <Icon name="cart-check" size={30} color="green" />
+                <Icon name="cart-check" size={24} color="green" />
               ) : (
-                <Icon name="cart" size={30} color="gray" />
+                <Icon name="cart" size={24} color="gray" />
               )}
             </TouchableOpacity>
-
-            <Icon
-              name="share-variant"
-              size={30}
+            <MaterialIcon
+              name="share"
+              size={24}
               color="gray"
               style={styles.icon}
             />
             <TouchableOpacity
               onPress={() => handleFavoriteToggle(selectedItem)}>
               <Icon
-                name={isFavorite ? 'heart' : 'heart-outline'}
-                size={30}
-                color={isFavorite ? 'red' : 'gray'}
+                name={selectedItem?.favourite ? 'heart' : 'heart-outline'}
+                size={24}
+                color={selectedItem?.favourite ? 'red' : 'gray'}
               />
             </TouchableOpacity>
           </View>
@@ -510,24 +533,27 @@ const ProductDetails = ({
           {similarItem?.map((item, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() => onSelectSimilarItem(item)}>
+              onPress={() => {
+                onSelectSimilarItem(item);
+                scrollToTop();
+              }}>
               <View style={styles.card}>
                 <Image
-                  source={{uri: item?.mainImage}}
+                  source={{uri: item?.productImage || item?.productImages?.[0]}}
                   style={styles.cardImage}
                 />
                 <View style={styles.shirtInfo}>
-                  <Text style={styles.cardTitle}>{item?.productCategory}</Text>
-                  <TouchableOpacity
+                  <Text style={styles.cardTitle}>{item?.productName}</Text>
+                  {/* <TouchableOpacity
                     onPress={() => handleFavoriteToggle(selectedItem)}>
                     <Icon
                       name={isFavorite ? 'heart' : 'heart-outline'}
                       size={30}
                       color={isFavorite ? 'red' : 'gray'}
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
-                <Text style={styles.cardPrice}>{item?.unitPrice}</Text>
+                <Text style={styles.cardPrice}>Rs. {item?.price}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -540,9 +566,16 @@ const ProductDetails = ({
 const ProductListView = ({route}) => {
   const navigation = useNavigation();
   const {selectedItem, similarItem} = route.params;
-
-  const [currentItem, setCurrentItem] = useState(selectedItem);
-  const [currentSimilarItems, setCurrentSimilarItems] = useState(similarItem);
+  const [currentItem, setCurrentItem] = useState({});
+  const user_context = useContext(UserContext);
+  let userInfo = user_context?.user;
+  async function getProductDetails(productId, userId) {
+    let productDetails = await getDetails(String(productId), String(userId));
+    setCurrentItem(productDetails?.data);
+  }
+  useEffect(() => {
+    getProductDetails(selectedItem?.id, userInfo?.id);
+  }, [selectedItem]);
   const [favoriteItems, setFavoriteItems] = useState([]);
 
   const toggleFavorite = item => {
@@ -560,10 +593,7 @@ const ProductListView = ({route}) => {
   };
 
   const handleSelectSimilarItem = item => {
-    setCurrentItem(item);
-    setCurrentSimilarItems(
-      currentSimilarItems.filter(similar => similar.id !== item.id),
-    );
+    getProductDetails(item?.id || item?.productId, userInfo?.id);
   };
 
   return (
@@ -596,7 +626,7 @@ const ProductListView = ({route}) => {
         selectedItem={currentItem}
         favorites={favoriteItems}
         toggleFavorite={toggleFavorite}
-        similarItem={currentSimilarItems}
+        similarItem={currentItem?.similarProducts}
         onSelectSimilarItem={handleSelectSimilarItem}
       />
     </View>
@@ -644,9 +674,10 @@ const styles = StyleSheet.create({
   },
   iconView: {
     flexDirection: 'row',
+    gap: 4,
   },
   icon: {
-    marginLeft: 10,
+    // marginLeft: 10,
   },
   price: {
     color: 'black',
