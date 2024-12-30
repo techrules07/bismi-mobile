@@ -13,14 +13,17 @@ import {getAllProducts} from '../Networking/HomePageService';
 import Heart from '../assets/Heart.svg';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { UserContext } from '../Context/UserContext';
 const ProductList = () => {
   const productContext = useContext(pContext);
+  const userContext = useContext(UserContext);
+  let userInfo = userContext?.user;
   const navigation = useNavigation();
   const route = useRoute();
   const {categoryId} = route.params;
   useEffect(() => {
     async function getProducts(params) {
-      const productsListRespone = await getAllProducts(categoryId);
+      const productsListRespone = await getAllProducts(categoryId,userInfo?.id);
       console.log(productsListRespone.data);
       if (
         productsListRespone.status == 200 &&

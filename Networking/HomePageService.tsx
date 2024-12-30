@@ -16,10 +16,14 @@ export const getHomePage = (requestData: any) => {
   return AxiosConfig.get('products/get/get-homepage', requestData);
 };
 
-export const getAllProducts = (id: any) => {
-  return AxiosConfig.post('products/get/all-products', {
-    categoryId: id,
-  });
+export const getAllProducts = (categoryId: any, userId?: any) => {
+  const payload: any = {categoryId};
+
+  if (userId) {
+    payload.userId = String(userId);
+  }
+
+  return AxiosConfig.post('products/get/all-products', payload);
 };
 export const getAllPremiumProducts = () => {
   return AxiosConfig.post('products/getPremiumProducts');
@@ -67,10 +71,10 @@ export const quantity = (requestId: number) => {
       throw error;
     });
 };
-export const getDetails = (requestId: number, userId: number) => {
+export const getDetails = (requestId: number, userId: any) => {
   const requestData = {
     requestId,
-    userId,
+    userId: userId || 0,
   };
 
   return AxiosConfig.post('products/get/get-details', requestData)
