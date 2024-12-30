@@ -74,7 +74,7 @@ const WishlistPage = () => {
         //   backgroundColor: 'green',
         // });
 
-        await removeFromWishlist(selectedItem);
+        await removeFromWishlist(selectedItem, false);
         setShowToast(true);
         setShowToastFailure(false);
         // Alert.alert('Success', 'Item moved to cart');
@@ -94,7 +94,7 @@ const WishlistPage = () => {
     }
   };
 
-  const removeFromWishlist = async item => {
+  const removeFromWishlist = async (item, showMessage = true) => {
     if (removingItem) return;
 
     setRemovingItem(item.productId);
@@ -106,30 +106,28 @@ const WishlistPage = () => {
         exclusive: true,
       };
 
-      // Make the API call to remove the item from the wishlist
       await productContext?.removeFromFavorite?.(data);
 
-      console.log('Item removed from favorite');
-      setShowToastRemove(true);
-      setShowToastRemoveFailure(false);
-
-      // Update wishlist immediately after the item is removed from the favorites.
-      setWishlist(prevWishlist => {
-        const updatedWishlist = prevWishlist.filter(
+      setWishlist(prevWishlist =>
+        prevWishlist.filter(
           wishlistItem => wishlistItem.productId !== item.productId,
-        );
-        console.log('Updated wishlist:', updatedWishlist);
-        return updatedWishlist; // Ensure the updated wishlist is returned
-      });
+        ),
+      );
+
+      if (showMessage) {
+        setShowToastRemove(true);
+        setShowToastRemoveFailure(false);
+      }
     } catch (error) {
       console.error('Error removing item from wishlist:', error);
-      setShowToastRemove(false);
-      setShowToastRemoveFailure(true);
+      if (showMessage) {
+        setShowToastRemove(false);
+        setShowToastRemoveFailure(true);
+      }
     } finally {
-      setRemovingItem(null); // Reset removing state to allow new actions
+      setRemovingItem(null); // Reset removing state
     }
   };
-
   const navigation = useNavigation();
   const navigateToCart = () => {
     navigation.navigate('Cart', {
