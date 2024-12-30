@@ -139,19 +139,19 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
             rating.id === response.id ? response : rating,
           ),
         );
-        Snackbar.show({
-          text: 'Rating updated successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Rating updated successfully!',
+        //   duration: Snackbar.LENGTH_LONG,
+        //   backgroundColor: 'green',
+        // });
       }
     } catch (error) {
       console.error('Error editing rating:', error);
-      Snackbar.show({
-        text: `Failed to edit rating: ${error.message}`,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      // Snackbar.show({
+      //   text: `Failed to edit rating: ${error.message}`,
+      //   duration: Snackbar.LENGTH_LONG,
+      //   backgroundColor: 'red',
+      // });
     }
   };
 
@@ -162,19 +162,19 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
         setRatings(prevRatings =>
           prevRatings.filter(rating => rating.id !== ratingId),
         );
-        Snackbar.show({
-          text: 'Rating deleted successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Rating deleted successfully!',
+        //   duration: Snackbar.LENGTH_LONG,
+        //   backgroundColor: 'green',
+        // });
       }
     } catch (error) {
       console.error('Error deleting rating:', error);
-      Snackbar.show({
-        text: `Failed to delete rating: ${error.message}`,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      // Snackbar.show({
+      //   text: `Failed to delete rating: ${error.message}`,
+      //   duration: Snackbar.LENGTH_LONG,
+      //   backgroundColor: 'red',
+      // });
     }
   };
 
@@ -240,21 +240,21 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
       const response = await addFavorite(product);
 
       if (response && response.status === 'Success') {
-        Snackbar.show({
-          text: 'Product added to favorites successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Product added to favorites successfully!',
+        //   duration: Snackbar.LENGTH_LONG,
+        //   backgroundColor: 'green',
+        // });
         return true;
       } else {
         return false;
       }
     } catch (error: any) {
-      Snackbar.show({
-        text: `Failed to add to favorites: ${error.message}`,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      // Snackbar.show({
+      //   text: `Failed to add to favorites: ${error.message}`,
+      //   duration: Snackbar.LENGTH_LONG,
+      //   backgroundColor: 'red',
+      // });
       return false;
     }
   };
@@ -263,21 +263,21 @@ const ProductContext: React.FC<{children: React.ReactNode}> = ({children}) => {
     try {
       const response = await deleteFavorite(productId);
       if (response?.status === 'Success') {
-        Snackbar.show({
-          text: 'Product removed from favorites successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
+        // Snackbar.show({
+        //   text: 'Product removed from favorites successfully!',
+        //   duration: Snackbar.LENGTH_LONG,
+        //   backgroundColor: 'green',
+        // });
         return true;
       } else {
         return false;
       }
     } catch (error: any) {
-      Snackbar.show({
-        text: `Failed to remove from favorites: ${error?.message}`,
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      // Snackbar.show({
+      //   text: `Failed to remove from favorites: ${error?.message}`,
+      //   duration: Snackbar.LENGTH_LONG,
+      //   backgroundColor: 'red',
+      // });
       return false;
     }
   };

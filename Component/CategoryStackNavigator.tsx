@@ -33,6 +33,7 @@ const CategoryStackNavigator = () => {
       <CategoryStack.Screen name="OrderList" component={OrderList} />
       <CategoryStack.Screen name="Address" component={SavedAddressesPage} />
       <CategoryStack.Screen name="Login" component={LoginScreen} />
+     
     </CategoryStack.Navigator>
   );
 };

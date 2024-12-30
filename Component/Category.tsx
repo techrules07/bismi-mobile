@@ -117,9 +117,9 @@ const Category = props => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>All Categories</Text>
         <View style={styles.headerIcons}>
-          <Icon name="magnify" size={24} color="#fff" />
+          {/* <Icon name="magnify" size={24} color="#fff" />
           <Icon name="microphone" size={24} color="#fff" />
-          <Icon name="camera" size={24} color="#fff" />
+          <Icon name="camera" size={24} color="#fff" /> */}
           <Icon name="cart" size={24} color="#fff" />
         </View>
       </View>

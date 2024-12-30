@@ -39,12 +39,10 @@ const ToastMessage = ({
           justifyContent: 'space-between',
           width: '100%',
         }}>
-        <Text
-          onPress={text1Press}
-          style={{color: 'white', fontWeight: 'bold', fontSize: 17,width:250}}>
+        <Text onPress={text1Press} style={{color: 'white', fontWeight: 'bold'}}>
           {text1}
         </Text>
-        <Text onPress={text2Press} style={{color: 'gold', fontSize: 17}}>
+        <Text onPress={text2Press} style={{color: 'gold', fontSize: 15}}>
           {text2}
         </Text>
       </View>
@@ -56,7 +54,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     paddingHorizontal: 30,
-    paddingVertical: 23,
+    paddingVertical: 20,
     backgroundColor: 'black',
     position: 'absolute',
     borderRadius: 8,

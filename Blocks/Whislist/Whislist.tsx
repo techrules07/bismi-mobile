@@ -14,6 +14,8 @@ import {UserContext} from '../../Context/UserContext';
 import {pContext} from '../../Context/ProductContext';
 import Snackbar from 'react-native-snackbar';
 import {addToCart} from '../../Networking/HomePageService';
+import {ScrollView} from 'react-native-gesture-handler';
+import ToastMessage from '../../Component/toast_message/toast_message';
 
 const WishlistPage = () => {
   const {user} = useContext(UserContext);
@@ -21,7 +23,10 @@ const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
   console.log('whislist', wishlist);
   const [removingItem, setRemovingItem] = useState(null);
-
+  const [showToast, setShowToast] = useState(false);
+  const [showToastFailure, setShowToastFailure] = useState(false);
+  const [showToastRemove, setShowToastRemove] = useState(false);
+  const [showToastRemoveFailure, setShowToastRemoveFailure] = useState(false);
   useEffect(() => {
     if (user?.id) {
       const data = {
@@ -40,16 +45,19 @@ const WishlistPage = () => {
 
   const addToCarts = async selectedItem => {
     const defaultItem = {
+      id: selectedItem?.id || selectedItem?.productId,
       userId: user?.id,
-      productId: selectedItem?.id,
-      category: selectedItem?.availabilityId,
+      productId: selectedItem?.id || selectedItem?.productId,
+      category: selectedItem?.availabilityId || selectedItem?.categoryId,
       subCategory: selectedItem?.productCategoryId,
       productCategory: selectedItem?.productCategoryId,
       brand: selectedItem?.brandId,
       color: selectedItem?.colorId,
       unit: selectedItem?.unitId,
       productSize:
-        parseFloat(selectedItem?.productSize?.replace(/[^\d.-]/g, '')) || 0,
+        parseFloat(selectedItem?.productSize?.replace(/[^\d.-]/g, '')) ||
+        selectedItem?.size?.replace(/[^\d.-]/g, '') ||
+        0,
       quantity: 1,
       active: true,
     };
@@ -60,32 +68,35 @@ const WishlistPage = () => {
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
 
-        Snackbar.show({
-          text: 'Product added to cart successfully!',
-          duration: Snackbar.LENGTH_LONG,
-          backgroundColor: 'green',
-        });
-
+        // Snackbar.show({
+        //   text: 'Product added to cart successfully!',
+        //   duration: Snackbar.LENGTH_LONG,
+        //   backgroundColor: 'green',
+        // });
+        setShowToast(true);
+        setShowToastFailure(false);
         await removeFromWishlist(selectedItem);
 
-        Alert.alert('Success', 'Item moved to cart');
-
-        navigation.navigate('Cart', {
-          selectedItem,
-        });
+        // Alert.alert('Success', 'Item moved to cart');
       } else {
+        setShowToast(false);
+        setShowToastFailure(true);
         throw new Error('Failed to add product to cart');
       }
     } catch (error) {
-      Snackbar.show({
-        text: error?.message || 'Something went wrong!',
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'red',
-      });
+      // Snackbar.show({
+      //   text: error?.message || 'Something went wrong!',
+      //   duration: Snackbar.LENGTH_LONG,
+      //   backgroundColor: 'red',
+      // });
+      setShowToast(false);
+      setShowToastFailure(true);
     }
   };
 
   const removeFromWishlist = async item => {
+    if (removingItem) return;
+
     setRemovingItem(item.productId);
 
     try {
@@ -95,27 +106,36 @@ const WishlistPage = () => {
         exclusive: true,
       };
 
+      // Make the API call to remove the item from the wishlist
       await productContext?.removeFromFavorite?.(data);
-      console.log('Item removed from favorite');
 
+      console.log('Item removed from favorite');
+      setShowToastRemove(true);
+      setShowToastRemoveFailure(false);
+
+      // Update wishlist immediately after the item is removed from the favorites.
       setWishlist(prevWishlist => {
         const updatedWishlist = prevWishlist.filter(
           wishlistItem => wishlistItem.productId !== item.productId,
         );
         console.log('Updated wishlist:', updatedWishlist);
-        return updatedWishlist;
+        return updatedWishlist; // Ensure the updated wishlist is returned
       });
-
-      Alert.alert('Success', 'Item removed from wishlist');
     } catch (error) {
       console.error('Error removing item from wishlist:', error);
-      Alert.alert('Error', 'An error occurred while removing the item');
+      setShowToastRemove(false);
+      setShowToastRemoveFailure(true);
     } finally {
-      setRemovingItem(null);
+      setRemovingItem(null); // Reset removing state to allow new actions
     }
   };
 
   const navigation = useNavigation();
+  const navigateToCart = () => {
+    navigation.navigate('Cart', {
+      selectedItem,
+    });
+  };
   const renderItem = ({item}) => (
     <View>
       <View style={styles.productCard}>
@@ -167,7 +187,7 @@ const WishlistPage = () => {
         </View>
 
         <View style={styles.headerIcons}>
-          <Icon name="magnify" size={24} color="#fff" />
+          {/* <Icon name="magnify" size={24} color="#fff" /> */}
           <Icon
             name="cart"
             size={24}
@@ -176,13 +196,51 @@ const WishlistPage = () => {
           />
         </View>
       </View>
-      <View style={{padding: 10}}>
+      <ScrollView style={{padding: 10}}>
         <FlatList
           data={wishlist}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           contentContainerStyle={styles.listContainer}
         />
+      </ScrollView>
+      <View style={{alignItems: 'center'}}>
+        {(showToast || showToastFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {
+              if (!showToastFailure) {
+                navigateToCart();
+              } else {
+                ('');
+              }
+            }}
+            text1={
+              showToastFailure ? 'Something went wrong' : 'Item move to cart'
+            }
+            text2={showToastFailure ? 'Failed to move item' : 'Success'}
+            setToast={() => {
+              setShowToast(false);
+              setShowToastFailure(false);
+            }}
+          />
+        )}
+        {(showToastRemove || showToastRemoveFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showToastRemoveFailure
+                ? 'Something went wrong'
+                : 'Item remove from wishlist'
+            }
+            text2={showToastRemoveFailure ? 'Failure' : 'Success'}
+            setToast={() => {
+              setShowToast(false);
+              setShowToastFailure(false);
+            }}
+          />
+        )}
       </View>
     </View>
   );
