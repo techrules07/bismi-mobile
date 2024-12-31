@@ -389,9 +389,9 @@ const SavedAddressesPage = () => {
       <View>
         <Text style={styles.detailsText}>{item.name}</Text>
         <View style={styles.addressContainer}>
-          <Text style={styles.addressType}>
-            {item.default ? 'Default' : item.addressType}
-          </Text>
+          <View style={styles.addressType}>
+            <Text>{item.default ? 'Default' : item.addressType}</Text>
+          </View>
         </View>
 
         <Text style={styles.addressInfo}>{item.addressLine1}</Text>
@@ -673,10 +673,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'white',
     backgroundColor: 'white',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
     borderRadius: 4,
-    width: 90,
+    width: 70,
+  },
+  addressType: {
+    fontSize: 14,
+    color: 'black',
   },
   header: {
     flexDirection: 'row',
@@ -723,16 +727,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     margin: 3,
   },
-  addressType: {
-    fontSize: 14,
-    color: 'black',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: 'white',
-    backgroundColor: 'white',
-    borderRadius: 4,
-  },
+
   addressInfo: {
     fontSize: 14,
     color: '#333',
