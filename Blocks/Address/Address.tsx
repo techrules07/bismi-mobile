@@ -436,233 +436,230 @@ const SavedAddressesPage = () => {
           />
         </View>
       </View>
-      <ScrollView style={{padding: 20}}>
-        {!showAddAddress ? (
-          <ScrollView>
-            <FlatList
-              data={savedAddresses}
-              keyExtractor={item => item.id.toString()}
-              renderItem={renderAddressCard}
-              ListEmptyComponent={
-                <Text style={styles.noAddresses}>
-                  No saved addresses found.
-                </Text>
-              }
-            />
-            <TouchableOpacity
-              style={[styles.addAddressTrigger, styles.cardWithBorder]}
-              onPress={() => setShowAddAddress(true)}>
-              <Icons name="plus" size={28} color="#703F07" />
-              <Text style={styles.addAddressText}>Add New Address</Text>
+      {!showAddAddress ? (
+        <ScrollView contentContainerStyle={{padding: 12}}>
+          <FlatList
+            data={savedAddresses}
+            keyExtractor={item => item.id.toString()}
+            renderItem={renderAddressCard}
+            ListEmptyComponent={
+              <Text style={styles.noAddresses}>No saved addresses found.</Text>
+            }
+          />
+          <TouchableOpacity
+            style={[styles.addAddressTrigger, styles.cardWithBorder]}
+            onPress={() => setShowAddAddress(true)}>
+            <Icons name="plus" size={28} color="#703F07" />
+            <Text style={styles.addAddressText}>Add New Address</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      ) : (
+        <ScrollView
+          contentContainerStyle={{padding: 12}}
+          style={styles.addAddressForm}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.formHeader}>
+            <Text style={styles.formTitle}>{'Address Information'}</Text>
+            <TouchableOpacity onPress={handleCloseForm}>
+              <Icons name="close-circle-outline" size={28} color="#703F07" />
             </TouchableOpacity>
-          </ScrollView>
-        ) : (
-          <ScrollView
-            style={styles.addAddressForm}
-            showsVerticalScrollIndicator={false}>
-            <View style={styles.formHeader}>
-              <Text style={styles.formTitle}>{'Address Information'}</Text>
-              <TouchableOpacity onPress={handleCloseForm}>
-                <Icons name="close-circle-outline" size={28} color="#703F07" />
+          </View>
+          <Text style={styles.label}>Address Line 1</Text>
+          <TextInput
+            style={getInputStyle(addressLine1Error, isAddressLine1Focused)}
+            placeholder="Enter address"
+            value={addressLine1}
+            onChangeText={setAddressLine1}
+            onFocus={() => handleFocus('addressLine1')}
+            onBlur={() => handleBlur('addressLine1')}
+          />
+          {addressLine1Error && !isAddressLine1Focused ? (
+            <Text style={styles.errorText}>{addressLine1Error}</Text>
+          ) : null}
+
+          <Text style={styles.label}>Address Line 2</Text>
+          <TextInput
+            style={getInputStyle(addressLine2Error, isAddressLine2Focused)}
+            placeholder="Enter address line 2"
+            value={addressLine2}
+            onChangeText={setAddressLine2}
+            onFocus={() => handleFocus('addressLine2')}
+            onBlur={() => handleBlur('addressLine2')}
+          />
+          {addressLine2Error && !isAddressLine2Focused ? (
+            <Text style={styles.errorText}>{addressLine2Error}</Text>
+          ) : null}
+
+          <Text style={styles.label}>Landmark</Text>
+          <TextInput
+            style={getInputStyle(landmarkError, isLandmarkFocused)}
+            placeholder="Enter landmark"
+            value={landmark}
+            onChangeText={setLandmark}
+            onFocus={() => handleFocus('landmark')}
+            onBlur={() => handleBlur('landmark')}
+          />
+          {landmarkError && !isLandmarkFocused ? (
+            <Text style={styles.errorText}>{landmarkError}</Text>
+          ) : null}
+
+          <Text style={styles.label}>Full Name</Text>
+          <TextInput
+            style={getInputStyle(fullNameError, isFullNameFocused)}
+            placeholder="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+            onFocus={() => handleFocus('fullName')}
+            onBlur={() => handleBlur('fullName')}
+          />
+          {fullNameError && !isFullNameFocused ? (
+            <Text style={styles.errorText}>{fullNameError}</Text>
+          ) : null}
+
+          <Text style={styles.label}>Phone Number</Text>
+          <TextInput
+            style={getInputStyle(phoneError, isPhoneFocused)}
+            placeholder="Phone Number"
+            value={phone}
+            onChangeText={text => setPhone(text.replace(/[^0-9]/g, ''))}
+            onFocus={() => handleFocus('phone')}
+            onBlur={() => handleBlur('phone')}
+          />
+          {phoneError && !isPhoneFocused ? (
+            <Text style={styles.errorText}>{phoneError}</Text>
+          ) : null}
+
+          <Text style={styles.label}>Pincode</Text>
+          <TextInput
+            style={getInputStyle(pincodeError, isPincodeFocused)}
+            placeholder="Pincode"
+            value={pincode}
+            onChangeText={text => setPincode(text.replace(/[^0-9]/g, ''))}
+            onFocus={() => handleFocus('pincode')}
+            onBlur={() => handleBlur('pincode')}
+          />
+          {pincodeError && !isPincodeFocused ? (
+            <Text style={styles.errorText}>{pincodeError}</Text>
+          ) : null}
+
+          <Text style={styles.label}>City</Text>
+          <TextInput
+            style={getInputStyle(cityError, isCityFocused)}
+            placeholder="City"
+            value={cityId}
+            onChangeText={setCityId}
+            onFocus={() => handleFocus('city')}
+            onBlur={() => handleBlur('city')}
+          />
+          {cityError && !isCityFocused ? (
+            <Text style={styles.errorText}>{cityError}</Text>
+          ) : null}
+
+          <Text style={styles.label}>State</Text>
+          <TextInput
+            style={getInputStyle(stateError, isStateFocused)}
+            placeholder="State"
+            value={stateId}
+            onChangeText={setStateId}
+            onFocus={() => handleFocus('state')}
+            onBlur={() => handleBlur('state')}
+          />
+          {stateError && !isStateFocused ? (
+            <Text style={styles.errorText}>{stateError}</Text>
+          ) : null}
+
+          <Text style={styles.label}>Address Type</Text>
+          <View style={styles.radioButtons}>
+            {['Home', 'Work', 'Office'].map(type => (
+              <TouchableOpacity
+                key={type}
+                style={styles.radioButton}
+                onPress={() => {
+                  setSelectedAddressTypeId(addressTypes[type]);
+                  setIsAddressTypeFocused(true);
+                }}>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    selectedAddressTypeId === addressTypes[type]
+                      ? styles.radioSelected
+                      : styles.radioUnselected,
+                  ]}
+                />
+                <Text style={styles.radioText}>{type}</Text>
               </TouchableOpacity>
-            </View>
-            <Text style={styles.label}>Address Line 1</Text>
-            <TextInput
-              style={getInputStyle(addressLine1Error, isAddressLine1Focused)}
-              placeholder="Enter address"
-              value={addressLine1}
-              onChangeText={setAddressLine1}
-              onFocus={() => handleFocus('addressLine1')}
-              onBlur={() => handleBlur('addressLine1')}
-            />
-            {addressLine1Error && !isAddressLine1Focused ? (
-              <Text style={styles.errorText}>{addressLine1Error}</Text>
-            ) : null}
-
-            <Text style={styles.label}>Address Line 2</Text>
-            <TextInput
-              style={getInputStyle(addressLine2Error, isAddressLine2Focused)}
-              placeholder="Enter address line 2"
-              value={addressLine2}
-              onChangeText={setAddressLine2}
-              onFocus={() => handleFocus('addressLine2')}
-              onBlur={() => handleBlur('addressLine2')}
-            />
-            {addressLine2Error && !isAddressLine2Focused ? (
-              <Text style={styles.errorText}>{addressLine2Error}</Text>
-            ) : null}
-
-            <Text style={styles.label}>Landmark</Text>
-            <TextInput
-              style={getInputStyle(landmarkError, isLandmarkFocused)}
-              placeholder="Enter landmark"
-              value={landmark}
-              onChangeText={setLandmark}
-              onFocus={() => handleFocus('landmark')}
-              onBlur={() => handleBlur('landmark')}
-            />
-            {landmarkError && !isLandmarkFocused ? (
-              <Text style={styles.errorText}>{landmarkError}</Text>
-            ) : null}
-
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={getInputStyle(fullNameError, isFullNameFocused)}
-              placeholder="Full Name"
-              value={fullName}
-              onChangeText={setFullName}
-              onFocus={() => handleFocus('fullName')}
-              onBlur={() => handleBlur('fullName')}
-            />
-            {fullNameError && !isFullNameFocused ? (
-              <Text style={styles.errorText}>{fullNameError}</Text>
-            ) : null}
-
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={getInputStyle(phoneError, isPhoneFocused)}
-              placeholder="Phone Number"
-              value={phone}
-              onChangeText={text => setPhone(text.replace(/[^0-9]/g, ''))}
-              onFocus={() => handleFocus('phone')}
-              onBlur={() => handleBlur('phone')}
-            />
-            {phoneError && !isPhoneFocused ? (
-              <Text style={styles.errorText}>{phoneError}</Text>
-            ) : null}
-
-            <Text style={styles.label}>Pincode</Text>
-            <TextInput
-              style={getInputStyle(pincodeError, isPincodeFocused)}
-              placeholder="Pincode"
-              value={pincode}
-              onChangeText={text => setPincode(text.replace(/[^0-9]/g, ''))}
-              onFocus={() => handleFocus('pincode')}
-              onBlur={() => handleBlur('pincode')}
-            />
-            {pincodeError && !isPincodeFocused ? (
-              <Text style={styles.errorText}>{pincodeError}</Text>
-            ) : null}
-
-            <Text style={styles.label}>City</Text>
-            <TextInput
-              style={getInputStyle(cityError, isCityFocused)}
-              placeholder="City"
-              value={cityId}
-              onChangeText={setCityId}
-              onFocus={() => handleFocus('city')}
-              onBlur={() => handleBlur('city')}
-            />
-            {cityError && !isCityFocused ? (
-              <Text style={styles.errorText}>{cityError}</Text>
-            ) : null}
-
-            <Text style={styles.label}>State</Text>
-            <TextInput
-              style={getInputStyle(stateError, isStateFocused)}
-              placeholder="State"
-              value={stateId}
-              onChangeText={setStateId}
-              onFocus={() => handleFocus('state')}
-              onBlur={() => handleBlur('state')}
-            />
-            {stateError && !isStateFocused ? (
-              <Text style={styles.errorText}>{stateError}</Text>
-            ) : null}
-
-            <Text style={styles.label}>Address Type</Text>
-            <View style={styles.radioButtons}>
-              {['Home', 'Work', 'Office'].map(type => (
-                <TouchableOpacity
-                  key={type}
-                  style={styles.radioButton}
-                  onPress={() => {
-                    setSelectedAddressTypeId(addressTypes[type]);
-                    setIsAddressTypeFocused(true);
-                  }}>
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      selectedAddressTypeId === addressTypes[type]
-                        ? styles.radioSelected
-                        : styles.radioUnselected,
-                    ]}
-                  />
-                  <Text style={styles.radioText}>{type}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            {addressTypeError && !isAddressTypeFocused ? (
-              <Text style={styles.errorText}>{addressTypeError}</Text>
-            ) : null}
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleSaveAddress}>
-              <Text style={styles.saveButtonText}>
-                {selectedAddressTypeId ? 'Save Changes' : 'Save Address'}
-              </Text>
-            </TouchableOpacity>
-            {errors && <Text style={styles.errorText}>{errors}</Text>}
-          </ScrollView>
+            ))}
+          </View>
+          {addressTypeError && !isAddressTypeFocused ? (
+            <Text style={styles.errorText}>{addressTypeError}</Text>
+          ) : null}
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveAddress}>
+            <Text style={styles.saveButtonText}>
+              {selectedAddressTypeId ? 'Save Changes' : 'Save Address'}
+            </Text>
+          </TouchableOpacity>
+          {errors && <Text style={styles.errorText}>{errors}</Text>}
+        </ScrollView>
+      )}
+      <View style={{alignItems: 'center'}}>
+        {(showToastDefault || showToastDefaultFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showToastDefaultFailure
+                ? 'Something went wrong'
+                : 'Address set to default'
+            }
+            text2={showToastDefaultFailure ? '' : ''}
+            setToast={() => {
+              setShowToastDefault(false);
+              setShowToastDefaultFailure(false);
+            }}
+          />
         )}
-        <View style={{alignItems: 'center'}}>
-          {(showToast || showToastFailure) && (
-            <ToastMessage
-              text1Press={() => {}}
-              text2Press={() => {
-                if (!showToastFailure) {
-                  navigateToAddressList();
-                } else {
-                  ('');
-                }
-              }}
-              text1={
-                showToastFailure
-                  ? showToastMessage || 'Something went wrong'
-                  : showToastMessage || 'Address added/update successfully'
+        {(showToastDelete || showToastDeleteFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {}}
+            text1={
+              showToastDeleteFailure
+                ? 'Something went wrong'
+                : 'Address deleted successfully'
+            }
+            text2={showToastDeleteFailure ? 'Failed' : 'Success'}
+            setToast={() => {
+              setShowToastDelete(false);
+              setShowToastDeleteFailure(false);
+            }}
+          />
+        )}
+        {(showToast || showToastFailure) && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => {
+              if (!showToastFailure) {
+                navigateToAddressList();
+              } else {
+                ('');
               }
-              text2={showToastFailure ? '' : ''}
-              setToast={() => {
-                setShowToast(false);
-                setShowToastFailure(false);
-                setShowToastMessage('');
-              }}
-            />
-          )}
-          {(showToastDefault || showToastDefaultFailure) && (
-            <ToastMessage
-              text1Press={() => {}}
-              text2Press={() => {}}
-              text1={
-                showToastDefaultFailure
-                  ? 'Something went wrong'
-                  : 'updated default address successfully'
-              }
-              text2={showToastDefaultFailure ? '' : ''}
-              setToast={() => {
-                setShowToastDefault(false);
-                setShowToastDefaultFailure(false);
-              }}
-            />
-          )}
-          {(showToastDelete || showToastDeleteFailure) && (
-            <ToastMessage
-              text1Press={() => {}}
-              text2Press={() => {}}
-              text1={
-                showToastDeleteFailure
-                  ? 'Something went wrong'
-                  : 'Address deleted successfully'
-              }
-              text2={showToastDeleteFailure ? 'Failed' : 'Success'}
-              setToast={() => {
-                setShowToastDelete(false);
-                setShowToastDeleteFailure(false);
-              }}
-            />
-          )}
-        </View>
-      </ScrollView>
+            }}
+            text1={
+              showToastFailure
+                ? showToastMessage || 'Something went wrong'
+                : showToastMessage || 'Address added/update successfully'
+            }
+            text2={showToastFailure ? '' : ''}
+            setToast={() => {
+              setShowToast(false);
+              setShowToastFailure(false);
+              setShowToastMessage('');
+            }}
+          />
+        )}
+      </View>
     </View>
   );
 };
@@ -819,10 +816,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 
-  addAddressForm: {
-    marginTop: 20,
-    height: 700,
-  },
+  // addAddressForm: {
+  //   paddingHorizontal: 16,
+  //   paddingVertical: 20,
+  // },
   formHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

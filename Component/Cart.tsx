@@ -1,5 +1,5 @@
 //@ts-nocheck
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
@@ -30,11 +30,8 @@ const CartPage = () => {
   const {user, logout} = useContext(UserContext);
   const navigation = useNavigation();
   const [address, setAddress] = useState(null);
-  console.log('address', address);
   const [defaultAddress, setDefaultAddress] = useState(null);
-  console.log('defaultAddress', defaultAddress);
   const [cartItems, setCartItems] = useState([]);
-  console.log('cartItems', cartItems);
   const [couponCode, setCouponCode] = useState('');
   const [allCoupons, setAllCoupons] = useState([]);
   const [couponDiscount, setCouponDiscount] = useState(0);
@@ -55,12 +52,13 @@ const CartPage = () => {
   const [showToastFavorite, setShowFavorite] = useState(false);
   const [showToastFavoriteFailure, setShowToastFavoriteFailure] =
     useState(false);
-
+  const isFocused = useIsFocused();
   const fetchCartDetails = async () => {
     try {
       const requestId = user?.id;
       if (!requestId) {
         console.warn('User ID is missing');
+        setCartItems([]);
         return;
       }
 
@@ -96,17 +94,19 @@ const CartPage = () => {
         .catch(error => {
           console.log('Failed to fetch addresses:', error);
         });
+    } else {
+      setDefaultAddress(null);
     }
   };
 
   useEffect(() => {
-    if (user?.id) {
+    if (isFocused) {
       fetchCartDetails();
       fetchAddressDetails();
     }
-  }, [user?.id]);
+  }, [user?.id, isFocused]);
   useEffect(() => {
-    if (defaultAddress && address?.length > 0) {
+    if (defaultAddress && address?.length > 0 && user?.id) {
       const selectedAddr = address.find(
         addressItem => addressItem.id === defaultAddress,
       );
@@ -114,8 +114,10 @@ const CartPage = () => {
       if (selectedAddr) {
         setSelectedAddress(selectedAddr);
       }
+    } else {
+      setSelectedAddress(null);
     }
-  }, [defaultAddress, address]);
+  }, [defaultAddress, address, isFocused]);
 
   const handleAddQuantity = async id => {
     const data = {requestId: id, type: 1};

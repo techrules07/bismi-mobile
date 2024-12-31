@@ -47,7 +47,7 @@ const Category = props => {
       await Promise.all([
         fetchAllOffers(),
         getAllCategoriesApi(),
-        getProducts(1),
+        getProducts(1, userInfo?.id),
         getPremiumProductsApi(),
         getNewArrivalApi(),
       ]);
@@ -112,6 +112,7 @@ const Category = props => {
       console.error('Error fetching products:', error);
     }
   };
+  console.log('categories', productContext?.categories);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -188,7 +189,7 @@ const Category = props => {
                       })
                     }>
                     <Image
-                      source={{uri: item?.mainImageUrl}}
+                      source={{uri: item?.mainImage}}
                       style={styles.recentImage}
                     />
                     <Text style={styles.recentText} numberOfLines={1}>
@@ -209,6 +210,7 @@ const Category = props => {
                       style={styles.roundedImage}
                     />
                     <Text style={styles.recentText}>{item?.offerName}</Text>
+                    {/* <Text>{JSON.stringify(productContext, null, 2)}</Text> */}
                   </View>
                 ))}
               </ScrollView>

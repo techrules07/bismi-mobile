@@ -12,7 +12,12 @@ import {useNavigation} from '@react-navigation/native';
 import UserAdapter from '../Networking/UserPageService';
 import {UserContext} from '../Context/UserContext';
 
-const SignUpScreen = () => {
+const SignUpScreen = props => {
+  const {
+    page = '',
+    setShowSignIn = () => {},
+    setShowRegister = () => {},
+  } = props;
   const {user} = useContext(UserContext);
   const [fullName, setFullName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');

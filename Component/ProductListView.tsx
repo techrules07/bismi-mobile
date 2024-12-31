@@ -9,6 +9,8 @@ import {
   ScrollView,
   TextInput,
   SafeAreaView,
+  Modal,
+  Pressable,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -28,6 +30,8 @@ import SuccessScreen from './SuccessScreen';
 import CustomerReviews from './Reviews';
 import uuid from 'react-native-uuid';
 import ToastMessage from './toast_message/toast_message';
+import SignUpScreen from './SignUp';
+import LoginScreen from './Login';
 
 const ProductDetails = ({
   selectedItem,
@@ -61,6 +65,8 @@ const ProductDetails = ({
   const [showRemoveFavorite, setShowRemoveFavorite] = useState(false);
   const [showRemoveFavoriteFailure, setShowRemoveFavoriteFailure] =
     useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   useEffect(() => {
     const requestId = selectedItem?.productId;
     const userId = user?.id;
@@ -91,9 +97,8 @@ const ProductDetails = ({
   const addToCarts = async defaultItem => {
     if (!user) {
       console.log('User not logged in! Please log in to continue.');
-      setShowToast(false);
-      setShowToastFailure(true);
       setShowPopup(false);
+      setShowSignIn(true);
       return;
     }
 
@@ -204,7 +209,7 @@ const ProductDetails = ({
 
   const handleFavoriteToggle = async item => {
     if (!user?.id) {
-      //Ask login here
+      setShowSignIn(true);
       return;
     }
     let favouriteAddObject = {
@@ -614,6 +619,59 @@ const ProductDetails = ({
           ))}
         </ScrollView>
       </ScrollView>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showSignIn || showRegister}
+        onRequestClose={() => {
+          // this.closeButtonFunction()
+        }}>
+        <View
+          style={{
+            marginTop: 'auto',
+            backgroundColor: 'white',
+            borderTopRightRadius: 24,
+            borderTopLeftRadius: 24,
+            // alignItems:"center",
+            // paddingTop:16,
+            paddingBottom: 24,
+            flex: 0.7,
+          }}>
+          <View style={{flex: 1, position: 'relative'}}>
+            <Pressable
+              style={{
+                height: 50,
+                width: 50,
+                backgroundColor: 'white',
+                borderRadius: 25,
+                top: -55,
+                left: '87%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={() => {
+                setShowSignIn(false);
+                setShowRegister(false);
+              }}>
+              <Icon size={24} name="close" />
+            </Pressable>
+            {showRegister ? (
+              <SignUpScreen
+                page="modal_layout"
+                setShowRegister={setShowRegister}
+                setShowSignIn={setShowSignIn}
+              />
+            ) : (
+              <LoginScreen
+                page="modal_layout"
+                setShowRegister={setShowRegister}
+                setShowSignIn={setShowSignIn}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -625,7 +683,10 @@ const ProductListView = ({route}) => {
   const user_context = useContext(UserContext);
   let userInfo = user_context?.user;
   async function getProductDetails(productId, userId) {
-    let productDetails = await getDetails(String(productId), String(userId));
+    let productDetails = await getDetails(
+      String(productId),
+      String(userId || 0),
+    );
     setCurrentItem(productDetails?.data);
   }
   useEffect(() => {
