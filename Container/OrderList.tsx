@@ -19,6 +19,7 @@ import ToastMessage from '../Component/toast_message/toast_message';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import Loader from '../Component/Loader';
 const OrderList = props => {
   const [listOrder, setListOrder] = useState([]);
   const [cancelOrderId, setCancelOrderId] = useState(null);
@@ -28,10 +29,12 @@ const OrderList = props => {
   const [showSubmit, setShowSubmit] = useState(false);
   const [showSubmitFailure, setShowSubmitFailure] = useState(false);
   const scrollViewRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true);
       try {
         const bodyData = {
           requestId: user?.id,
@@ -46,21 +49,24 @@ const OrderList = props => {
             order_list.data?.length > 0
           ) {
             all_orders = order_list?.data;
-            all_orders?.sort((a: any, b: any) => {
+            all_orders?.sort((a, b) => {
               const dateA = moment(a.createdAt, 'DD/MM/YYYY');
               const dateB = moment(b.createdAt, 'DD/MM/YYYY');
-              return dateB.diff(dateA); // Latest dates come first
+              return dateB.diff(dateA);
             });
           }
           setListOrder(all_orders);
+          setShowToast(true);
         } else {
           setListOrder([]);
         }
       } catch (error) {
-        setShowToast(false);
         console.error('Error fetching orders:', error);
+      } finally {
+        setLoading(false);
       }
     };
+
     if (isFocused && user) {
       fetchOrders();
     }
@@ -83,11 +89,12 @@ const OrderList = props => {
         setShowSubmit(true);
         setShowSubmitFailure(false);
         console.log('Order cancelled successfully!');
-        const updatedOrders = listOrder.filter(
-          order => order.orderId !== orderId,
+        const updatedOrders = listOrder.map(order =>
+          order.orderId === orderId
+            ? {...order, orderStatus: 'Cancelled'}
+            : order,
         );
         setListOrder(updatedOrders);
-
         await AsyncStorage.setItem('orders', JSON.stringify(updatedOrders));
       } else {
         setShowSubmit(false);
@@ -126,7 +133,11 @@ const OrderList = props => {
               <Text style={styles.OrderText}>You are not logged in.</Text>
             </View>
           )}
-          {user && listOrder.length > 0 ? (
+          {loading ? (
+            <View style={styles.loaderContainer}>
+              <Loader />
+            </View>
+          ) : user && listOrder.length > 0 ? (
             listOrder.map(_orderItem => (
               <View style={styles.cardsContainer} key={_orderItem?.orderId}>
                 <Text style={styles.orderId}>
@@ -154,7 +165,13 @@ const OrderList = props => {
                         <Text style={{marginTop: 3}}>
                           {_orderItem?.orderItems?.[0]?.productCategory}
                         </Text>
-                        <Text style={styles.arrivalText}>
+                        <Text
+                          style={[
+                            styles.arrivalText,
+                            _orderItem?.orderStatus === 'Cancelled' && {
+                              color: 'red',
+                            },
+                          ]}>
                           {_orderItem?.orderStatus}
                         </Text>
                       </View>
@@ -254,6 +271,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#EDE0D4',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardsContainer: {
     flex: 1,
