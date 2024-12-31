@@ -16,8 +16,9 @@ import {getAllOrders, cancelOrderApi} from '../Networking/HomePageService'; // A
 import {UserContext} from '../Context/UserContext';
 import Snackbar from 'react-native-snackbar';
 import ToastMessage from '../Component/toast_message/toast_message';
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import moment from 'moment';
 const OrderList = props => {
   const [listOrder, setListOrder] = useState([]);
   const [cancelOrderId, setCancelOrderId] = useState(null);
@@ -28,42 +29,41 @@ const OrderList = props => {
   const [showSubmitFailure, setShowSubmitFailure] = useState(false);
   const scrollViewRef = useRef(null);
   const navigation = useNavigation();
-
+  const isFocused = useIsFocused();
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const storedOrders = await AsyncStorage.getItem('orders');
-
-        if (storedOrders) {
-          setListOrder(JSON.parse(storedOrders));
-        } else {
-          const bodyData = {
-            requestId: user?.id,
-            userId: user?.id,
-          };
-
-          const response = await getAllOrders(bodyData);
-
-          if (response?.status === 'Success' && response?.code === 200) {
-            setShowToast(true);
-            setListOrder(response?.data);
-
-            await AsyncStorage.setItem(
-              'orders',
-              JSON.stringify(response?.data),
-            );
-          } else {
-            setShowToast(false);
-            console.log('Failed to list orders. Please try again.');
+        const bodyData = {
+          requestId: user?.id,
+          userId: user?.id,
+        };
+        const order_list = await getAllOrders(bodyData);
+        if (order_list?.data) {
+          let all_orders = [];
+          if (
+            order_list?.data &&
+            Array.isArray(order_list?.data) &&
+            order_list.data?.length > 0
+          ) {
+            all_orders = order_list?.data;
+            all_orders?.sort((a: any, b: any) => {
+              const dateA = moment(a.createdAt, 'DD/MM/YYYY');
+              const dateB = moment(b.createdAt, 'DD/MM/YYYY');
+              return dateB.diff(dateA); // Latest dates come first
+            });
           }
+          setListOrder(all_orders);
+        } else {
+          setListOrder([]);
         }
       } catch (error) {
         setShowToast(false);
         console.error('Error fetching orders:', error);
       }
     };
-
-    fetchOrders();
+    if (isFocused && user) {
+      fetchOrders();
+    }
   }, [user, props.navigation]);
 
   const handleCancelOrder = async orderId => {
@@ -121,89 +121,101 @@ const OrderList = props => {
               <Text style={styles.OrderText}>My Order</Text>
             </TouchableOpacity>
           </View>
+          {!user && (
+            <View>
+              <Text style={styles.OrderText}>You are not logged in.</Text>
+            </View>
+          )}
+          {user && listOrder.length > 0 ? (
+            listOrder.map(_orderItem => (
+              <View style={styles.cardsContainer} key={_orderItem?.orderId}>
+                <Text style={styles.orderId}>
+                  Order ID: #{_orderItem?.orderId}
+                </Text>
 
-          {listOrder.map(_orderItem => (
-            <View style={styles.cardsContainer} key={_orderItem?.orderId}>
-              <Text style={styles.orderId}>
-                Order ID: #{_orderItem?.orderId}
-              </Text>
+                <View style={styles.card}>
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <View style={styles.cardContent}>
+                      <Image
+                        source={{
+                          uri: _orderItem?.orderItems?.[0]?.productImage,
+                        }}
+                        style={styles.productImage}
+                      />
+                      <View style={{display: 'flex'}}>
+                        <Text style={styles.productName}>
+                          {_orderItem?.orderItems?.[0]?.productName}
+                        </Text>
+                        <Text style={{marginTop: 3}}>
+                          {_orderItem?.orderItems?.[0]?.productCategory}
+                        </Text>
+                        <Text style={styles.arrivalText}>
+                          {_orderItem?.orderStatus}
+                        </Text>
+                      </View>
+                    </View>
 
-              <View style={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  <View style={styles.cardContent}>
-                    <Image
-                      source={{uri: _orderItem?.orderItems?.[0]?.productImage}}
-                      style={styles.productImage}
-                    />
-                    <View style={{display: 'flex'}}>
-                      <Text style={styles.productName}>
-                        {_orderItem?.orderItems?.[0]?.productName}
-                      </Text>
-                      <Text style={{marginTop: 3}}>
-                        {_orderItem?.orderItems?.[0]?.productCategory}
-                      </Text>
-                      <Text style={styles.arrivalText}>
-                        {_orderItem?.orderStatus}
-                      </Text>
+                    <View>
+                      <TouchableOpacity
+                        style={styles.iconWrapper}
+                        onPress={() =>
+                          props.navigation.navigate('OrderDetails', {
+                            _orderItem,
+                          })
+                        }>
+                        <MaterialIcons
+                          name="arrow-forward"
+                          size={24}
+                          color="black"
+                        />
+                      </TouchableOpacity>
                     </View>
                   </View>
+                  <View style={styles.dividers} />
 
-                  <View>
+                  {/* Action Buttons */}
+                  <View style={styles.actionButtons}>
                     <TouchableOpacity
-                      style={styles.iconWrapper}
                       onPress={() =>
                         props.navigation.navigate('OrderDetails', {_orderItem})
                       }>
-                      <MaterialIcons
-                        name="arrow-forward"
-                        size={24}
-                        color="black"
-                      />
+                      <Text style={styles.actionText}>View Order</Text>
                     </TouchableOpacity>
-                  </View>
-                </View>
-                <View style={styles.dividers} />
 
-                {/* Action Buttons */}
-                <View style={styles.actionButtons}>
-                  <TouchableOpacity
-                    onPress={() =>
-                      props.navigation.navigate('OrderDetails', {_orderItem})
-                    }>
-                    <Text style={styles.actionText}>View Order</Text>
-                  </TouchableOpacity>
+                    <View style={styles.verticalDivider} />
 
-                  <View style={styles.verticalDivider} />
-
-                  <TouchableOpacity
-                    onPress={() => setCancelOrderId(_orderItem?.orderId)}>
-                    <Text style={styles.actionText}>Cancel Order</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {cancelOrderId === _orderItem?.orderId && (
-                  <View style={styles.cancelInputContainer}>
-                    <TextInput
-                      style={styles.cancelInput}
-                      placeholder="Enter reason for cancellation"
-                      value={cancelReason}
-                      onChangeText={setCancelReason}
-                    />
                     <TouchableOpacity
-                      style={styles.submitCancelButton}
-                      onPress={() => handleCancelOrder(_orderItem?.orderId)}>
-                      <Text style={styles.submitCancelText}>Submit</Text>
+                      onPress={() => setCancelOrderId(_orderItem?.orderId)}>
+                      <Text style={styles.actionText}>Cancel Order</Text>
                     </TouchableOpacity>
                   </View>
-                )}
+
+                  {cancelOrderId === _orderItem?.orderId && (
+                    <View style={styles.cancelInputContainer}>
+                      <TextInput
+                        style={styles.cancelInput}
+                        placeholder="Enter reason for cancellation"
+                        value={cancelReason}
+                        onChangeText={setCancelReason}
+                      />
+                      <TouchableOpacity
+                        style={styles.submitCancelButton}
+                        onPress={() => handleCancelOrder(_orderItem?.orderId)}>
+                        <Text style={styles.submitCancelText}>Submit</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          ))}
+            ))
+          ) : (
+            <Text>Your cart is empty</Text>
+          )}
         </View>
       </ScrollView>
 

@@ -9,6 +9,7 @@ import Category from './Category';
 import OrderList from '../Container/OrderList';
 import SavedAddressesPage from '../Blocks/Address/Address';
 import LoginScreen from './Login';
+import SignUpScreen from './SignUp';
 
 const CategoryStack = createStackNavigator();
 
@@ -33,7 +34,7 @@ const CategoryStackNavigator = () => {
       <CategoryStack.Screen name="OrderList" component={OrderList} />
       <CategoryStack.Screen name="Address" component={SavedAddressesPage} />
       <CategoryStack.Screen name="Login" component={LoginScreen} />
-     
+      <CategoryStack.Screen name="SignUp" component={SignUpScreen} />
     </CategoryStack.Navigator>
   );
 };

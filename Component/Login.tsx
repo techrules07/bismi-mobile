@@ -13,7 +13,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import UserAdapter from '../Networking/UserPageService';
 import {UserContext} from '../Context/UserContext';
 
-const LoginScreen = () => {
+const LoginScreen = props => {
+  const {
+    page = '',
+    setShowSignIn = () => {},
+    setShowRegister = () => {},
+  } = props;
   const [userData, setUserData] = useState(null);
   const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
@@ -113,8 +118,12 @@ const LoginScreen = () => {
           JSON.stringify(userLoginResponse?.data),
         );
         setUser(userLoginResponse?.data);
-
-        navigation.navigate('Account', {userData: userLoginResponse?.data});
+        if (page === 'modal_layout') {
+          setShowRegister(false);
+          setShowSignIn(false);
+        } else {
+          navigation.navigate('Account', {userData: userLoginResponse?.data});
+        }
         console.log('userLoginResponse', userLoginResponse);
       } else {
         setErrorMessage('Invalid OTP. Please try again.');
@@ -179,7 +188,14 @@ const LoginScreen = () => {
         <Text style={{color: 'black'}}>Don’t have an account? </Text>
         <Text
           style={styles.linkText}
-          onPress={() => navigation.navigate('SignUp')}>
+          onPress={() => {
+            if (page === 'modal_layout') {
+              setShowRegister(true);
+              setShowSignIn(false);
+            } else {
+              navigation.navigate('SignUp');
+            }
+          }}>
           Register
         </Text>
       </View>
