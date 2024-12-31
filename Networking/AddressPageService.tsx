@@ -26,7 +26,7 @@ export const getStateAndCity = async () => {
   return await AxiosConfig.get('/master/get/places');
 };
 
-export const addressTypes = async () => {
+export const getAddressTypes = async () => {
   return await AxiosConfig.get('/master/get/address-types');
 };
 
