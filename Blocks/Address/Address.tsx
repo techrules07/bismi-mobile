@@ -14,6 +14,7 @@ import {
   defaultAddressApi,
   deleteAddress,
   getAddress,
+  getAddressTypes,
   getStateAndCity,
   updateAddress,
 } from '../../Networking/AddressPageService';
@@ -69,11 +70,8 @@ const SavedAddressesPage = () => {
   const navigation = useNavigation();
   const [stateData, setStateData] = useState([]);
   const [cityData, setCityData] = useState([]);
-  const addressTypes = {
-    Home: 1,
-    Work: 2,
-    Office: 3,
-  };
+  const [addressTypes, setAddressTypes] = useState({});
+  console.log('addressTypes', addressTypes);
   useEffect(() => {
     if (user?.id) {
       const requestId = user.id;
@@ -94,6 +92,16 @@ const SavedAddressesPage = () => {
         .catch(error =>
           console.log('Failed to fetch state and city data:', error),
         );
+      getAddressTypes()
+        .then(response => {
+          const types = response.data.data;
+          const typesObject = types.reduce((acc, type) => {
+            acc[type.name] = type.id;
+            return acc;
+          }, {});
+          setAddressTypes(typesObject);
+        })
+        .catch(error => console.log('Failed to fetch address types:', error));
       getAddress(requestId, userId)
         .then(data => {
           const addresses = data?.data;
@@ -608,9 +616,7 @@ const SavedAddressesPage = () => {
                       ? styles.radioSelected
                       : styles.radioUnselected,
                   ]}>
-                  {/* White inner circle */}
                   <View style={styles.radioInnerCircle}>
-                    {/* Inner dot (brown circle) when selected */}
                     {selectedAddressTypeId === addressTypes[type] && (
                       <View style={styles.radioDot} />
                     )}
