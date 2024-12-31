@@ -286,15 +286,14 @@ const SavedAddressesPage = () => {
   };
 
   const handleEditAddress = address => {
-    debugger;
     setFullName(address.name);
     setAddressLine1(address.addressLine1);
     setAddressLine2(address.addressLine2 || '');
     setLandmark(address.landmark || '');
     setPhone(address.phone);
     setPincode(address.pincode);
-    setStateId(address.stateId);
-    setCityId(address.cityId);
+    setStateId(address.state);
+    setCityId(address.city);
     setSelectedAddressTypeId(addressTypes[address.addressType] || null);
     setAddressId(address.id);
     setShowAddAddress(true);
@@ -595,32 +594,32 @@ const SavedAddressesPage = () => {
 
           <Text style={styles.label}>Address Type</Text>
           <View style={styles.radioButtons}>
-        {['Home', 'Work', 'Office'].map(type => (
-          <TouchableOpacity
-            key={type}
-            style={styles.radioButton}
-            onPress={() => {
-              setSelectedAddressTypeId(addressTypes[type]);
-            }}
-          >
-            <View
-              style={[
-                styles.radioOuterCircle,
-                selectedAddressTypeId === addressTypes[type] ? styles.radioSelected : styles.radioUnselected,
-              ]}
-            >
-              {/* White inner circle */}
-              <View style={styles.radioInnerCircle}>
-                {/* Inner dot (brown circle) when selected */}
-                {selectedAddressTypeId === addressTypes[type] && (
-                  <View style={styles.radioDot} />
-                )}
-              </View>
-            </View>
-            <Text style={styles.radioText}>{type}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            {['Home', 'Work', 'Office'].map(type => (
+              <TouchableOpacity
+                key={type}
+                style={styles.radioButton}
+                onPress={() => {
+                  setSelectedAddressTypeId(addressTypes[type]);
+                }}>
+                <View
+                  style={[
+                    styles.radioOuterCircle,
+                    selectedAddressTypeId === addressTypes[type]
+                      ? styles.radioSelected
+                      : styles.radioUnselected,
+                  ]}>
+                  {/* White inner circle */}
+                  <View style={styles.radioInnerCircle}>
+                    {/* Inner dot (brown circle) when selected */}
+                    {selectedAddressTypeId === addressTypes[type] && (
+                      <View style={styles.radioDot} />
+                    )}
+                  </View>
+                </View>
+                <Text style={styles.radioText}>{type}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
           {addressTypeError && !isAddressTypeFocused ? (
             <Text style={styles.errorText}>{addressTypeError}</Text>
           ) : null}
@@ -803,7 +802,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   radioButtons: {
-    marginTop:10,
+    marginTop: 10,
     flexDirection: 'row',
     flexWrap: 'wrap', // Allows buttons to wrap if there are too many
   },
@@ -844,7 +843,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#703F07', // Dot color (brown)
   },
   radioText: {
-    fontSize: 14, 
+    fontSize: 14,
   },
   saveButton: {
     backgroundColor: '#703F07',
