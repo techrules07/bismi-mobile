@@ -1,92 +1,113 @@
-//@ts-nocheck
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  FlatList,
-  StyleSheet,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 
-const Dropdown = ({ options, selectedValue, onValueChange }) => {
-  const [isVisible, setIsVisible] = useState(false);
+const DropdownComponent = ({
+  data,
+  labelField,
+  valueField,
+  placeholder,
+  onChange,
+  value,
+  onFocus,
+  onBlur,
+  error,
+}) => {
+  const [isFocus, setIsFocus] = useState(false);
 
-  const handleSelect = value => {
-    setIsVisible(false);
-    onValueChange(value);
+  const renderLabel = () => {
+    // Show label only if value is not selected and input is not focused
+    if (!value && !isFocus) {
+      return (
+        <Text style={[styles.label, isFocus && { color: '#703F07' }]}>
+          {placeholder || 'Select item'}
+        </Text>
+      );
+    }
+    return null;
   };
 
   return (
-    <View>
-      <TouchableOpacity
-        style={styles.dropdownButton}
-        onPress={() => setIsVisible(!isVisible)}>
-        <Text style={styles.dropdownButtonText}>{selectedValue}</Text>
-      </TouchableOpacity>
-      {isVisible && (
-        <Modal
-          transparent
-          animationType="fade"
-          onRequestClose={() => setIsVisible(false)}>
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            onPress={() => setIsVisible(false)}
-          />
-          <View style={styles.dropdownList}>
-            <FlatList
-              data={options}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => handleSelect(item)}>
-                  <Text style={styles.dropdownItemText}>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </Modal>
-      )}
+    <View style={styles.container}>
+  
+      <Dropdown
+        style={[
+          styles.dropdown,
+          isFocus && { borderColor: '#703F07' },  // Change border color when focused
+          error && !isFocus && { borderColor: 'red' },  // Change border color to red when error exists and not focused
+        ]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        iconStyle={styles.iconStyle}
+        data={data}
+        search
+        maxHeight={300}
+        labelField={labelField || 'label'}
+        valueField={valueField || 'value'}
+        placeholder={!isFocus ? placeholder || 'Select item' : '...'}
+        searchPlaceholder="Search..."
+        value={value}
+        onFocus={() => {
+          setIsFocus(true);
+          onFocus && onFocus();
+        }}
+        onBlur={() => {
+          setIsFocus(false);
+          onBlur && onBlur();
+        }}
+        onChange={item => {
+          onChange(item[valueField || 'value']);
+          setIsFocus(false);
+        }}
+      />
+      {error && !isFocus ? (
+        <Text style={styles.errorText}>{error}</Text>  // Show error text below the dropdown when not focused
+      ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  dropdownButton: {
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    justifyContent: 'center',
+  container: {
+    backgroundColor: 'white',
+    // marginVertical: 10,
   },
-  dropdownButtonText: {
-    fontSize: 16,
-    color: '#333',
+  dropdown: {
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    paddingHorizontal: 8,
+    marginVertical: 10,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  dropdownList: {
+  label: {
     position: 'absolute',
-    top: '50%',
-    left: '10%',
-    right: '10%',
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    maxHeight: 200,
-    elevation: 5,
+    backgroundColor: 'white',
+    left: 22,
+    top: 8,
+    zIndex: 999,
+    paddingHorizontal: 8,
+    fontSize: 14,
   },
-  dropdownItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  dropdownItemText: {
+  placeholderStyle: {
     fontSize: 16,
-    color: '#333',
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 5,
   },
 });
-export default Dropdown
+
+export default DropdownComponent;

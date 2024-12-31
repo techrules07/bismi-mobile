@@ -14,12 +14,14 @@ import {
   defaultAddressApi,
   deleteAddress,
   getAddress,
+  getStateAndCity,
   updateAddress,
 } from '../../Networking/AddressPageService';
 import {ScrollView} from 'react-native-gesture-handler';
 import {useNavigation} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import ToastMessage from '../../Component/toast_message/toast_message';
+import DropdownComponent from '../../Component/DropDown/DropDown';
 const SavedAddressesPage = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -65,7 +67,8 @@ const SavedAddressesPage = () => {
   const [defaultAddress, setDefaultAddress] = useState(false);
   const [addressId, setAddressId] = useState(null);
   const navigation = useNavigation();
-
+  const [stateData, setStateData] = useState([]);
+  const [cityData, setCityData] = useState([]);
   const addressTypes = {
     Home: 1,
     Work: 2,
@@ -75,7 +78,22 @@ const SavedAddressesPage = () => {
     if (user?.id) {
       const requestId = user.id;
       const userId = user.id;
-
+      getStateAndCity()
+        .then(response => {
+          const places = response.data.data;
+          const states = places.map(state => ({
+            label: state.name,
+            value: state.id,
+            listCities: state.listCities.map(city => ({
+              label: city.name,
+              value: city.id,
+            })),
+          }));
+          setStateData(states);
+        })
+        .catch(error =>
+          console.log('Failed to fetch state and city data:', error),
+        );
       getAddress(requestId, userId)
         .then(data => {
           const addresses = data?.data;
@@ -101,7 +119,14 @@ const SavedAddressesPage = () => {
       console.log('User is not available');
     }
   }, [user]);
+  const handleStateChange = stateId => {
+    setStateId(stateId);
+    const selectedState = stateData.find(state => state.value === stateId);
 
+    const selectedCities = selectedState ? selectedState.listCities : [];
+    setCityData(selectedCities);
+    setCityId(null);
+  };
   const handleDefaultAddress = addressId => {
     if (user?.id) {
       const userId = user?.id;
@@ -204,8 +229,8 @@ const SavedAddressesPage = () => {
       name: fullName,
       streetName: addressLine1,
       locality: addressLine2,
-      city: 1,
-      state: 1,
+      city: cityId,
+      state: stateId,
       pincode: pincode,
       landmark: landmark,
       addressType: selectedAddressTypeId,
@@ -261,14 +286,15 @@ const SavedAddressesPage = () => {
   };
 
   const handleEditAddress = address => {
+    debugger;
     setFullName(address.name);
     setAddressLine1(address.addressLine1);
     setAddressLine2(address.addressLine2 || '');
     setLandmark(address.landmark || '');
     setPhone(address.phone);
     setPincode(address.pincode);
-    setStateId(address.state);
-    setCityId(address.city);
+    setStateId(address.stateId);
+    setCityId(address.cityId);
     setSelectedAddressTypeId(addressTypes[address.addressType] || null);
     setAddressId(address.id);
     setShowAddAddress(true);
@@ -384,6 +410,7 @@ const SavedAddressesPage = () => {
         break;
     }
   };
+
   const renderAddressCard = ({item}) => (
     <View style={styles.addressCard}>
       <View>
@@ -541,55 +568,59 @@ const SavedAddressesPage = () => {
           {pincodeError && !isPincodeFocused ? (
             <Text style={styles.errorText}>{pincodeError}</Text>
           ) : null}
-
-          <Text style={styles.label}>City</Text>
-          <TextInput
-            style={getInputStyle(cityError, isCityFocused)}
-            placeholder="City"
-            value={cityId}
-            onChangeText={setCityId}
-            onFocus={() => handleFocus('city')}
-            onBlur={() => handleBlur('city')}
-          />
-          {cityError && !isCityFocused ? (
-            <Text style={styles.errorText}>{cityError}</Text>
-          ) : null}
-
           <Text style={styles.label}>State</Text>
-          <TextInput
-            style={getInputStyle(stateError, isStateFocused)}
-            placeholder="State"
+          <DropdownComponent
+            data={stateData}
+            labelField="label"
+            valueField="value"
+            placeholder="Select State"
             value={stateId}
-            onChangeText={setStateId}
+            onChange={handleStateChange}
             onFocus={() => handleFocus('state')}
             onBlur={() => handleBlur('state')}
+            error={stateError && !isStateFocused ? stateError : null}
           />
-          {stateError && !isStateFocused ? (
-            <Text style={styles.errorText}>{stateError}</Text>
-          ) : null}
+          <Text style={styles.label}>City</Text>
+          <DropdownComponent
+            data={cityData}
+            labelField="label"
+            valueField="value"
+            placeholder="Select City"
+            value={cityId}
+            onChange={setCityId}
+            onFocus={() => handleFocus('city')}
+            onBlur={() => handleBlur('city')}
+            error={cityError && !isCityFocused ? cityError : null}
+          />
 
           <Text style={styles.label}>Address Type</Text>
           <View style={styles.radioButtons}>
-            {['Home', 'Work', 'Office'].map(type => (
-              <TouchableOpacity
-                key={type}
-                style={styles.radioButton}
-                onPress={() => {
-                  setSelectedAddressTypeId(addressTypes[type]);
-                  setIsAddressTypeFocused(true);
-                }}>
-                <View
-                  style={[
-                    styles.radioCircle,
-                    selectedAddressTypeId === addressTypes[type]
-                      ? styles.radioSelected
-                      : styles.radioUnselected,
-                  ]}
-                />
-                <Text style={styles.radioText}>{type}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {['Home', 'Work', 'Office'].map(type => (
+          <TouchableOpacity
+            key={type}
+            style={styles.radioButton}
+            onPress={() => {
+              setSelectedAddressTypeId(addressTypes[type]);
+            }}
+          >
+            <View
+              style={[
+                styles.radioOuterCircle,
+                selectedAddressTypeId === addressTypes[type] ? styles.radioSelected : styles.radioUnselected,
+              ]}
+            >
+              {/* White inner circle */}
+              <View style={styles.radioInnerCircle}>
+                {/* Inner dot (brown circle) when selected */}
+                {selectedAddressTypeId === addressTypes[type] && (
+                  <View style={styles.radioDot} />
+                )}
+              </View>
+            </View>
+            <Text style={styles.radioText}>{type}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
           {addressTypeError && !isAddressTypeFocused ? (
             <Text style={styles.errorText}>{addressTypeError}</Text>
           ) : null}
@@ -772,31 +803,48 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   radioButtons: {
+    marginTop:10,
     flexDirection: 'row',
-    marginBottom: 10,
-    marginTop: 10,
+    flexWrap: 'wrap', // Allows buttons to wrap if there are too many
   },
   radioButton: {
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 15,
+    marginBottom: 10, // Adding space between radio buttons
   },
-  radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  radioOuterCircle: {
+    width: 18, // Smaller outer circle
+    height: 18, // Smaller outer circle
+    borderRadius: 9, // Outer circle size (half of width/height)
     borderWidth: 2,
-    marginRight: 5,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   radioUnselected: {
-    borderColor: '#ccc',
+    borderColor: '#ccc', // Outer circle border when unselected
   },
   radioSelected: {
-    borderColor: '#703F07',
-    backgroundColor: '#703F07',
+    borderColor: '#703F07', // Outer circle border when selected
+    backgroundColor: '#703F07', // Outer circle fill color when selected
+  },
+  radioInnerCircle: {
+    width: 12, // Smaller inner circle
+    height: 12, // Smaller inner circle
+    borderRadius: 6, // White inner circle size
+    backgroundColor: 'white', // Inner circle color
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioDot: {
+    width: 6, // Smaller inner dot size
+    height: 6, // Smaller inner dot size
+    borderRadius: 3, // Inner dot size
+    backgroundColor: '#703F07', // Dot color (brown)
   },
   radioText: {
-    fontSize: 16,
+    fontSize: 14, 
   },
   saveButton: {
     backgroundColor: '#703F07',
