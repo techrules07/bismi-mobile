@@ -121,7 +121,12 @@ const Category = props => {
           {/* <Icon name="magnify" size={24} color="#fff" />
           <Icon name="microphone" size={24} color="#fff" />
           <Icon name="camera" size={24} color="#fff" /> */}
-          <Icon name="cart" size={24} color="#fff" />
+          <Icon
+            name="cart"
+            size={24}
+            color="#fff"
+            onPress={() => navigation.navigate('Cart')}
+          />
         </View>
       </View>
       {loading ? (

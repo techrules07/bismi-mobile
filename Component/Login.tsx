@@ -66,6 +66,9 @@ const LoginScreen = props => {
           if (user_data?.registered === true) {
             setIsOtpVisible(true);
             setUserData(user_data);
+          } else if (page === 'modal_layout') {
+            setShowRegister(true);
+            setShowSignIn(false);
           } else {
             setErrorMessage({
               ...errorMessage,
