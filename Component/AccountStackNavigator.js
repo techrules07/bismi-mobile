@@ -19,6 +19,7 @@ const AccountStack = createStackNavigator();
 const AccountStackNavigator = () => {
   return (
     <AccountStack.Navigator
+      initialRouteName='Account'
       screenOptions={{
         headerShown: false,
       }}>

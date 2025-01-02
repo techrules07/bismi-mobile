@@ -20,7 +20,6 @@ const Account = props => {
   console.log('user', user);
   const handleLogout = () => {
     logout();
-    navigation.navigate('Login');
   };
   return user ? (
     <View style={styles.container}>

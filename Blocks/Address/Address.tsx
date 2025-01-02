@@ -19,7 +19,7 @@ import {
   updateAddress,
 } from '../../Networking/AddressPageService';
 import {ScrollView} from 'react-native-gesture-handler';
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
 import ToastMessage from '../../Component/toast_message/toast_message';
 import DropdownComponent from '../../Component/DropDown/DropDown';
@@ -61,7 +61,6 @@ const SavedAddressesPage = () => {
   const [showToastDelete, setShowToastDelete] = useState(false);
   const [showToastDeleteFailure, setShowToastDeleteFailure] = useState(false);
   const [showToastMessage, setShowToastMessage] = useState('');
-  console.log('savedAddresses', savedAddresses);
   const {user} = useContext(UserContext);
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,63 +69,59 @@ const SavedAddressesPage = () => {
   const navigation = useNavigation();
   const [stateData, setStateData] = useState([]);
   const [cityData, setCityData] = useState([]);
-  const [addressTypes, setAddressTypes] = useState({});
-  console.log('addressTypes', addressTypes);
+  const [addressTypes, setAddressTypes] = useState([]);
+  const isFocused = useIsFocused();
+  const fetchAddressType = async () => {
+    let address_types_response = await getAddressTypes();
+    const types = address_types_response.data.data;
+    setAddressTypes(types);
+  };
+  const fetchStateAndCity = async () => {
+    try {
+      let getStateAndCityResponse = await getStateAndCity();
+      const places = getStateAndCityResponse.data.data;
+      const states = places.map((state: any) => ({
+        label: state.name,
+        value: state.id,
+        listCities: state.listCities.map((city: any) => ({
+          label: city.name,
+          value: city.id,
+        })),
+      }));
+      setStateData(states);
+    } catch (error) {
+      setStateData([]);
+    }
+  };
+  const fetchUserAddress = async (requestId: any, userId: any) => {
+    let user_address_response = await getAddress(requestId, userId);
+    const addresses = user_address_response?.data;
+
+    const defaultAddress = addresses?.find((address: any) => address.default);
+
+    if (!defaultAddress && addresses?.length > 0) {
+      addresses[0].default = true;
+    }
+
+    setSavedAddresses(addresses);
+
+    if (defaultAddress) {
+      setDefaultAddress(defaultAddress.id);
+    } else {
+      setDefaultAddress(addresses[0]?.id);
+    }
+  };
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && isFocused) {
       const requestId = user.id;
       const userId = user.id;
-      getStateAndCity()
-        .then(response => {
-          const places = response.data.data;
-          const states = places.map(state => ({
-            label: state.name,
-            value: state.id,
-            listCities: state.listCities.map(city => ({
-              label: city.name,
-              value: city.id,
-            })),
-          }));
-          setStateData(states);
-        })
-        .catch(error =>
-          console.log('Failed to fetch state and city data:', error),
-        );
-      getAddressTypes()
-        .then(response => {
-          const types = response.data.data;
-          const typesObject = types.reduce((acc, type) => {
-            acc[type.name] = type.id;
-            return acc;
-          }, {});
-          setAddressTypes(typesObject);
-        })
-        .catch(error => console.log('Failed to fetch address types:', error));
-      getAddress(requestId, userId)
-        .then(data => {
-          const addresses = data?.data;
-
-          const defaultAddress = addresses?.find(address => address.default);
-
-          if (!defaultAddress && addresses?.length > 0) {
-            addresses[0].default = true;
-          }
-
-          setSavedAddresses(addresses);
-
-          if (defaultAddress) {
-            setDefaultAddress(defaultAddress.id);
-          } else {
-            setDefaultAddress(addresses[0]?.id);
-          }
-        })
-        .catch(error => {
-          console.log('Failed to fetch addresses:', error);
-        });
+      fetchAddressType();
+      fetchStateAndCity();
+      fetchUserAddress(requestId, userId);
     } else {
       console.log('User is not available');
     }
-  }, [user]);
+  }, [user, isFocused]);
   const handleStateChange = stateId => {
     setStateId(stateId);
     const selectedState = stateData.find(state => state.value === stateId);
@@ -262,6 +257,8 @@ const SavedAddressesPage = () => {
           //   duration: Snackbar.LENGTH_SHORT,
           //   backgroundColor: 'green',
           // });
+          fetchUserAddress(user?.id, user?.id);
+          handleCloseForm();
           setShowToast(true);
           setShowToastFailure(false);
           setShowToastMessage(successMessage);
@@ -293,16 +290,27 @@ const SavedAddressesPage = () => {
       });
   };
 
-  const handleEditAddress = address => {
+  const handleEditAddress = (address: any) => {
+    let selectedAddressType = addressTypes.find(
+      _address => _address?.name === address.addressType,
+    );
+    let selectedState = stateData.find(
+      _address => _address?.label === address.state,
+    );
+    let selectedCity = selectedState?.listCities?.find(
+      _city => _city?.label === address.city,
+    );
+    const selectedCities = selectedState ? selectedState.listCities : [];
+    setCityData(selectedCities);
     setFullName(address.name);
     setAddressLine1(address.addressLine1);
     setAddressLine2(address.addressLine2 || '');
     setLandmark(address.landmark || '');
     setPhone(address.phone);
-    setPincode(address.pincode);
-    setStateId(address.state);
-    setCityId(address.city);
-    setSelectedAddressTypeId(addressTypes[address.addressType] || null);
+    setPincode(address.pincode ? String(address.pincode) : '');
+    setStateId(selectedState?.value || null);
+    setCityId(selectedCity?.value || null);
+    setSelectedAddressTypeId(selectedAddressType?.id || null);
     setAddressId(address.id);
     setShowAddAddress(true);
   };
@@ -602,27 +610,27 @@ const SavedAddressesPage = () => {
 
           <Text style={styles.label}>Address Type</Text>
           <View style={styles.radioButtons}>
-            {['Home', 'Work', 'Office'].map(type => (
+            {addressTypes.map(type => (
               <TouchableOpacity
                 key={type}
                 style={styles.radioButton}
                 onPress={() => {
-                  setSelectedAddressTypeId(addressTypes[type]);
+                  setSelectedAddressTypeId(type.id);
                 }}>
                 <View
                   style={[
                     styles.radioOuterCircle,
-                    selectedAddressTypeId === addressTypes[type]
+                    selectedAddressTypeId === type.id
                       ? styles.radioSelected
                       : styles.radioUnselected,
                   ]}>
                   <View style={styles.radioInnerCircle}>
-                    {selectedAddressTypeId === addressTypes[type] && (
+                    {selectedAddressTypeId === type.id && (
                       <View style={styles.radioDot} />
                     )}
                   </View>
                 </View>
-                <Text style={styles.radioText}>{type}</Text>
+                <Text style={styles.radioText}>{type?.name}</Text>
               </TouchableOpacity>
             ))}
           </View>
