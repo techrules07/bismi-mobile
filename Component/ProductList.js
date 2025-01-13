@@ -19,12 +19,11 @@ import FilterPage from './ProductList/Filter';
 const ProductList = () => {
   const productContext = useContext(pContext);
   const userContext = useContext(UserContext);
-  const [sortVisible, setSortVisible] = useState(false); // State for Sort Modal
-  const [filterVisible, setFilterVisible] = useState(false); // State for Sort Modal
+  const [sortVisible, setSortVisible] = useState(false); 
+  const [filterVisible, setFilterVisible] = useState(false); 
   const [selectedSort, setSelectedSort] = useState(null);
   let [sortedData, setSortedData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [appliedFilters, setAppliedFilters] = useState([]);
   const [filterProductRange, setFilterProductRange] = useState(null);
   let userInfo = userContext?.user;
   const navigation = useNavigation();
@@ -51,7 +50,7 @@ const ProductList = () => {
   }, []);
   const handleSortOptionSelect = option => {
     setSelectedSort(option);
-    setSortVisible(false); // Close modal after selecting
+    setSortVisible(false); 
     let sorted_data = [];
     if (option === 'Low Price') {
       sorted_data = productContext.productList.sort(
@@ -132,7 +131,6 @@ const ProductList = () => {
   return (
     <View style={{flex: 1}}>
       <ScrollView style={styles.container}>
-        {/* <Text>{JSON.stringify(productContext.productList, null, 2)}</Text> */}
         <View style={styles.header}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Icon
@@ -188,9 +186,6 @@ const ProductList = () => {
                     </Text>
                     <View style={{display: 'flex', flexDirection: 'row'}}>
                       <View style={{display: 'flex', flexDirection: 'column'}}>
-                        {/* <Text style={{fontSize: 10, fontWeight: 600}}>
-                        Casual Shirts
-                      </Text> */}
                         <View
                           style={{flexDirection: 'row', alignItems: 'center'}}>
                           <Text
@@ -251,10 +246,6 @@ const ProductList = () => {
             () => {
               setFilterVisible(true);
             }
-            // navigation.navigate('FilterPage', {
-            //   productList:productContext?.productList,
-            //   applyFilter: handleFilterApply,
-            // })
           }>
           <Icon name="filter-outline" size={28} color="#fff" />
           <Text style={styles.footerText}>Filter</Text>

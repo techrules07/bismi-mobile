@@ -83,40 +83,12 @@ const Account = props => {
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
             </TouchableOpacity>
-
-            {/* <View style={styles.textContainer}>
-              <View style={styles.textContain}>
-                <View style={{marginTop: 3}}>
-                  <MaterialIcons name="reviews" size={16} />
-                </View>
-                <Text style={styles.list}>Reviews</Text>
-              </View>
-              <View>
-                <MaterialIcons name="keyboard-arrow-right" size={16} />
-              </View>
-            </View> */}
           </View>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Account Settings</Text>
           <View style={styles.cardContent}>
-            {/* <TouchableOpacity
-              style={styles.textContainer}
-              onPress={() => props.navigation.navigate('EditProfile')}>
-              <View style={styles.textContain}>
-                <View style={{marginTop: 3}}>
-                  <MaterialCommunityIcons
-                    name="account-edit-outline"
-                    size={16}
-                  />
-                </View>
-                <Text style={styles.list}>Edit Profile</Text>
-              </View>
-              <View>
-                <MaterialIcons name="keyboard-arrow-right" size={16} />
-              </View>
-            </TouchableOpacity> */}
             <TouchableOpacity
               style={styles.textContainer}
               onPress={() => props.navigation.navigate('Payment')}>
@@ -167,17 +139,6 @@ const Account = props => {
                 <MaterialIcons name="keyboard-arrow-right" size={16} />
               </View>
             </TouchableOpacity>
-            {/* <View style={styles.textContainer}>
-              <View style={styles.textContain}>
-                <View style={{marginTop: 3}}>
-                  <MaterialCommunityIcons name="headset" size={16} />
-                </View>
-                <Text style={styles.list}>Customer Support</Text>
-              </View>
-              <View>
-                <MaterialIcons name="keyboard-arrow-right" size={16} />
-              </View>
-            </View> */}
           </View>
         </View>
 

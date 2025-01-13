@@ -7,12 +7,10 @@ import {
   StyleSheet,
   Image,
   FlatList,
-  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {UserContext} from '../../Context/UserContext';
 import {pContext} from '../../Context/ProductContext';
-import Snackbar from 'react-native-snackbar';
 import {addToCart} from '../../Networking/HomePageService';
 import {ScrollView} from 'react-native-gesture-handler';
 import ToastMessage from '../../Component/toast_message/toast_message';
@@ -67,28 +65,15 @@ const WishlistPage = () => {
 
       if (cartResponse?.code === 200 && cartResponse?.status === 'Success') {
         productContext?.addToCart(defaultItem);
-
-        // Snackbar.show({
-        //   text: 'Product added to cart successfully!',
-        //   duration: Snackbar.LENGTH_LONG,
-        //   backgroundColor: 'green',
-        // });
-
         await removeFromWishlist(selectedItem, false);
         setShowToast(true);
         setShowToastFailure(false);
-        // Alert.alert('Success', 'Item moved to cart');
       } else {
         setShowToast(false);
         setShowToastFailure(true);
         throw new Error('Failed to add product to cart');
       }
     } catch (error) {
-      // Snackbar.show({
-      //   text: error?.message || 'Something went wrong!',
-      //   duration: Snackbar.LENGTH_LONG,
-      //   backgroundColor: 'red',
-      // });
       setShowToast(false);
       setShowToastFailure(true);
     }
@@ -125,7 +110,7 @@ const WishlistPage = () => {
         setShowToastRemoveFailure(true);
       }
     } finally {
-      setRemovingItem(null); // Reset removing state
+      setRemovingItem(null); 
     }
   };
   const navigation = useNavigation();

@@ -294,6 +294,7 @@ const ProductDetails = ({
   const navigateToLogin = () => {
     navigation.navigate('Login');
   };
+  const regex = /(<([^>]+)>|&nbsp;)/gi;
   return (
     <SafeAreaView style={{flex: 1, alignItems: 'center'}}>
       {(showToast || showToastFailure) && (
@@ -431,7 +432,7 @@ const ProductDetails = ({
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between',padding:5}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between',paddingLeft:5}}>
           <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
         </View>
 
@@ -464,7 +465,7 @@ const ProductDetails = ({
         </View>
 
         <Text style={styles.sectionTitle}>Product Description:</Text>
-        <Text style={styles.descriptionText}>{selectedItem?.description}</Text>
+        <Text style={styles.descriptionText}>{selectedItem?.description.replace(regex, '')}</Text>
         <View style={styles.containers} collapsable={false} ref={targetViewRef}>
           <View style={styles.headers}>
             <Text style={styles.title}>Review Product</Text>
@@ -604,14 +605,6 @@ const ProductDetails = ({
                 />
                 <View style={styles.shirtInfo}>
                   <Text style={styles.cardTitle}>{item?.productName}</Text>
-                  {/* <TouchableOpacity
-                    onPress={() => handleFavoriteToggle(selectedItem)}>
-                    <Icon
-                      name={isFavorite ? 'heart' : 'heart-outline'}
-                      size={30}
-                      color={isFavorite ? 'red' : 'gray'}
-                    />
-                  </TouchableOpacity> */}
                 </View>
                 <Text style={styles.cardPrice}>Rs. {item?.price}</Text>
               </View>
@@ -624,7 +617,6 @@ const ProductDetails = ({
         transparent={true}
         visible={showSignIn || showRegister}
         onRequestClose={() => {
-          // this.closeButtonFunction()
         }}>
         <View
           style={{
@@ -632,8 +624,6 @@ const ProductDetails = ({
             backgroundColor: 'white',
             borderTopRightRadius: 24,
             borderTopLeftRadius: 24,
-            // alignItems:"center",
-            // paddingTop:16,
             paddingBottom: 24,
             flex: 0.7,
           }}>
@@ -786,14 +776,14 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'space-between',
     flexDirection: 'row',
-    padding: 10,
+    paddingLeft: 10,
   },
   iconView: {
     flexDirection: 'row',
     gap: 4,
   },
   icon: {
-    // marginLeft: 10,
+
   },
   price: {
     color: 'black',
@@ -812,7 +802,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
-    padding: 10,
+    paddingLeft: 10,
     color: 'black',
   },
   sizeOptions: {
@@ -836,7 +826,7 @@ const styles = StyleSheet.create({
   },
   detailsSection: {
     marginBottom: 10,
-    padding: 10,
+    paddingLeft: 10,
   },
   detailsText: {
     fontSize: 16,
@@ -845,8 +835,7 @@ const styles = StyleSheet.create({
   descriptionText: {
     fontSize: 16,
     lineHeight: 22,
-    marginBottom: 15,
-    padding: 10,
+    paddingLeft: 10,
     color: 'gray',
   },
   similarItemsContainer: {
@@ -1049,7 +1038,6 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 18,
     fontWeight: 'bold',
-    // marginRight: 15,
   },
   reviewContainer: {
     maxHeight: 600,

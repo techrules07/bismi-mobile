@@ -21,7 +21,6 @@ import {
   removeCart,
 } from '../Networking/HomePageService';
 import {UserContext} from '../Context/UserContext';
-import Snackbar from 'react-native-snackbar';
 import {getAddress} from '../Networking/AddressPageService';
 import {applyCoupons} from '../Networking/CouponPageService';
 import ToastMessage from './toast_message/toast_message';
@@ -130,11 +129,6 @@ const CartPage = () => {
           ),
         );
         productContext?.updateQuantity(cartItems);
-        // Snackbar.show({
-        //   text: 'Quantity increased successfully!',
-        //   duration: Snackbar.LENGTH_SHORT,
-        //   backgroundColor: 'green',
-        // });
         setShowAdd(true);
         setShowToastAddFailure(false);
       } else {
@@ -159,12 +153,7 @@ const CartPage = () => {
               : item,
           ),
         );
-        productContext.updateQuantity(cartItems); // Update context
-        // Snackbar.show({
-        //   text: 'Quantity decreased successfully!',
-        //   duration: Snackbar.LENGTH_SHORT,
-        //   backgroundColor: 'green',
-        // });
+        productContext.updateQuantity(cartItems); 
         setShowRemove(true);
         setShowToastRemoveFailure(false);
       } else {
@@ -184,22 +173,12 @@ const CartPage = () => {
       if (response?.code === 200 && response?.status === 'Success') {
         setCartItems(prev => prev.filter(item => item.id !== id));
         productContext.removeFromCart(id);
-        // Snackbar.show({
-        //   text: 'Product removed successfully!',
-        //   duration: Snackbar.LENGTH_LONG,
-        //   backgroundColor: 'green',
-        // });
         setShowItemRemove(true);
         setShowItemRemoveFailure(false);
       } else {
         throw new Error('Failed to remove product from cart');
       }
     } catch (error) {
-      // Snackbar.show({
-      //   text: error?.message || 'Something went wrong!',
-      //   duration: Snackbar.LENGTH_LONG,
-      //   backgroundColor: 'red',
-      // });
       setShowItemRemove(false);
       setShowItemRemoveFailure(true);
     }
@@ -244,11 +223,6 @@ const CartPage = () => {
       if (response?.code === 200 && response?.status === 'Success') {
         setAllCoupons(response?.data);
         setCouponDiscount(response?.data?.discount || 0);
-        // Snackbar.show({
-        //   text: 'Coupon applied successfully!',
-        //   duration: Snackbar.LENGTH_SHORT,
-        //   backgroundColor: 'green',
-        // });
         setShowCoupon(true);
         setShowToastCouponFailure(false);
         setCouponError('');
@@ -279,19 +253,9 @@ const CartPage = () => {
       const response = await placeOrder(bodyData);
 
       if (response?.status === 'Success' && response?.code === 200) {
-        // Snackbar.show({
-        //   text: 'Order placed successfully!',
-        //   duration: Snackbar.LENGTH_SHORT,
-        //   backgroundColor: 'green',
-        // });
         setShowToast(true);
         setShowToastFailure(false);
       } else {
-        // Snackbar.show({
-        //   text: 'Failed to place order. Please try again.',
-        //   duration: Snackbar.LENGTH_SHORT,
-        //   backgroundColor: 'red',
-        // });
         setShowToast(false);
         setShowToastFailure(true);
       }
@@ -299,11 +263,6 @@ const CartPage = () => {
       console.log('Placing order with data:', bodyData);
     } catch (error) {
       console.error('Error placing order:', error);
-      // Snackbar.show({
-      //   text: 'An error occurred while placing the order.',
-      //   duration: Snackbar.LENGTH_SHORT,
-      //   backgroundColor: 'red',
-      // });
       setShowToast(false);
       setShowToastFailure(true);
     }

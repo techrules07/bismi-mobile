@@ -215,7 +215,6 @@ const Category = props => {
                       style={styles.roundedImage}
                     />
                     <Text style={styles.recentText}>{item?.offerName}</Text>
-                    {/* <Text>{JSON.stringify(productContext, null, 2)}</Text> */}
                   </View>
                 ))}
               </ScrollView>
@@ -251,7 +250,6 @@ const Category = props => {
                           <Text style={{fontWeight: 'bold', color: 'black'}}>
                             {store?.subCategoryName}
                           </Text>
-                          {/* <Text>{store?.categoryName }</Text> */}
                         </View>
 
                         <Text style={{color: 'black'}}>
@@ -264,7 +262,6 @@ const Category = props => {
               </View>
             </ScrollView>
           )}
-          {/* {selectedSection === 'Fashion' && <CategoryForMens />} */}
         </View>
       )}
     </View>
@@ -363,7 +360,6 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 40,
   },
-  //   sidebarContainer: {flex: 1},
   forYouSection: {
     marginTop: 20,
     alignItems: 'center',
