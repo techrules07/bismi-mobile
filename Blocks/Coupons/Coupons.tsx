@@ -140,31 +140,32 @@ const CouponsPage = () => {
           <Text style={styles.pageTitle}>Available Coupon</Text>
           <View style={styles.circle}></View>
           <View style={styles.circleRight}></View>
-          {coupon?.map(_item => (
-            <View style={styles.couponCard}>
-              <View style={styles.row}>
-                <View style={styles.imageWrapper}>
-                  <Image
-                    source={{uri: _item?.couponImage}}
-                    style={styles.couponImage}
-                  />
-                </View>
+          {coupon?.length > 0 ? (
+            coupon?.map(_item => (
+              <View style={styles.couponCard}>
+                <View style={styles.row}>
+                  <View style={styles.imageWrapper}>
+                    <Image
+                      source={{uri: _item?.couponImage}}
+                      style={styles.couponImage}
+                    />
+                  </View>
 
-                <View style={styles.dottedLine}></View>
-                <View style={styles.details}>
-                  <Text style={styles.couponDescription}>
-                    {_item?.description}
-                  </Text>
-                  <Text style={styles.couponDescription}>
-                    Coupon code : {_item?.couponCode}
-                  </Text>
-                  <Text style={styles.expiryText}>
-                    Expires: {_item?.endDate}
-                  </Text>
-                  <Text style={styles.minPurchase}>
-                    Min Purchase: ₹{_item?.minimumPurchaseAmount}
-                  </Text>
-                  {/* <Text
+                  <View style={styles.dottedLine}></View>
+                  <View style={styles.details}>
+                    <Text style={styles.couponDescription}>
+                      {_item?.description}
+                    </Text>
+                    <Text style={styles.couponDescription}>
+                      Coupon code : {_item?.couponCode}
+                    </Text>
+                    <Text style={styles.expiryText}>
+                      Expires: {_item?.endDate}
+                    </Text>
+                    <Text style={styles.minPurchase}>
+                      Min Purchase: ₹{_item?.minimumPurchaseAmount}
+                    </Text>
+                    {/* <Text
                   style={
                     _item.active === true
                       ? styles.activeText
@@ -172,20 +173,33 @@ const CouponsPage = () => {
                   }>
                   {_item.active === true ? 'Active' : 'Expired'}
                 </Text> */}
-                  <TouchableOpacity
-                    style={
-                      _item.active === true
-                        ? styles.applyButton
-                        : styles.disabledButton
-                    }
-                    onPress={() => applyCouponFor(_item)}
-                    disabled={_item.active !== true}>
-                    <Text style={styles.buttonText}>Apply Coupon</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={
+                        _item.active === true
+                          ? styles.applyButton
+                          : styles.disabledButton
+                      }
+                      onPress={() => applyCouponFor(_item)}
+                      disabled={_item.active !== true}>
+                      <Text style={styles.buttonText}>Apply Coupon</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
+            ))
+          ) : (
+            <View style={{flex: 1, margin: 12}}>
+              <Text
+                style={{
+                  padding: 12,
+                  textAlign: 'center',
+                  borderWidth: 1,
+                  borderStyle: 'dashed',
+                }}>
+                No Coupon Found
+              </Text>
             </View>
-          ))}
+          )}
         </View>
       </ScrollView>
       <View style={{alignItems: 'center'}}>
