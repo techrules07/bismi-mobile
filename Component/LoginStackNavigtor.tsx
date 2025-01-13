@@ -1,11 +1,10 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './Login';
 import SignUpScreen from './SignUp';
 import OtpVerificationScreen from './OTP';
 
-const LoginScreenStack = createStackNavigator(); // Use capital "S"
+const LoginScreenStack = createStackNavigator(); 
 
 const LoginScreenNavigator = () => {
   return (

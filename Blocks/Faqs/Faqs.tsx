@@ -25,7 +25,7 @@ const FAQsScreen = () => {
   ];
 
   const toggleDetails = index => {
-    setExpanded(prev => (prev === index ? null : index)); // Toggle the expanded state
+    setExpanded(prev => (prev === index ? null : index)); 
   };
   const navigation = useNavigation();
   return (
@@ -103,7 +103,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    // padding: 20,
   },
   header: {
     flexDirection: 'row',
@@ -124,7 +123,6 @@ const styles = StyleSheet.create({
   Cards: {
     backgroundColor: '#fff',
     marginBottom: 15,
-    // borderRadius: 8,
     padding: 15,
     elevation: 2,
     shadowColor: '#000',
@@ -135,7 +133,6 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     marginBottom: 5,
-    // borderRadius: 8,
     padding: 15,
     elevation: 2,
     shadowColor: '#000',

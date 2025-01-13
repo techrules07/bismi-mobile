@@ -165,14 +165,6 @@ const CouponsPage = () => {
                     <Text style={styles.minPurchase}>
                       Min Purchase: ₹{_item?.minimumPurchaseAmount}
                     </Text>
-                    {/* <Text
-                  style={
-                    _item.active === true
-                      ? styles.activeText
-                      : styles.expiredText
-                  }>
-                  {_item.active === true ? 'Active' : 'Expired'}
-                </Text> */}
                     <TouchableOpacity
                       style={
                         _item.active === true

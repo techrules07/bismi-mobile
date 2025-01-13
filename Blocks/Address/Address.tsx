@@ -20,7 +20,6 @@ import {
 } from '../../Networking/AddressPageService';
 import {ScrollView} from 'react-native-gesture-handler';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import Snackbar from 'react-native-snackbar';
 import ToastMessage from '../../Component/toast_message/toast_message';
 import DropdownComponent from '../../Component/DropDown/DropDown';
 const SavedAddressesPage = () => {
@@ -63,7 +62,6 @@ const SavedAddressesPage = () => {
   const [showToastMessage, setShowToastMessage] = useState('');
   const {user} = useContext(UserContext);
   const [showAddAddress, setShowAddAddress] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [defaultAddress, setDefaultAddress] = useState(false);
   const [addressId, setAddressId] = useState(null);
   const navigation = useNavigation();
@@ -135,11 +133,6 @@ const SavedAddressesPage = () => {
       const userId = user?.id;
       defaultAddressApi(addressId, userId)
         .then(data => {
-          // Snackbar.show({
-          //   text: 'Default address set successfully!',
-          //   duration: Snackbar.LENGTH_LONG,
-          //   backgroundColor: 'green',
-          // });
           setShowToastDefault(true);
           setShowToastDefaultFailure(false);
           setSavedAddresses(prevAddresses =>
@@ -153,11 +146,6 @@ const SavedAddressesPage = () => {
           setDefaultAddress(addressId);
         })
         .catch(error => {
-          // Snackbar.show({
-          //   text: 'Failed to set default address!',
-          //   duration: Snackbar.LENGTH_LONG,
-          //   backgroundColor: 'red',
-          // });
           setShowToastDefault(false);
           setShowToastDefaultFailure(true);
           console.log('Failed to set default address:', error);
@@ -252,11 +240,6 @@ const SavedAddressesPage = () => {
           : 'Failed to add address!';
 
         if (res?.code === 200 || res.data.code === 200) {
-          // Snackbar.show({
-          //   text: successMessage,
-          //   duration: Snackbar.LENGTH_SHORT,
-          //   backgroundColor: 'green',
-          // });
           fetchUserAddress(user?.id, user?.id);
           handleCloseForm();
           setShowToast(true);
@@ -268,20 +251,9 @@ const SavedAddressesPage = () => {
           setShowToast(false);
           setShowToastFailure(true);
           setShowToastMessage(errorMessage);
-
-          // Snackbar.show({
-          //   text: errorMessage,
-          //   duration: Snackbar.LENGTH_SHORT,
-          //   backgroundColor: 'red',
-          // });
         }
       })
       .catch(error => {
-        // Snackbar.show({
-        //   text: 'Error saving address',
-        //   duration: Snackbar.LENGTH_SHORT,
-        //   backgroundColor: 'red',
-        // });
         console.log('Error saving address');
         setShowToast(false);
         setShowToastFailure(true);
@@ -336,18 +308,8 @@ const SavedAddressesPage = () => {
         );
         setShowToastDelete(true);
         setShowToastDeleteFailure(false);
-        // Snackbar.show({
-        //   text: 'Address deleted successfully!',
-        //   duration: Snackbar.LENGTH_LONG,
-        //   backgroundColor: 'green',
-        // });
       })
       .catch(error => {
-        // Snackbar.show({
-        //   text: 'Failed to delete address!',
-        //   duration: Snackbar.LENGTH_LONG,
-        //   backgroundColor: 'red',
-        // });
         setShowToastDelete(false);
         setShowToastDeleteFailure(true);
         console.log('Failed to delete address:', error);

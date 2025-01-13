@@ -9,7 +9,6 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import Icons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const SavedPaymentsPage = () => {
@@ -219,7 +218,6 @@ const SavedPaymentsPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // padding: 20,
     backgroundColor: '#f9f9f9',
   },
   header: {

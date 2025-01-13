@@ -15,25 +15,14 @@ const DropdownComponent = ({
 }) => {
   const [isFocus, setIsFocus] = useState(false);
 
-  const renderLabel = () => {
-    // Show label only if value is not selected and input is not focused
-    if (!value && !isFocus) {
-      return (
-        <Text style={[styles.label, isFocus && {color: '#703F07'}]}>
-          {placeholder || 'Select item'}
-        </Text>
-      );
-    }
-    return null;
-  };
 
   return (
     <View style={styles.container}>
       <Dropdown
         style={[
           styles.dropdown,
-          isFocus && {borderColor: '#703F07'}, // Change border color when focused
-          error && !isFocus && {borderColor: 'red'}, // Change border color to red when error exists and not focused
+          isFocus && {borderColor: '#703F07'}, 
+          error && !isFocus && {borderColor: 'red'}, 
         ]}
         placeholderStyle={styles.placeholderStyle}
         selectedTextStyle={styles.selectedTextStyle}
@@ -61,7 +50,7 @@ const DropdownComponent = ({
         }}
       />
       {error && !isFocus ? (
-        <Text style={styles.errorText}>{error}</Text> // Show error text below the dropdown when not focused
+        <Text style={styles.errorText}>{error}</Text> 
       ) : null}
     </View>
   );
@@ -70,7 +59,6 @@ const DropdownComponent = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    // marginVertical: 10,
   },
   dropdown: {
     height: 50,
