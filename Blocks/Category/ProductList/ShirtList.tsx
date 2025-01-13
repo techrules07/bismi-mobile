@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 10,
+    padding: 15,
     backgroundColor: '#703F07',
   },
   headerTitle: {fontSize: 18, fontWeight: 'bold', color: '#fff'},

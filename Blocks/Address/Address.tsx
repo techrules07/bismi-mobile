@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#703F07',
-    padding: 10,
+    padding: 15,
     alignItems: 'center',
   },
   inputError: {

@@ -85,6 +85,7 @@ const HomeScreen = props => {
           paddingVertical: 16,
           width: '100%',
           backgroundColor: themeConfig.appPrimary,
+          paddingBottom: 40,
         }}>
         <View style={{}}>
           <Image source={Logo} />
@@ -139,7 +140,7 @@ const HomeScreen = props => {
                 // padding: 16,
                 // height: 800,
               }}>
-              <View style={{width: '100%',padding:16}}>
+              <View style={{width: '100%', padding: 16}}>
                 {productContext?.sliderItems.length > 0 && (
                   <Carousel
                     width={width - 30}
@@ -182,7 +183,7 @@ const HomeScreen = props => {
                   <TouchableOpacity
                     key={item.id}
                     style={{
-                      flexBasis: '25%',
+                      flexBasis: '30%',
                       // height: 80,
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -199,10 +200,11 @@ const HomeScreen = props => {
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        padding: '10px',
                       }}>
                       <Image
                         source={{uri: item.imageURL}}
-                        style={{width: 56, height: 56, borderRadius: 28}}
+                        style={styles.roundedImage}
                       />
                       <Text
                         style={{
@@ -218,10 +220,7 @@ const HomeScreen = props => {
                 ))}
               </View>
 
-              <View
-                style={{
-
-                }}>
+              <View style={{}}>
                 <Text style={styles.sectionTitle}>More Offers</Text>
                 <ScrollView
                   horizontal
@@ -246,7 +245,14 @@ const HomeScreen = props => {
                   contentContainerStyle={{flexDirection: 'row'}}
                   showsHorizontalScrollIndicator={false}>
                   {productContext?.homeItems?.map(store => (
-                    <View key={store.id} style={styles.gridItem}>
+                    <TouchableOpacity
+                      key={store.id}
+                      style={styles.gridItem}
+                      onPress={() =>
+                        props.navigation.navigate('Products', {
+                          categoryId: store?.id,
+                        })
+                      }>
                       <Image
                         source={{uri: store?.imageURL}}
                         style={styles.gridImage}
@@ -256,7 +262,7 @@ const HomeScreen = props => {
                           {store?.categoryName}
                         </Text>
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   ))}
                 </ScrollView>
               </View>
@@ -295,7 +301,7 @@ const styles = StyleSheet.create({
   gridItem: {
     width: 120,
     marginLeft: 16,
-    padding:4,
+    padding: 4,
     backgroundColor: themeConfig.appSecondary,
     borderRadius: 16,
     overflow: 'hidden',
@@ -308,8 +314,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 100,
     resizeMode: 'cover',
-    borderTopLeftRadius:12,
-    borderTopRightRadius:12,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   gridText: {
     fontSize: 12,
@@ -318,7 +324,7 @@ const styles = StyleSheet.create({
     padding: 4,
     textAlign: 'center',
     alignItems: 'center',
-    fontWeight:"bold"
+    fontWeight: 'bold',
   },
   loaderContainer: {
     position: 'absolute',

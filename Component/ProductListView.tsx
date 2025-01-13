@@ -431,7 +431,7 @@ const ProductDetails = ({
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between',padding:5}}>
           <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
         </View>
 
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 10,
+    padding: 15,
     backgroundColor: '#703F07',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'space-between',
     flexDirection: 'row',
-    padding: 5,
+    padding: 10,
   },
   iconView: {
     flexDirection: 'row',
@@ -812,7 +812,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
-    padding: 5,
+    padding: 10,
     color: 'black',
   },
   sizeOptions: {
@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
   },
   detailsSection: {
     marginBottom: 10,
-    padding: 5,
+    padding: 10,
   },
   detailsText: {
     fontSize: 16,
@@ -846,7 +846,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     marginBottom: 15,
-    padding: 5,
+    padding: 10,
     color: 'gray',
   },
   similarItemsContainer: {

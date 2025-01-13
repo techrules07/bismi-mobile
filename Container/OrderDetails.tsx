@@ -102,11 +102,10 @@ const OrderDetails = props => {
                     <Text style={styles.productName}>
                       {listOrder?.productName}
                     </Text>
-              
                   </View>
                   <Text style={styles.productCategory}>
-                      {listOrder?.productCategory}
-                    </Text>
+                    {listOrder?.productCategory}
+                  </Text>
                   <Text style={styles.arrivalText}>
                     Brand: {listOrder?.brand}
                   </Text>
@@ -169,7 +168,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#703F07',
     height: 50,
     justifyContent: 'center',
-    paddingLeft: 15,
   },
   divider: {
     borderBottomColor: 'black',
@@ -180,6 +178,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 10,
   },
   orderText: {
     fontSize: 16,
@@ -194,7 +193,7 @@ const styles = StyleSheet.create({
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 5,
+    padding: 10,
     // backgroundColor: '#fff',
     marginBottom: 10,
   },
