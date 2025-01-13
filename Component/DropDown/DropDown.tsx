@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
+import React, {useState} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
+import {Dropdown} from 'react-native-element-dropdown';
 
 const DropdownComponent = ({
   data,
@@ -19,7 +19,7 @@ const DropdownComponent = ({
     // Show label only if value is not selected and input is not focused
     if (!value && !isFocus) {
       return (
-        <Text style={[styles.label, isFocus && { color: '#703F07' }]}>
+        <Text style={[styles.label, isFocus && {color: '#703F07'}]}>
           {placeholder || 'Select item'}
         </Text>
       );
@@ -29,12 +29,11 @@ const DropdownComponent = ({
 
   return (
     <View style={styles.container}>
-  
       <Dropdown
         style={[
           styles.dropdown,
-          isFocus && { borderColor: '#703F07' },  // Change border color when focused
-          error && !isFocus && { borderColor: 'red' },  // Change border color to red when error exists and not focused
+          isFocus && {borderColor: '#703F07'}, // Change border color when focused
+          error && !isFocus && {borderColor: 'red'}, // Change border color to red when error exists and not focused
         ]}
         placeholderStyle={styles.placeholderStyle}
         selectedTextStyle={styles.selectedTextStyle}
@@ -62,7 +61,7 @@ const DropdownComponent = ({
         }}
       />
       {error && !isFocus ? (
-        <Text style={styles.errorText}>{error}</Text>  // Show error text below the dropdown when not focused
+        <Text style={styles.errorText}>{error}</Text> // Show error text below the dropdown when not focused
       ) : null}
     </View>
   );

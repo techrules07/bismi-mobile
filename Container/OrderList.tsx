@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    marginTop: 10,
+    padding:10
   },
   OrderText: {
     fontSize: 16,
