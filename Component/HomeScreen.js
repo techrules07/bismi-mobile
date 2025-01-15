@@ -185,6 +185,7 @@ const HomeScreen = props => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: 16,
+                      marginLeft:10
                     }}
                     onPress={() => {
                       props.navigation.navigate('Products', {
