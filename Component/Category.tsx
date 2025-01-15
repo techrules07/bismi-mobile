@@ -61,7 +61,7 @@ const Category = props => {
   const fetchAllOffers = async () => {
     const response = await getAllOffers();
     if (response?.status === 200 && response?.data?.code === 200) {
-      productContext.updateSliderItems(response?.data?.data);
+      productContext?.updateSliderItems(response?.data?.data);
     }
   };
 
@@ -69,7 +69,7 @@ const Category = props => {
     try {
       const response = await getAllPremiumProducts();
       if (response?.status === 200 && response?.data?.code === 200) {
-        productContext.updatePremiumProducts(response?.data?.data);
+        productContext?.updatePremiumProducts(response?.data?.data);
       }
     } catch (error) {
       console.error('Failed to fetch premium products:', error);
@@ -80,7 +80,7 @@ const Category = props => {
     try {
       const response = await getNewArrivalProducts();
       if (response?.status === 200 && response?.data?.code === 200) {
-        productContext.updateNewArrival(response?.data?.data);
+        productContext?.updateNewArrival(response?.data?.data);
       }
     } catch (error) {
       console.error('Failed to fetch arrival products:', error);
@@ -93,7 +93,7 @@ const Category = props => {
       categoriesResponse?.status === 200 &&
       categoriesResponse?.data?.code === 200
     ) {
-      productContext.updateCategories(categoriesResponse.data.data);
+      productContext?.updateCategories(categoriesResponse.data.data);
     }
   };
 
@@ -152,7 +152,7 @@ const Category = props => {
                     handleSidebarClick(category?.id, userInfo?.id)
                   }>
                   <Image
-                    source={{uri: category.imageURL}}
+                    source={{uri: category?.imageURL}}
                     style={[
                       selectedSection === category?.id
                         ? styles.roundedImages
@@ -181,7 +181,7 @@ const Category = props => {
                 horizontal
                 style={styles.horizontalScroll}
                 showsHorizontalScrollIndicator={false}>
-                {productContext?.productList.map(item => (
+                {productContext?.productList?.map(item => (
                   <TouchableOpacity
                     key={item.id}
                     style={styles.recentItem}
@@ -223,7 +223,7 @@ const Category = props => {
                 horizontal
                 style={styles.horizontalScroll}
                 showsHorizontalScrollIndicator={false}>
-                {productContext?.newArrival.map(item => (
+                {productContext?.newArrival?.map(item => (
                   <View key={item.id} style={styles.recentItem}>
                     <Image
                       source={{uri: item?.mainImageUrl}}

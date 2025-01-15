@@ -23,7 +23,7 @@ const HomeScreen = props => {
   const productContext = useContext(pContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const width = Dimensions.get('window').width;
+  const width = Dimensions?.get('window').width;
   const handleSearch = text => {
     if (typeof text === 'string') {
       setSearchQuery(text);
@@ -33,7 +33,7 @@ const HomeScreen = props => {
   if (searchQuery) {
     let search_query = searchQuery?.toLowerCase()?.trim();
     filteredProducts = Array.isArray(productContext?.categories)
-      ? productContext?.categories.filter(product =>
+      ? productContext?.categories?.filter(product =>
           product?.categoryName?.toLowerCase()?.includes(search_query),
         )
       : [];
@@ -51,19 +51,19 @@ const HomeScreen = props => {
             getAllCategories(),
           ]);
 
-        if (offersResponse.status === 200 && offersResponse.data.code === 200) {
-          productContext.updateSliderItems(offersResponse.data.data);
+        if (offersResponse?.status === 200 && offersResponse?.data?.code === 200) {
+          productContext?.updateSliderItems(offersResponse?.data?.data);
         }
 
         if (
-          categoriesResponse.status === 200 &&
-          categoriesResponse.data.code === 200
+          categoriesResponse?.status === 200 &&
+          categoriesResponse?.data?.code === 200
         ) {
-          productContext.updateCategories(categoriesResponse.data.data);
+          productContext?.updateCategories(categoriesResponse?.data?.data);
         }
 
-        if (homeResponse.status === 200 && homeResponse.data.code === 200) {
-          productContext.updateHomeItems(homeResponse.data.data);
+        if (homeResponse?.status === 200 && homeResponse?.data?.code === 200) {
+          productContext?.updateHomeItems(homeResponse?.data?.data);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -133,15 +133,10 @@ const HomeScreen = props => {
           ) : (
             <View
               style={{
-                // flex: 1,
                 width: '100%',
-                // borderTopRightRadius: 16,
-                // borderTopLeftRadius: 16,
-                // padding: 16,
-                // height: 800,
               }}>
               <View style={{width: '100%', padding: 16}}>
-                {productContext?.sliderItems.length > 0 && (
+                {productContext?.sliderItems?.length > 0 && (
                   <Carousel
                     width={width - 30}
                     height={160}
@@ -154,7 +149,7 @@ const HomeScreen = props => {
                         <View style={{height: 160, width: '100%'}}>
                           {item.item.offerImage != null ? (
                             <Image
-                              source={{uri: item.item.offerImage}}
+                              source={{uri: item?.item?.offerImage}}
                               style={{
                                 width: '100%',
                                 height: '100%',
@@ -184,7 +179,6 @@ const HomeScreen = props => {
                     key={item.id}
                     style={{
                       flexBasis: '30%',
-                      // height: 80,
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: 16,
@@ -208,7 +202,7 @@ const HomeScreen = props => {
                       />
                       <Text
                         style={{
-                          fontWeight: '500', // Fix for React Native fontWeight
+                          fontWeight: '500', 
                           fontSize: 12,
                           color: themeConfig.appPrimary,
                           marginTop: 4,
@@ -227,7 +221,7 @@ const HomeScreen = props => {
                   style={styles.horizontalScroll}
                   showsHorizontalScrollIndicator={false}>
                   {productContext?.sliderItems?.map(item => (
-                    <View key={item.id} style={styles.recentItem}>
+                    <View key={item?.id} style={styles.recentItem}>
                       <Image
                         source={{uri: item?.offerImage}}
                         style={styles.roundedImage}

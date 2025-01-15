@@ -32,7 +32,7 @@ const LoginScreen = props => {
   const {setUser} = useContext(UserContext);
   const validateMobileNumber = (number: string) => {
     const regex = /^[0-9]{10}$/;
-    return regex.test(number);
+    return regex?.test(number);
   };
 
   const handleLogin = async () => {
@@ -95,7 +95,7 @@ const LoginScreen = props => {
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length !== 6) {
+    if (otp?.length !== 6) {
       setErrorMessage(prev => ({
         ...prev,
         otp: 'Please enter a valid 6-digit OTP.',
@@ -144,7 +144,7 @@ const LoginScreen = props => {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Mobile</Text>
         <TextInput
-          style={[styles.input, errorMessage.mobile ? styles.errorInput : null]}
+          style={[styles.input, errorMessage?.mobile ? styles.errorInput : null]}
           placeholder="Enter your mobile number"
           value={mobileNumber}
           onChangeText={setMobileNumber}
@@ -152,7 +152,7 @@ const LoginScreen = props => {
         />
       </View>
       {errorMessage.mobile && (
-        <Text style={styles.errorText}>{errorMessage.mobile}</Text>
+        <Text style={styles.errorText}>{errorMessage?.mobile}</Text>
       )}
 
       {!isOtpVisible && (
@@ -170,15 +170,15 @@ const LoginScreen = props => {
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Enter OTP</Text>
           <TextInput
-            style={[styles.input, errorMessage.otp ? styles.errorInput : null]}
+            style={[styles.input, errorMessage?.otp ? styles.errorInput : null]}
             placeholder="Enter OTP"
             value={otp}
             onChangeText={setOtp}
             keyboardType="number-pad"
             maxLength={6}
           />
-          {errorMessage.otp && (
-            <Text style={styles.errorText}>{errorMessage.otp}</Text>
+          {errorMessage?.otp && (
+            <Text style={styles.errorText}>{errorMessage?.otp}</Text>
           )}
 
           <TouchableOpacity style={styles.button} onPress={handleVerifyOtp}>

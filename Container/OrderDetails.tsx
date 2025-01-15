@@ -18,12 +18,12 @@ import ToastMessage from '../Component/toast_message/toast_message';
 
 const OrderDetails = props => {
   const route = useRoute();
-  const {_orderItem} = route.params;
+  const {_orderItem} = route?.params;
   const {user, logout} = useContext(UserContext);
   const steps = [
     {label: 'Order Placed', value: '12 Dec 2024, 10:30 AM'},
     {label: 'Shipped', value: 'Querier partner tracking id-1234567'},
-    {label: 'In-Transit', value: '14 Dec 2024 Track'},
+    // {label: 'In-Transit', value: '14 Dec 2024 Track'},
     {label: 'Out for Delivery', value: '14 Dec 2024 Track'},
     {label: 'Delivered', value: '14 Dec 2024, 12:30 PM'},
   ];
@@ -87,55 +87,58 @@ const OrderDetails = props => {
           <Text style={styles.orderId}>Order ID: {listOrder[0]?.orderId}</Text>
           <Text style={styles.orderId}>Date: {listOrder[0]?.createdAt}</Text>
         </View>
+        {listOrder && listOrder?.length > 0 && (
+          <View style={styles.card}>
+            {listOrder?.map((listOrder, index) => (
+              <View>
+                <View key={index} style={styles.cardContent}>
+                  <Image
+                    source={{uri: listOrder?.productImage}}
+                    style={styles.productImage}
+                  />
 
-        <View style={styles.card}>
-          {listOrder?.map((listOrder, index) => (
-            <View>
-              <View key={index} style={styles.cardContent}>
-                <Image
-                  source={{uri: listOrder?.productImage}}
-                  style={styles.productImage}
-                />
-
-                <View style={styles.productDetails}>
-                  <View style={styles.productRow}>
-                    <Text style={styles.productName}>
-                      {listOrder?.productName}
+                  <View style={styles.productDetails}>
+                    <View style={styles.productRow}>
+                      <Text style={styles.productName}>
+                        {listOrder?.productName}
+                      </Text>
+                    </View>
+                    <Text style={styles.productCategory}>
+                      {listOrder?.productCategory}
                     </Text>
-                  </View>
-                  <Text style={styles.productCategory}>
-                    {listOrder?.productCategory}
-                  </Text>
-                  <Text style={styles.arrivalText}>
-                    Brand: {listOrder?.brand}
-                  </Text>
-                  <Text style={styles.arrivalText}>
-                    Size: {listOrder?.size}
-                  </Text>
-                  <Text style={styles.arrivalText}>
-                    Qty: {listOrder?.quantity}
-                  </Text>
-                  <View style={styles.productPriceContainer}>
-                    <Text style={styles.productPrice}>₹{listOrder?.price}</Text>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={handleDownload}>
-                      <MaterialIcons
-                        name="file-download"
-                        size={20}
-                        color="#000"
-                      />
-                      <Text style={styles.buttonText}>Download Invoice</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.arrivalText}>
+                      Brand: {listOrder?.brand}
+                    </Text>
+                    <Text style={styles.arrivalText}>
+                      Size: {listOrder?.size}
+                    </Text>
+                    <Text style={styles.arrivalText}>
+                      Qty: {listOrder?.quantity}
+                    </Text>
+                    <View style={styles.productPriceContainer}>
+                      <Text style={styles.productPrice}>
+                        ₹{listOrder?.price}
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleDownload}>
+                        <MaterialIcons
+                          name="file-download"
+                          size={20}
+                          color="#000"
+                        />
+                        <Text style={styles.buttonText}>Download Invoice</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
+                <View style={styles.divider} />
               </View>
-              <View style={styles.divider} />
-            </View>
-          ))}
+            ))}
 
-          <StepperComponent steps={steps} />
-        </View>
+            <StepperComponent steps={steps} />
+          </View>
+        )}
       </View>
       {/* <View style={{alignItems: 'center'}}>
         {(showToast || showToastFailure) && (
