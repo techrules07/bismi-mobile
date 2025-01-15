@@ -51,7 +51,10 @@ const HomeScreen = props => {
             getAllCategories(),
           ]);
 
-        if (offersResponse?.status === 200 && offersResponse?.data?.code === 200) {
+        if (
+          offersResponse?.status === 200 &&
+          offersResponse?.data?.code === 200
+        ) {
           productContext?.updateSliderItems(offersResponse?.data?.data);
         }
 
@@ -147,7 +150,7 @@ const HomeScreen = props => {
                     renderItem={item => {
                       return (
                         <View style={{height: 160, width: '100%'}}>
-                          {item.item.offerImage != null ? (
+                          {item?.item?.offerImage != null ? (
                             <Image
                               source={{uri: item?.item?.offerImage}}
                               style={{
@@ -183,18 +186,18 @@ const HomeScreen = props => {
                       justifyContent: 'center',
                       marginBottom: 16,
                     }}
-                    onPress={() =>
+                    onPress={() => {
                       props.navigation.navigate('Products', {
-                        categoryId: item.id,
-                      })
-                    }>
+                        categoryId: item?.id,
+                      });
+                    }}>
                     <View
                       style={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        padding: '10px',
+                        padding: 10,
                       }}>
                       <Image
                         source={{uri: item.imageURL}}
@@ -202,7 +205,7 @@ const HomeScreen = props => {
                       />
                       <Text
                         style={{
-                          fontWeight: '500', 
+                          fontWeight: '500',
                           fontSize: 12,
                           color: themeConfig.appPrimary,
                           marginTop: 4,
@@ -240,7 +243,7 @@ const HomeScreen = props => {
                   showsHorizontalScrollIndicator={false}>
                   {productContext?.homeItems?.map(store => (
                     <TouchableOpacity
-                      key={store.id}
+                      key={store?.id}
                       style={styles.gridItem}
                       onPress={() =>
                         props.navigation.navigate('Products', {
