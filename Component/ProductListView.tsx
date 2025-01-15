@@ -77,9 +77,9 @@ const ProductDetails = ({
   }, [selectedItem, user]);
 
   const scrollToTarget = () => {
-    targetViewRef.current.measure((fx, fy, width, height, px, py) => {
-      console.log(fx, fy, width, height, px, py, 'from target Ref');
-      scrollViewRef.current.scrollTo({
+    targetViewRef?.current?.measure((fx, fy, width, height, px, py) => {
+      console?.log(fx, fy, width, height, px, py, 'from target Ref');
+      scrollViewRef?.current?.scrollTo({
         x: 0,
         y: -py + 70,
         animated: true,
@@ -88,7 +88,7 @@ const ProductDetails = ({
   };
 
   const scrollToTop = () => {
-    scrollViewRef.current?.scrollTo({
+    scrollViewRef?.current?.scrollTo({
       y: 0,
       animated: true,
     });
@@ -147,9 +147,9 @@ const ProductDetails = ({
     setRating(index + 1);
   };
   const handleEdit = review => {
-    setEditingItemId(review.id);
-    setComment(review.comments);
-    setRating(review.rating);
+    setEditingItemId(review?.id);
+    setComment(review?.comments);
+    setRating(review?.rating);
   };
   const handleSubmit = async () => {
     try {
@@ -384,7 +384,7 @@ const ProductDetails = ({
         </View>
 
         <View style={styles.iconContainer}>
-          <Text style={styles.shirtTitle}>{selectedItem?.productName}</Text>
+          <Text style={styles.productTitle}>{selectedItem?.productName}</Text>
           <View style={styles.iconView}>
             <TouchableOpacity
               onPress={() => {
@@ -440,9 +440,9 @@ const ProductDetails = ({
           <Icon name="star" size={26} color={'gray'} />
           <Text style={styles.ratingText}>
             {productContext &&
-            productContext.ratings &&
-            productContext.ratings.length > 0
-              ? productContext.ratings[productContext.ratings.length - 1]
+            productContext?.ratings &&
+            productContext?.ratings?.length > 0
+              ? productContext?.ratings[productContext?.ratings?.length - 1]
                   ?.rating || 0.0
               : 0.0}
           </Text>
@@ -465,7 +465,7 @@ const ProductDetails = ({
         </View>
 
         <Text style={styles.sectionTitle}>Product Description:</Text>
-        <Text style={styles.descriptionText}>{selectedItem?.description.replace(regex, '')}</Text>
+        <Text style={styles.descriptionText}>{selectedItem?.description?.replace(regex, '')}</Text>
         <View style={styles.containers} collapsable={false} ref={targetViewRef}>
           <View style={styles.headers}>
             <Text style={styles.title}>Review Product</Text>
@@ -473,7 +473,7 @@ const ProductDetails = ({
 
           <View style={styles.ratingContainer}>
             <View style={styles.stars}>
-              {[...Array(5)].map((_, index) => {
+              {[...Array(5)]?.map((_, index) => {
                 const isFull = rating >= index + 1;
 
                 return (
@@ -523,20 +523,20 @@ const ProductDetails = ({
           style={[styles.reviewContainer, {maxHeight: 500}]}
           nestedScrollEnabled={true}
           showsVerticalScrollIndicator={false}>
-          {productContext?.ratings && productContext?.ratings.length > 0 ? (
+          {productContext?.ratings && productContext?.ratings?.length > 0 ? (
             productContext?.ratings
-              .slice(
+              ?.slice(
                 0,
                 showAllReviews
                   ? productContext?.ratings?.length
                   : visibleReviews,
               )
-              .map(item => (
-                <View key={item.id} style={styles.reviewCard}>
+              ?.map(item => (
+                <View key={item?.id} style={styles.reviewCard}>
                   <View style={styles.reviewHeader}>
                     <Text style={styles.username}>{item.username}</Text>
                     <View style={styles.stars}>
-                      {Array.from({length: item.rating}).map((_, index) => (
+                      {Array.from({length: item?.rating})?.map((_, index) => (
                         <Icon
                           key={index}
                           name="star"
@@ -549,7 +549,7 @@ const ProductDetails = ({
                   <Text style={styles.comment}>
                     {item?.comments || 'No comment'}
                   </Text>
-                  {item.userId === user?.id && (
+                  {item?.userId === user?.id && (
                     <View style={styles.commentActions}>
                       <TouchableOpacity
                         style={styles.editButton}
@@ -603,7 +603,7 @@ const ProductDetails = ({
                   source={{uri: item?.productImage || item?.productImages?.[0]}}
                   style={styles.cardImage}
                 />
-                <View style={styles.shirtInfo}>
+                <View style={styles.productInfo}>
                   <Text style={styles.cardTitle}>{item?.productName}</Text>
                 </View>
                 <Text style={styles.cardPrice}>Rs. {item?.price}</Text>
@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     padding: 5,
   },
-  shirtTitle: {
+  productTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
@@ -855,7 +855,7 @@ const styles = StyleSheet.create({
     height: 150,
     marginBottom: 5,
   },
-  shirtInfo: {
+  productInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

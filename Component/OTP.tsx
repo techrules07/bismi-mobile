@@ -19,7 +19,7 @@ const OtpVerificationScreen = ({route}) => {
 
 
 
-    if (otp.length !== 6) {
+    if (otp?.length !== 6) {
       setErrorMessage('Please enter a 6-digit OTP.');
       return;
     }

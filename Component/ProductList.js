@@ -28,7 +28,7 @@ const ProductList = () => {
   let userInfo = userContext?.user;
   const navigation = useNavigation();
   const route = useRoute();
-  const {categoryId} = route.params;
+  const {categoryId} = route?.params;
   useEffect(() => {
     async function getProducts(params) {
       const productsListRespone = await getAllProducts(
@@ -40,7 +40,7 @@ const ProductList = () => {
         productsListRespone.status == 200 &&
         productsListRespone.data.code == 200
       ) {
-        productContext.updateProductList(
+        productContext?.updateProductList(
           productsListRespone.data.data.listAllProductItems,
         );
       }
@@ -81,7 +81,7 @@ const ProductList = () => {
         <View style={styles.sortContainer}>
           <Text style={styles.sortTitle}>Sort By</Text>
 
-          {['Low Price', 'High Price', 'Popularity'].map(option => (
+          {['Low Price', 'High Price', 'Popularity']?.map(option => (
             <TouchableOpacity
               key={option}
               style={styles.sortOption}
@@ -176,7 +176,7 @@ const ProductList = () => {
                       })
                     }>
                     <Image
-                      source={{uri: item.mainImage}}
+                      source={{uri: item?.mainImage}}
                       style={{height: 180}}
                     />
                     <Text
@@ -194,9 +194,9 @@ const ProductList = () => {
                               fontSize: 12,
                               color: '#000000',
                             }}>
-                            &#8377;{item.priceWithGst}
+                            &#8377;{item?.priceWithGst}
                           </Text>
-                          <Text
+                          {/* <Text
                             style={{
                               fontSize: 8,
                               fontWeight: 500,
@@ -205,7 +205,7 @@ const ProductList = () => {
                               textDecorationLine: 'line-through',
                             }}>
                             &#8377;1200
-                          </Text>
+                          </Text> */}
                           <Text
                             style={{
                               fontSize: 8,

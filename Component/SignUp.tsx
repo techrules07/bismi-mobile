@@ -49,7 +49,7 @@ const SignUpScreen = props => {
     if (errors.mobileNumber || errors.fullName || errors.email) return;
 
     try {
-      const userLoginResponse = await UserAdapter.signUp({
+      const userLoginResponse = await UserAdapter?.signUp({
         id: 0,
         name: fullName,
         phone: mobileNumber,
@@ -62,7 +62,7 @@ const SignUpScreen = props => {
         userLoginResponse?.status === 'Success' &&
         userLoginResponse?.code === 200
       ) {
-        const userData = userLoginResponse.data;
+        const userData = userLoginResponse?.data;
         console.log('userData', userData);
         await AsyncStorage?.setItem('user', JSON.stringify(userData));
         navigation.navigate('Account');
@@ -86,42 +86,42 @@ const SignUpScreen = props => {
       <Text style={styles.title}>Register</Text>
 
       <TextInput
-        style={[styles.input, errorMessage.fullName ? styles.errorInput : null]}
+        style={[styles.input, errorMessage?.fullName ? styles.errorInput : null]}
         placeholder="Enter your full name"
         value={fullName}
         onChangeText={setFullName}
       />
-      {errorMessage.fullName ? (
-        <Text style={styles.errorText}>{errorMessage.fullName}</Text>
+      {errorMessage?.fullName ? (
+        <Text style={styles.errorText}>{errorMessage?.fullName}</Text>
       ) : null}
 
       <TextInput
-        style={[styles.input, errorMessage.email ? styles.errorInput : null]}
+        style={[styles.input, errorMessage?.email ? styles.errorInput : null]}
         placeholder="Enter your email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
       />
-      {errorMessage.email ? (
-        <Text style={styles.errorText}>{errorMessage.email}</Text>
+      {errorMessage?.email ? (
+        <Text style={styles.errorText}>{errorMessage?.email}</Text>
       ) : null}
 
       <TextInput
         style={[
           styles.input,
-          errorMessage.mobileNumber ? styles.errorInput : null,
+          errorMessage?.mobileNumber ? styles.errorInput : null,
         ]}
         placeholder="Enter your mobile number"
         value={mobileNumber}
         onChangeText={setMobileNumber}
         keyboardType="phone-pad"
       />
-      {errorMessage.mobileNumber ? (
-        <Text style={styles.errorText}>{errorMessage.mobileNumber}</Text>
+      {errorMessage?.mobileNumber ? (
+        <Text style={styles.errorText}>{errorMessage?.mobileNumber}</Text>
       ) : null}
 
-      {errorMessage.general ? (
-        <Text style={styles.errorText}>{errorMessage.general}</Text>
+      {errorMessage?.general ? (
+        <Text style={styles.errorText}>{errorMessage?.general}</Text>
       ) : null}
 
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>

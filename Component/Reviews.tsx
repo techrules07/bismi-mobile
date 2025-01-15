@@ -21,11 +21,11 @@ const CustomerReviews = ({reviews}) => {
       <Text style={styles.title}>Customer Reviews</Text>
 
       <ScrollView style={styles.reviewContainer}>
-        {reviews && reviews.length > 0 ? (
-          reviews.slice(0, visibleReviews).map(item => (
-            <View key={item.id} style={styles.reviewCard}>
+        {reviews && reviews?.length > 0 ? (
+          reviews?.slice(0, visibleReviews)?.map(item => (
+            <View key={item?.id} style={styles.reviewCard}>
               <View style={styles.reviewHeader}>
-                <Text style={styles.username}>{item.username}</Text>
+                <Text style={styles.username}>{item?.username}</Text>
                 <View style={styles.stars}>
                 </View>
                 <Text style={styles.score}>{item?.score || null}</Text>
@@ -44,7 +44,7 @@ const CustomerReviews = ({reviews}) => {
         )}
       </ScrollView>
 
-      {reviews && visibleReviews < reviews.length && (
+      {reviews && visibleReviews < reviews?.length && (
         <View style={styles.viewMoreButtonContainer}>
           <TouchableOpacity
             onPress={handleViewMore}

@@ -46,13 +46,13 @@ const OrderList = props => {
           if (
             order_list?.data &&
             Array.isArray(order_list?.data) &&
-            order_list.data?.length > 0
+            order_list?.data?.length > 0
           ) {
             all_orders = order_list?.data;
             all_orders?.sort((a, b) => {
               const dateA = moment(a.createdAt, 'DD/MM/YYYY');
               const dateB = moment(b.createdAt, 'DD/MM/YYYY');
-              return dateB.diff(dateA);
+              return dateB?.diff(dateA);
             });
           }
           setListOrder(all_orders);
@@ -95,7 +95,7 @@ const OrderList = props => {
             : order,
         );
         setListOrder(updatedOrders);
-        await AsyncStorage.setItem('orders', JSON.stringify(updatedOrders));
+        await AsyncStorage?.setItem('orders', JSON.stringify(updatedOrders));
       } else {
         setShowSubmit(false);
         setShowSubmitFailure(true);
@@ -137,8 +137,8 @@ const OrderList = props => {
             <View style={styles.loaderContainer}>
               <Loader />
             </View>
-          ) : user && listOrder.length > 0 ? (
-            listOrder.map(_orderItem => (
+          ) : user && listOrder?.length > 0 ? (
+            listOrder?.map(_orderItem => (
               <View style={styles.cardsContainer} key={_orderItem?.orderId}>
                 <Text style={styles.orderId}>
                   Order ID: #{_orderItem?.orderId}

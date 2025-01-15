@@ -64,19 +64,19 @@ const CartPage = () => {
       const cartData = await getAllCartItems(requestId);
       setCartItems(cartData?.data || []);
     } catch (error) {
-      console.error('Error fetching cart details:', error.message);
+      console.error('Error fetching cart details:', error?.message);
     }
   };
 
   const fetchAddressDetails = async () => {
     if (user?.id) {
-      const requestId = user.id;
-      const userId = user.id;
+      const requestId = user?.id;
+      const userId = user?.id;
 
       getAddress(requestId, userId)
-        .then(data => {
+        ?.then(data => {
           const addresses = data?.data;
-          const defaultAddress = addresses?.find(address => address.default);
+          const defaultAddress = addresses?.find(address => address?.default);
 
           if (!defaultAddress && addresses?.length > 0) {
             addresses[0].default = true;
@@ -106,7 +106,7 @@ const CartPage = () => {
   }, [user?.id, isFocused]);
   useEffect(() => {
     if (defaultAddress && address?.length > 0 && user?.id) {
-      const selectedAddr = address.find(
+      const selectedAddr = address?.find(
         addressItem => addressItem.id === defaultAddress,
       );
 
@@ -124,8 +124,8 @@ const CartPage = () => {
       const response = await quantity(data);
       if (response?.code === 200) {
         setCartItems(prev =>
-          prev.map(item =>
-            item.id === id ? {...item, quantity: item.quantity + 1} : item,
+          prev?.map(item =>
+            item?.id === id ? {...item, quantity: item?.quantity + 1} : item,
           ),
         );
         productContext?.updateQuantity(cartItems);
@@ -147,9 +147,9 @@ const CartPage = () => {
       const response = await quantity(data);
       if (response?.code === 200) {
         setCartItems(prev =>
-          prev.map(item =>
-            item.id === id
-              ? {...item, quantity: Math.max(1, item.quantity - 1)}
+          prev?.map(item =>
+            item?.id === id
+              ? {...item, quantity: Math.max(1, item?.quantity - 1)}
               : item,
           ),
         );
@@ -171,7 +171,7 @@ const CartPage = () => {
       const userId = user?.id;
       const response = await removeCart(id, userId);
       if (response?.code === 200 && response?.status === 'Success') {
-        setCartItems(prev => prev.filter(item => item.id !== id));
+        setCartItems(prev => prev?.filter(item => item?.id !== id));
         productContext.removeFromCart(id);
         setShowItemRemove(true);
         setShowItemRemoveFailure(false);
@@ -203,11 +203,11 @@ const CartPage = () => {
   const shippingCost = 50;
 
   const totalPrice = cartItems?.reduce(
-    (acc, item) => acc + item?.priceWithGst * item.quantity,
+    (acc, item) => acc + item?.priceWithGst * item?.quantity,
     0,
   );
-  const cartWithDetails = cartItems.map(item => {
-    const productDetail = productDetails.find(detail => detail.id === item.id);
+  const cartWithDetails = cartItems?.map(item => {
+    const productDetail = productDetails?.find(detail => detail?.id === item?.id);
     return productDetail ? {...item, ...productDetail} : item;
   });
 
@@ -320,7 +320,7 @@ const CartPage = () => {
             <View style={styles.quantityContainer}>
               <TouchableOpacity
                 style={styles.quantityButton}
-                onPress={() => handleRemoveQuantity(item.id)}>
+                onPress={() => handleRemoveQuantity(item?.id)}>
                 <Text style={styles.quantityText}>-</Text>
               </TouchableOpacity>
 
