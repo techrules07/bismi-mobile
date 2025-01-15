@@ -265,7 +265,7 @@ const ProductDetails = ({
 
   const handleDelete = async item => {
     const requestId = item?.id;
-    const itemId = selectedItem?.id;
+    const itemId = selectedItem?.productId;
     const userId = item?.userId;
 
     try {
@@ -432,7 +432,12 @@ const ProductDetails = ({
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between',paddingLeft:5}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            paddingLeft: 5,
+          }}>
           <Text style={styles.price}>₹{selectedItem?.unitPrice}</Text>
         </View>
 
@@ -465,7 +470,9 @@ const ProductDetails = ({
         </View>
 
         <Text style={styles.sectionTitle}>Product Description:</Text>
-        <Text style={styles.descriptionText}>{selectedItem?.description?.replace(regex, '')}</Text>
+        <Text style={styles.descriptionText}>
+          {selectedItem?.description?.replace(regex, '')}
+        </Text>
         <View style={styles.containers} collapsable={false} ref={targetViewRef}>
           <View style={styles.headers}>
             <Text style={styles.title}>Review Product</Text>
@@ -616,8 +623,7 @@ const ProductDetails = ({
         animationType="slide"
         transparent={true}
         visible={showSignIn || showRegister}
-        onRequestClose={() => {
-        }}>
+        onRequestClose={() => {}}>
         <View
           style={{
             marginTop: 'auto',
@@ -777,14 +783,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     paddingLeft: 10,
+    paddingRight: 10,
   },
   iconView: {
     flexDirection: 'row',
     gap: 4,
   },
-  icon: {
-
-  },
+  icon: {},
   price: {
     color: 'black',
     fontSize: 18,
@@ -835,8 +840,9 @@ const styles = StyleSheet.create({
   descriptionText: {
     fontSize: 16,
     lineHeight: 22,
-    paddingLeft: 10,
+    marginLeft: 10,
     color: 'gray',
+    marginRight: 12,
   },
   similarItemsContainer: {
     paddingVertical: 15,

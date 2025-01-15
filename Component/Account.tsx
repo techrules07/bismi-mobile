@@ -21,15 +21,26 @@ const Account = props => {
   const handleLogout = () => {
     logout();
   };
+  const getInitial = () => {
+    return user?.name ? user?.name.charAt(0).toUpperCase() : '';
+  };
+
   return user ? (
     <View style={styles.container}>
       <View style={styles.profileCard}>
         <View style={styles.profileHeader}></View>
         <View style={styles.profileContent}>
-          <Image
-            source={{uri: 'https://via.placeholder.com/100'}}
+          {/* <Image
+            source={{uri: 'https://via.placeholder.com/150'}}
             style={styles.profilePhoto}
-          />
+          /> */}
+          <View style={styles.profilePhoto}>
+            {user?.name ? (
+              <Text style={styles.initialText}>{getInitial(user?.name)}</Text>
+            ) : (
+              <Text style={styles.initialText}>?</Text>
+            )}
+          </View>
           <View>
             <Text style={styles.profileName}>{user?.name}</Text>
             <Text style={styles.profiler}>(Member)</Text>
@@ -182,8 +193,17 @@ const styles = StyleSheet.create({
   profilePhoto: {
     width: 100,
     height: 100,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#FFE6A7',
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  initialText: {
+    fontSize: 40,
+    color: '#703F07',
+    fontWeight: 'bold',
   },
   profileName: {
     color: 'black',
