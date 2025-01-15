@@ -19,8 +19,8 @@ import FilterPage from './ProductList/Filter';
 const ProductList = () => {
   const productContext = useContext(pContext);
   const userContext = useContext(UserContext);
-  const [sortVisible, setSortVisible] = useState(false); 
-  const [filterVisible, setFilterVisible] = useState(false); 
+  const [sortVisible, setSortVisible] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
   const [selectedSort, setSelectedSort] = useState(null);
   let [sortedData, setSortedData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -29,39 +29,38 @@ const ProductList = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const {categoryId} = route?.params;
-  useEffect(() => {
-    async function getProducts(params) {
-      const productsListRespone = await getAllProducts(
-        categoryId,
-        userInfo?.id,
+  const fetchProducts = async categoryId => {
+    const productsListResponse = await getAllProducts(categoryId, userInfo?.id);
+    if (
+      productsListResponse?.status === 200 &&
+      productsListResponse?.data?.code === 200
+    ) {
+      productContext?.updateProductList(
+        productsListResponse?.data?.data?.listAllProductItems,
       );
-      console.log(productsListRespone.data);
-      if (
-        productsListRespone.status == 200 &&
-        productsListRespone.data.code == 200
-      ) {
-        productContext?.updateProductList(
-          productsListRespone.data.data.listAllProductItems,
-        );
-      }
     }
+  };
 
-    getProducts();
-  }, []);
+  useEffect(() => {
+    if (categoryId) {
+      productContext?.updateProductList([]);
+      fetchProducts(categoryId);
+    }
+  }, [categoryId]);
   const handleSortOptionSelect = option => {
     setSelectedSort(option);
-    setSortVisible(false); 
+    setSortVisible(false);
     let sorted_data = [];
     if (option === 'Low Price') {
-      sorted_data = productContext.productList.sort(
+      sorted_data = productContext?.productList?.sort(
         (a, b) => a.unitPrice - b.unitPrice,
       );
     } else if (option === 'High Price') {
-      sorted_data = productContext.productList.sort(
+      sorted_data = productContext?.productList?.sort(
         (a, b) => b.unitPrice - a.unitPrice,
       );
     } else if (option === 'Popularity') {
-      sorted_data = productContext.productList.sort(
+      sorted_data = productContext?.productList?.sort(
         (a, b) => b.rating - a.rating,
       );
     }
@@ -242,11 +241,9 @@ const ProductList = () => {
       <View style={styles.footer}>
         <TouchableOpacity
           style={{flexDirection: 'row', gap: 5}}
-          onPress={
-            () => {
-              setFilterVisible(true);
-            }
-          }>
+          onPress={() => {
+            setFilterVisible(true);
+          }}>
           <Icon name="filter-outline" size={28} color="#fff" />
           <Text style={styles.footerText}>Filter</Text>
         </TouchableOpacity>
