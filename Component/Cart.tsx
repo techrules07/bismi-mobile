@@ -24,6 +24,7 @@ import {UserContext} from '../Context/UserContext';
 import {getAddress} from '../Networking/AddressPageService';
 import {applyCoupons} from '../Networking/CouponPageService';
 import ToastMessage from './toast_message/toast_message';
+import Loader from './Loader';
 const CartPage = () => {
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
@@ -51,8 +52,10 @@ const CartPage = () => {
   const [showToastFavorite, setShowFavorite] = useState(false);
   const [showToastFavoriteFailure, setShowToastFavoriteFailure] =
     useState(false);
+  const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   const fetchCartDetails = async () => {
+    setLoading(true);
     try {
       const requestId = user?.id;
       if (!requestId) {
@@ -63,6 +66,7 @@ const CartPage = () => {
 
       const cartData = await getAllCartItems(requestId);
       setCartItems(cartData?.data || []);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching cart details:', error?.message);
     }
@@ -153,7 +157,7 @@ const CartPage = () => {
               : item,
           ),
         );
-        productContext.updateQuantity(cartItems); 
+        productContext.updateQuantity(cartItems);
         setShowRemove(true);
         setShowToastRemoveFailure(false);
       } else {
@@ -207,7 +211,9 @@ const CartPage = () => {
     0,
   );
   const cartWithDetails = cartItems?.map(item => {
-    const productDetail = productDetails?.find(detail => detail?.id === item?.id);
+    const productDetail = productDetails?.find(
+      detail => detail?.id === item?.id,
+    );
     return productDetail ? {...item, ...productDetail} : item;
   });
 
@@ -304,47 +310,53 @@ const CartPage = () => {
         </Text>
       </View>
       <ScrollView style={styles.cartItemsContainer}>
-        {cartItems?.map(item => (
-          <View key={item?.id} style={styles.cartItem}>
-            <View style={{display: 'flex', flexDirection: 'row'}}>
-              <Image
-                source={{uri: item?.productImage}}
-                style={styles.itemImage}
-              />
-              <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item?.productName}</Text>
-                <Text style={styles.itemPrice}>₹{item?.priceWithGst}</Text>
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <Loader />
+          </View>
+        ) : (
+          cartItems?.map(item => (
+            <View key={item?.id} style={styles.cartItem}>
+              <View style={{display: 'flex', flexDirection: 'row'}}>
+                <Image
+                  source={{uri: item?.productImage}}
+                  style={styles.itemImage}
+                />
+                <View style={styles.itemDetails}>
+                  <Text style={styles.itemName}>{item?.productName}</Text>
+                  <Text style={styles.itemPrice}>₹{item?.priceWithGst}</Text>
+                </View>
+              </View>
+
+              <View style={styles.quantityContainer}>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => handleRemoveQuantity(item?.id)}>
+                  <Text style={styles.quantityText}>-</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.quantityValue}>{item?.quantity}</Text>
+
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => handleAddQuantity(item?.id)}>
+                  <Text style={styles.quantityText}>+</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.divider} />
+              <View style={styles.actionButtons}>
+                <TouchableOpacity onPress={() => removeItem(item?.id)}>
+                  <Text style={styles.actionText}>Remove</Text>
+                </TouchableOpacity>
+                <View style={styles.verticalDivider} />
+                <TouchableOpacity onPress={() => moveToWishlist(item)}>
+                  <Text style={styles.actionText}>Move to Wishlist</Text>
+                </TouchableOpacity>
               </View>
             </View>
-
-            <View style={styles.quantityContainer}>
-              <TouchableOpacity
-                style={styles.quantityButton}
-                onPress={() => handleRemoveQuantity(item?.id)}>
-                <Text style={styles.quantityText}>-</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.quantityValue}>{item?.quantity}</Text>
-
-              <TouchableOpacity
-                style={styles.quantityButton}
-                onPress={() => handleAddQuantity(item?.id)}>
-                <Text style={styles.quantityText}>+</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.divider} />
-            <View style={styles.actionButtons}>
-              <TouchableOpacity onPress={() => removeItem(item?.id)}>
-                <Text style={styles.actionText}>Remove</Text>
-              </TouchableOpacity>
-              <View style={styles.verticalDivider} />
-              <TouchableOpacity onPress={() => moveToWishlist(item)}>
-                <Text style={styles.actionText}>Move to Wishlist</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
+          ))
+        )}
       </ScrollView>
       <View style={styles.priceSummary}>
         <Text style={styles.priceHeader}>Price Details</Text>
@@ -501,6 +513,16 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: 'gray',
     opacity: 0.6,
+  },
+  loaderContainer: {
+    position: 'absolute',
+    // bottom: 400,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+    top: 260,
   },
   header: {
     padding: 15,

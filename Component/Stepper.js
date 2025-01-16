@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
   stepContent: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
   },
   stepText: {
     fontSize: 16,
