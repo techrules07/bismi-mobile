@@ -15,6 +15,7 @@ import {getAllOrdersById} from '../Networking/HomePageService';
 import Snackbar from 'react-native-snackbar';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import ToastMessage from '../Component/toast_message/toast_message';
+import Loader from '../Component/Loader';
 
 const OrderDetails = props => {
   const route = useRoute();
@@ -28,12 +29,14 @@ const OrderDetails = props => {
     {label: 'Delivered', value: '14 Dec 2024, 12:30 PM'},
   ];
   const [listOrder, setListOrder] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [showToastFailure, setShowToastFailure] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
     const fetchOrdersById = async () => {
+      setLoading(true)
       try {
         const bodyData = {
           orderId: _orderItem?.orderId,
@@ -45,6 +48,7 @@ const OrderDetails = props => {
           setShowToast(true);
           setShowToastFailure(false);
           setListOrder(response?.data);
+          setLoading(false)
         } else {
           setShowToast(false);
           setShowToastFailure(true);
@@ -81,7 +85,11 @@ const OrderDetails = props => {
           <Text style={styles.orderText}>Order Details</Text>
         </TouchableOpacity>
       </View>
-
+      {loading ? (
+          <View style={styles.loaderContainer}>
+            <Loader />
+          </View>
+        ) : (
       <View style={styles.cardsContainer}>
         <View style={styles.orderHeader}>
           <Text style={styles.orderId}>Order ID: {listOrder[0]?.orderId}</Text>
@@ -140,6 +148,7 @@ const OrderDetails = props => {
           </View>
         )}
       </View>
+)}
       {/* <View style={{alignItems: 'center'}}>
         {(showToast || showToastFailure) && (
           <ToastMessage
@@ -199,6 +208,16 @@ const styles = StyleSheet.create({
     padding: 10,
     // backgroundColor: '#fff',
     marginBottom: 10,
+  },
+  loaderContainer: {
+    position: 'absolute',
+    // bottom: 400,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+    top: 260,
   },
   orderId: {
     fontSize: 14,

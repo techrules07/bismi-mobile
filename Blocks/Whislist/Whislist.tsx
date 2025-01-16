@@ -14,12 +14,14 @@ import {pContext} from '../../Context/ProductContext';
 import {addToCart} from '../../Networking/HomePageService';
 import {ScrollView} from 'react-native-gesture-handler';
 import ToastMessage from '../../Component/toast_message/toast_message';
+import Loader from '../../Component/Loader';
 
 const WishlistPage = () => {
   const {user} = useContext(UserContext);
   const productContext = useContext(pContext);
   const [wishlist, setWishlist] = useState([]);
   console.log('whislist', wishlist);
+  const [loading, setLoading] = useState(true);
   const [removingItem, setRemovingItem] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [showToastFailure, setShowToastFailure] = useState(false);
@@ -36,8 +38,10 @@ const WishlistPage = () => {
   }, [user]);
 
   useEffect(() => {
+    setLoading(true);
     if (productContext?.favoriteItems?.data) {
       setWishlist(productContext.favoriteItems.data);
+      setLoading(false);
     }
   }, [productContext?.favoriteItems]);
 
@@ -110,7 +114,7 @@ const WishlistPage = () => {
         setShowToastRemoveFailure(true);
       }
     } finally {
-      setRemovingItem(null); 
+      setRemovingItem(null);
     }
   };
   const navigation = useNavigation();
@@ -121,38 +125,49 @@ const WishlistPage = () => {
   };
   const renderItem = ({item}) => (
     <View>
-      <View style={styles.productCard}>
-        <Image source={{uri: item.productImage}} style={styles.productImage} />
-        <View style={styles.productDetails}>
-          <Text style={styles.productName}>
-            {item.productName || item.productCategory}
-          </Text>
-          <Text style={styles.productPrice}>₹{item.priceWithGst}</Text>
-          <View style={styles.starWrapper}>
-            <Icon name="star" size={20} color="orange" />
-            <Icon name="star" size={20} color="orange" />
-            <Icon name="star" size={20} color="orange" />
-            <Icon name="star" size={20} color="orange" />
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.moveButton}
-              onPress={() => addToCarts(item)}>
-              <Text style={styles.buttonText}>Move to Cart</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.removeButton,
-                removingItem === item.productId && {opacity: 0.5},
-              ]}
-              onPress={() => removeFromWishlist(item)}
-              disabled={removingItem === item.productId}>
-              <Text style={styles.buttonText}>Remove</Text>
-            </TouchableOpacity>
-          </View>
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <Loader />
         </View>
-      </View>
-      <View style={styles.divider}></View>
+      ) : (
+        <View>
+          <View style={styles.productCard}>
+            <Image
+              source={{uri: item.productImage}}
+              style={styles.productImage}
+            />
+            <View style={styles.productDetails}>
+              <Text style={styles.productName}>
+                {item.productName || item.productCategory}
+              </Text>
+              <Text style={styles.productPrice}>₹{item.priceWithGst}</Text>
+              <View style={styles.starWrapper}>
+                <Icon name="star" size={20} color="orange" />
+                <Icon name="star" size={20} color="orange" />
+                <Icon name="star" size={20} color="orange" />
+                <Icon name="star" size={20} color="orange" />
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.moveButton}
+                  onPress={() => addToCarts(item)}>
+                  <Text style={styles.buttonText}>Move to Cart</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.removeButton,
+                    removingItem === item.productId && {opacity: 0.5},
+                  ]}
+                  onPress={() => removeFromWishlist(item)}
+                  disabled={removingItem === item.productId}>
+                  <Text style={styles.buttonText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          <View style={styles.divider}></View>
+        </View>
+      )}
     </View>
   );
 
@@ -242,6 +257,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#703F07',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+  },
+  loaderContainer: {
+    position: 'absolute',
+    // bottom: 400,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+    top: 260,
   },
   headerIcons: {flexDirection: 'row', gap: 15},
   headerTitle: {

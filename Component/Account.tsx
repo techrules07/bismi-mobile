@@ -48,8 +48,10 @@ const Account = props => {
               <Text style={styles.initialText}>?</Text>
             )}
           </View>
-          <View>
-            <Text style={styles.profileName}>{userDetail?.name || user?.name}</Text>
+          <View style={styles.content}>
+            <Text style={styles.profileName}>
+              {userDetail?.name || user?.name}
+            </Text>
             <Text style={styles.profiler}>(Member)</Text>
           </View>
         </View>
@@ -213,6 +215,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#EDE0D4',
+  },
+  content: {
+    marginTop: 20,
   },
   profileCard: {
     backgroundColor: '#fff',

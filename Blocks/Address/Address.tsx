@@ -22,6 +22,7 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import ToastMessage from '../../Component/toast_message/toast_message';
 import DropdownComponent from '../../Component/DropDown/DropDown';
+import Loader from '../../Component/Loader';
 const SavedAddressesPage = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -68,6 +69,7 @@ const SavedAddressesPage = () => {
   const [stateData, setStateData] = useState([]);
   const [cityData, setCityData] = useState([]);
   const [addressTypes, setAddressTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   const fetchAddressType = async () => {
     let address_types_response = await getAddressTypes();
@@ -92,6 +94,7 @@ const SavedAddressesPage = () => {
     }
   };
   const fetchUserAddress = async (requestId: any, userId: any) => {
+    setLoading(true);
     let user_address_response = await getAddress(requestId, userId);
     const addresses = user_address_response?.data;
 
@@ -105,6 +108,7 @@ const SavedAddressesPage = () => {
 
     if (defaultAddress) {
       setDefaultAddress(defaultAddress.id);
+      setLoading(false);
     } else {
       setDefaultAddress(addresses[0]?.id);
     }
@@ -129,6 +133,7 @@ const SavedAddressesPage = () => {
     setCityId(null);
   };
   const handleDefaultAddress = addressId => {
+    setLoading(false);
     if (user?.id) {
       const userId = user?.id;
       defaultAddressApi(addressId, userId)
@@ -144,6 +149,7 @@ const SavedAddressesPage = () => {
           );
 
           setDefaultAddress(addressId);
+          setLoading(false);
         })
         .catch(error => {
           setShowToastDefault(false);
@@ -389,30 +395,38 @@ const SavedAddressesPage = () => {
   };
 
   const renderAddressCard = ({item}) => (
-    <View style={styles.addressCard}>
-      <View>
-        <Text style={styles.detailsText}>{item.name}</Text>
-        <View style={styles.addressContainer}>
-          <View style={styles.addressType}>
-            <Text>{item.default ? 'Default' : item.addressType}</Text>
+    <View>
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <Loader />
+        </View>
+      ) : (
+        <View style={styles.addressCard}>
+          <View>
+            <Text style={styles.detailsText}>{item.name}</Text>
+            <View style={styles.addressContainer}>
+              <View style={styles.addressType}>
+                <Text>{item.default ? 'Default' : item.addressType}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.addressInfo}>{item.addressLine1}</Text>
+          </View>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity onPress={() => handleEditAddress(item)}>
+              <Text style={styles.actionText}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDeleteAddress(item.id)}>
+              <Text style={styles.actionText}>Delete</Text>
+            </TouchableOpacity>
+            {!item.default && (
+              <TouchableOpacity onPress={() => handleDefaultAddress(item.id)}>
+                <Text style={styles.actionText}>Default</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
-
-        <Text style={styles.addressInfo}>{item.addressLine1}</Text>
-      </View>
-      <View style={styles.actionButtons}>
-        <TouchableOpacity onPress={() => handleEditAddress(item)}>
-          <Text style={styles.actionText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDeleteAddress(item.id)}>
-          <Text style={styles.actionText}>Delete</Text>
-        </TouchableOpacity>
-        {!item.default && (
-          <TouchableOpacity onPress={() => handleDefaultAddress(item.id)}>
-            <Text style={styles.actionText}>Default</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      )}
     </View>
   );
   const navigateToAddressList = () => {
@@ -683,6 +697,16 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     width: 70,
+  },
+  loaderContainer: {
+    position: 'absolute',
+    // bottom: 400,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+    top: 260,
   },
   addressType: {
     fontSize: 14,

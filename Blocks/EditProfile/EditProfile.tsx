@@ -143,7 +143,7 @@ const EditProfilePage = () => {
           </View>
 
           <View style={styles.headerIcons}>
-            <Icon name="magnify" size={24} color="#fff" />
+            {/* <Icon name="magnify" size={24} color="#fff" /> */}
             <Icon
               name="cart"
               size={24}
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
-    top:260
+    top: 260,
   },
   profilePhoto: {
     width: 100,
