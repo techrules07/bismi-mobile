@@ -152,7 +152,27 @@ const Account = props => {
             </TouchableOpacity>
           </View>
         </View>
-
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>General Settings</Text>
+          <View style={styles.cardContent}>
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('ThemeSettings')}>
+              <View style={styles.textContain}>
+                <View style={{marginTop: 3}}>
+                  <MaterialCommunityIcons
+                    name="file-question-outline"
+                    size={16}
+                  />
+                </View>
+                <Text style={styles.list}>Theme</Text>
+              </View>
+              <View>
+                <MaterialIcons name="keyboard-arrow-right" size={16} />
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={[styles.card, styles.logoutCard]}>
           <View style={styles.logoutButtonContainer}>
             <Button title="Log Out" color="#703F07" onPress={handleLogout} />
