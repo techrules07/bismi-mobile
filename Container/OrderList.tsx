@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    top:250
   },
   cardsContainer: {
     flex: 1,

@@ -332,6 +332,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
+    top:250
   },
 });
 export default HomeScreen;
