@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React from 'react';
+import React, {useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
@@ -25,6 +25,7 @@ import Home from './Component/BottomBar';
 import AppNavigator from './Component/TopBar';
 import {UserContextProvider} from './Context/UserContext';
 import {CouponProvider} from './Context/CouponContext';
+import {ThemeContext} from './Context/ThemeContext';
 
 function AppComponent(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -46,14 +47,26 @@ function AppComponent(): React.JSX.Element {
 }
 
 const App = () => {
+  const [appTheme, setAppTheme] = useState('dark');
+
+  const updateTheme = (newTheme: any) => {
+    if (!newTheme) {
+      newTheme = 'dark';
+    } else {
+      newTheme = newTheme;
+    }
+    setAppTheme(newTheme);
+  };
   return (
-    <ProductContext>
-      <UserContextProvider>
-        <CouponProvider>
-          <AppComponent />
-        </CouponProvider>
-      </UserContextProvider>
-    </ProductContext>
+    <ThemeContext.Provider value={{appTheme, updateTheme}}>
+      <ProductContext>
+        <UserContextProvider>
+          <CouponProvider>
+            <AppComponent />
+          </CouponProvider>
+        </UserContextProvider>
+      </ProductContext>
+    </ThemeContext.Provider>
   );
 };
 

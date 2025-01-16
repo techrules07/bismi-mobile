@@ -24,21 +24,35 @@ const UserContext = createContext<UserContextType | null | undefined>(
 const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [userDetail, setUserDetail] = useState(null);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const savedUser = await AsyncStorage.getItem('user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-        }
+        const savedUserDetail = await AsyncStorage.getItem('userDetail');
+
+        if (savedUser) setUser(JSON.parse(savedUser));
+        if (savedUserDetail) setUserDetail(JSON.parse(savedUserDetail));
       } catch (error) {
-        console.error('Failed to load user data from AsyncStorage:', error);
+        console.error('Failed to load data from AsyncStorage:', error);
       }
       setLoading(false);
     };
 
     fetchUser();
   }, []);
+
+  const getUserDetail = async (data: User) => {
+    setUserDetail(data);
+  
+    try {
+      await AsyncStorage.setItem('userDetail', JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save user detail to AsyncStorage:', error);
+    }
+  };
+  
 
   const login = async (userData: User) => {
     try {
@@ -68,7 +82,8 @@ const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
   // }
 
   return (
-    <UserContext.Provider value={{user, login, logout, setUser}}>
+    <UserContext.Provider
+      value={{user, login, logout, setUser, userDetail, getUserDetail}}>
       {children}
     </UserContext.Provider>
   );

@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,20 +11,111 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import UserAdapter from '../../Networking/UserPageService';
+import {UserContext} from '../../Context/UserContext';
+import ToastMessage from '../../Component/toast_message/toast_message';
+import Loader from '../../Component/Loader';
 
 const EditProfilePage = () => {
-  const [firstName, setFirstName] = useState('John');
-  const [lastName, setLastName] = useState('Doe');
-  const [gender, setGender] = useState('male');
-  const [email, setEmail] = useState('johndoe@example.com');
-  const [birthDate, setBirthDate] = useState('1990-01-01');
-  const [phone, setPhone] = useState('1234567890');
-  const [profileImage, setProfileImage] = useState(
-    'https://via.placeholder.com/150',
-  );
+  const {user, getUserDetail, userDetail} = useContext(UserContext);
+  console.log('userDetail', userDetail);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState('');
+  const [email, setEmail] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [phone, setPhone] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState({
+    phone: '',
+    firstName: '',
+    email: '',
+  });
+  const fetchUserProfile = async () => {
+    const requestId = user?.id;
+    const userId = user?.id;
+    setLoading(true);
+    if (!userId) {
+      console.error('User ID is missing');
+      setErrorMessage('User ID is missing');
+      return;
+    }
 
-  const handleSaveProfile = () => {
-    Alert.alert('Profile Saved', 'Your profile has been updated successfully!');
+    try {
+      const response = await UserAdapter?.getProfile({requestId, userId});
+      console.log('getUser', response);
+
+      if (response?.status === 'Success' && response?.code === 200) {
+        getUserDetail(response?.data);
+        await AsyncStorage.setItem(
+          'userDetail',
+          JSON.stringify(response?.data),
+        );
+        setFirstName(response?.data?.name || '');
+        setEmail(response?.data?.email || '');
+        setPhone(response?.data?.phone || '');
+        setLoading(false);
+      } else {
+        setErrorMessage('Something went wrong.');
+      }
+    } catch (error) {
+      console.error('Error in getProfile:', error);
+      setErrorMessage('An error occurred. Please try again.');
+    }
+  };
+  useEffect(() => {
+    fetchUserProfile();
+  }, [user]);
+
+  const validateMobileNumber = (number: number) => /^[0-9]{10}$/.test(number);
+  const validateEmail = (mail: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
+  const handleSaveProfile = async () => {
+    let errors = {mobileNumber: '', fullName: '', email: ''};
+
+    if (!phone || !validateMobileNumber(phone)) {
+      errors.mobileNumber = 'Please enter a valid 10-digit mobile number.';
+    }
+    if (!firstName) {
+      errors.fullName = 'Please enter your full name.';
+    }
+    if (!email || !validateEmail(email)) {
+      errors.email = 'Please enter a valid email address.';
+    }
+    setErrorMessage(errors);
+
+    if (errors.mobileNumber || errors.fullName || errors.email) return;
+
+    try {
+      const addUser = await UserAdapter?.signUp({
+        id: user?.id,
+        name: firstName,
+        phone: phone,
+        email: email,
+      });
+
+      console.log('addUser', addUser);
+
+      if (addUser?.status === 'Success' && addUser?.code === 200) {
+        const userData = addUser?.data;
+        console.log('userData', userData);
+        await AsyncStorage?.setItem('user', JSON.stringify(userData));
+        setShowToast(true);
+        fetchUserProfile();
+      } else {
+        setErrorMessage(prev => ({
+          ...prev,
+          general: 'Something went wrong.',
+        }));
+      }
+    } catch (error) {
+      console.error('Sign-up error:', error);
+      setErrorMessage(prev => ({
+        ...prev,
+        general: 'An error occurred. Please try again.',
+      }));
+    }
   };
 
   const handleImageEdit = () => {
@@ -32,109 +124,153 @@ const EditProfilePage = () => {
       'Image upload functionality can be added here!',
     );
   };
+  const getInitial = () => {
+    return firstName ? firstName?.charAt(0).toUpperCase() : '';
+  };
   const navigation = useNavigation();
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Icon
-            name="arrow-left"
-            size={24}
-            color="#fff"
-            onPress={() => navigation.navigate('Account')}
-          />
-          <Text style={styles.headerTitle}>Edit Profile</Text>
-        </View>
-
-        <View style={styles.headerIcons}>
-          <Icon name="magnify" size={24} color="#fff" />
-          <Icon
-            name="cart"
-            size={24}
-            color="#fff"
-            onPress={() => navigation.navigate('Cart')}
-          />
-        </View>
-      </View>
-      <View style={{padding: 20}}>
-        <View style={styles.imageContainer}>
-          <Image source={{uri: profileImage}} style={styles.profileImage} />
-          <TouchableOpacity style={styles.editIcon} onPress={handleImageEdit}>
-            <Icon name="camera" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.userName}>{`${firstName} ${lastName}`}</Text>
-        <Text style={styles.userPhone}>{phone}</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>First Name</Text>
-          <TextInput
-            style={styles.input}
-            value={firstName}
-            onChangeText={setFirstName}
-            placeholder="Enter First Name"
-          />
-
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-            placeholder="Enter Last Name"
-          />
-
-          <Text style={styles.label}>Gender</Text>
-          <View style={styles.radioContainer}>
-            <TouchableOpacity
-              style={styles.radioButton}
-              onPress={() => setGender('male')}>
-              <View
-                style={gender === 'male' ? styles.radioSelected : styles.radio}
-              />
-              <Text style={styles.radioText}>Male</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.radioButton}
-              onPress={() => setGender('female')}>
-              <View
-                style={
-                  gender === 'female' ? styles.radioSelected : styles.radio
-                }
-              />
-              <Text style={styles.radioText}>Female</Text>
-            </TouchableOpacity>
+    <>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Icon
+              name="arrow-left"
+              size={24}
+              color="#fff"
+              onPress={() => navigation.navigate('Account', {firstName})}
+            />
+            <Text style={styles.headerTitle}>Edit Profile</Text>
           </View>
 
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter Email"
-            keyboardType="email-address"
-          />
-
-          <Text style={styles.label}>Birth Date</Text>
-          <TextInput
-            style={styles.input}
-            value={birthDate}
-            onChangeText={setBirthDate}
-            placeholder="YYYY-MM-DD"
-          />
-
-          <Text style={styles.label}>Mobile</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Enter Mobile Number"
-            keyboardType="phone-pad"
-          />
+          <View style={styles.headerIcons}>
+            <Icon name="magnify" size={24} color="#fff" />
+            <Icon
+              name="cart"
+              size={24}
+              color="#fff"
+              onPress={() => navigation.navigate('Cart')}
+            />
+          </View>
         </View>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
-          <Text style={styles.buttonText}>Save Profile</Text>
-        </TouchableOpacity>
+        <View>
+          {loading ? (
+            <View style={styles.loaderContainer}>
+              <Loader />
+            </View>
+          ) : (
+            <View style={{padding: 20}}>
+              <View style={styles.imageContainer}>
+                {/* <Image source={{uri: profileImage}} style={styles.profileImage} /> */}
+                <View style={styles.profilePhoto}>
+                  {firstName ? (
+                    <Text style={styles.initialText}>
+                      {getInitial(firstName)}
+                    </Text>
+                  ) : (
+                    <Text style={styles.initialText}>?</Text>
+                  )}
+                </View>
+                {/* <TouchableOpacity style={styles.editIcon} onPress={handleImageEdit}>
+      <Icon name="camera" size={20} color="#fff" />
+    </TouchableOpacity> */}
+              </View>
+              <Text style={styles.userName}>{`${firstName} ${lastName}`}</Text>
+              <Text style={styles.userPhone}>{phone}</Text>
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Full Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="Enter First Name"
+                />
+                {errorMessage?.firstName ? (
+                  <Text style={styles.errorText}>
+                    {errorMessage?.firstName}
+                  </Text>
+                ) : null}
+                {/* <Text style={styles.label}>Last Name</Text>
+  <TextInput
+    style={styles.input}
+    value={lastName}
+    onChangeText={setLastName}
+    placeholder="Enter Last Name"
+  /> */}
+
+                {/* <Text style={styles.label}>Gender</Text>
+  <View style={styles.radioContainer}>
+    <TouchableOpacity
+      style={styles.radioButton}
+      onPress={() => setGender('male')}>
+      <View
+        style={gender === 'male' ? styles.radioSelected : styles.radio}
+      />
+      <Text style={styles.radioText}>Male</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.radioButton}
+      onPress={() => setGender('female')}>
+      <View
+        style={
+          gender === 'female' ? styles.radioSelected : styles.radio
+        }
+      />
+      <Text style={styles.radioText}>Female</Text>
+    </TouchableOpacity>
+  </View> */}
+
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter Email"
+                  keyboardType="email-address"
+                />
+                {errorMessage?.email ? (
+                  <Text style={styles.errorText}>{errorMessage?.email}</Text>
+                ) : null}
+                {/* <Text style={styles.label}>Birth Date</Text>
+  <TextInput
+    style={styles.input}
+    value={birthDate}
+    onChangeText={setBirthDate}
+    placeholder="YYYY-MM-DD"
+  /> */}
+
+                <Text style={styles.label}>Mobile</Text>
+                <TextInput
+                  style={styles.input}
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="Enter Mobile Number"
+                  keyboardType="phone-pad"
+                />
+                {errorMessage?.phone ? (
+                  <Text style={styles.errorText}>{errorMessage?.phone}</Text>
+                ) : null}
+              </View>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSaveProfile}>
+                <Text style={styles.buttonText}>Save Profile</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
-    </View>
+      <View style={{alignItems: 'center'}}>
+        {showToast && (
+          <ToastMessage
+            text1Press={() => {}}
+            text2Press={() => navigation.navigate('Account', {firstName})}
+            text1={'Profile added successfully'}
+            text2={'Go to account'}
+            setToast={setShowToast}
+          />
+        )}
+      </View>
+    </>
   );
 };
 
@@ -163,6 +299,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
     position: 'relative',
+  },
+  loaderContainer: {
+    position: 'absolute',
+    // bottom: 400,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+    top:260
+  },
+  profilePhoto: {
+    width: 100,
+    height: 100,
+    borderWidth: 3,
+    borderColor: '#FFE6A7',
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  initialText: {
+    fontSize: 40,
+    color: '#703F07',
+    fontWeight: 'bold',
+  },
+
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'left',
+    width: '100%',
   },
   profileImage: {
     width: 120,

@@ -13,6 +13,7 @@ import LoginScreen from './Login';
 import SignUpScreen from './SignUp';
 import OtpVerificationScreen from './OTP';
 import Category from './Category';
+import ThemeSettings from '../Container/ThemeSettings';
 
 const AccountStack = createStackNavigator();
 
@@ -36,6 +37,7 @@ const AccountStackNavigator = () => {
       <AccountStack.Screen name="SignUp" component={SignUpScreen} />
       <AccountStack.Screen name="OTP" component={OtpVerificationScreen} />
       <AccountStack.Screen name="Category" component={Category} />
+      <AccountStack.Screen name="ThemeSettings" component={ThemeSettings} />
     </AccountStack.Navigator>
   );
 };
