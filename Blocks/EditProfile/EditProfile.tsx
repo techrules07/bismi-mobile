@@ -15,7 +15,6 @@ import UserAdapter from '../../Networking/UserPageService';
 import {UserContext} from '../../Context/UserContext';
 import ToastMessage from '../../Component/toast_message/toast_message';
 import Loader from '../../Component/Loader';
-import Skeleton from '../../Component/SkeletonLoader';
 
 const EditProfilePage = () => {
   const {user, getUserDetail, userDetail} = useContext(UserContext);
@@ -155,7 +154,9 @@ const EditProfilePage = () => {
         </View>
         <View>
           {loading ? (
-            <Skeleton layout={undefined} containerStyle={undefined} />
+            <View style={styles.loaderContainer}>
+              <Loader />
+            </View>
           ) : (
             <View style={{padding: 20}}>
               <View style={styles.imageContainer}>
@@ -307,6 +308,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
+    top:260
   },
   profilePhoto: {
     width: 100,
