@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -27,7 +28,9 @@ const FAQsScreen = () => {
   const toggleDetails = index => {
     setExpanded(prev => (prev === index ? null : index)); 
   };
+
   const navigation = useNavigation();
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>

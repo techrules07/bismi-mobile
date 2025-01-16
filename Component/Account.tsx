@@ -17,13 +17,17 @@ import LoginScreen from './Login';
 import UserAdapter from '../Networking/UserPageService';
 
 const Account = props => {
+
   const navigation = useNavigation();
   const {user, logout, userDetail} = useContext(UserContext);
   console.log('userDetail', userDetail);
+
+  //usestate management
   const [errorMessage, setErrorMessage] = useState('');
   const handleLogout = () => {
     logout();
   };
+  
   const getInitial = () => {
     return userDetail?.name
       ? userDetail?.name.charAt(0).toUpperCase()
@@ -37,10 +41,6 @@ const Account = props => {
       <View style={styles.profileCard}>
         <View style={styles.profileHeader}></View>
         <View style={styles.profileContent}>
-          {/* <Image
-            source={{uri: 'https://via.placeholder.com/150'}}
-            style={styles.profilePhoto}
-          /> */}
           <View style={styles.profilePhoto}>
             {userDetail?.name || user?.name ? (
               <Text style={styles.initialText}>{getInitial()}</Text>

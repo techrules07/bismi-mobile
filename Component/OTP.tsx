@@ -12,13 +12,14 @@ import UserAdapter from '../Networking/UserPageService';
 const OtpVerificationScreen = ({route}) => {
   const {userData} = route.params;
   console.log('userData', userData);
+
+  //useState management
   const [otp, setOtp] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
+
+  //function handling
   const handleVerifyOtp = async () => {
-
-
-
     if (otp?.length !== 6) {
       setErrorMessage('Please enter a 6-digit OTP.');
       return;

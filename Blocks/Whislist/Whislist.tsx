@@ -1,3 +1,4 @@
+//@ts-nocheck
 import {useNavigation} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
 import {
@@ -19,6 +20,8 @@ import Loader from '../../Component/Loader';
 const WishlistPage = () => {
   const {user} = useContext(UserContext);
   const productContext = useContext(pContext);
+
+  //usestate management
   const [wishlist, setWishlist] = useState([]);
   console.log('whislist', wishlist);
   const [loading, setLoading] = useState(true);
@@ -27,6 +30,8 @@ const WishlistPage = () => {
   const [showToastFailure, setShowToastFailure] = useState(false);
   const [showToastRemove, setShowToastRemove] = useState(false);
   const [showToastRemoveFailure, setShowToastRemoveFailure] = useState(false);
+
+  //useEffect
   useEffect(() => {
     if (user?.id) {
       const data = {
@@ -45,6 +50,7 @@ const WishlistPage = () => {
     }
   }, [productContext?.favoriteItems]);
 
+  //function handling
   const addToCarts = async selectedItem => {
     const defaultItem = {
       id: selectedItem?.id || selectedItem?.productId,
@@ -117,12 +123,15 @@ const WishlistPage = () => {
       setRemovingItem(null);
     }
   };
+
   const navigation = useNavigation();
+
   const navigateToCart = () => {
     navigation.navigate('Cart', {
       selectedItem,
     });
   };
+  
   const renderItem = ({item}) => (
     <View>
       {loading ? (
@@ -260,7 +269,6 @@ const styles = StyleSheet.create({
   },
   loaderContainer: {
     position: 'absolute',
-    // bottom: 400,
     left: 0,
     right: 0,
     justifyContent: 'center',
