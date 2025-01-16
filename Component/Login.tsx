@@ -19,6 +19,8 @@ const LoginScreen = props => {
     setShowSignIn = () => {},
     setShowRegister = () => {},
   } = props;
+
+  //useState management
   const [userData, setUserData] = useState(null);
   const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
@@ -30,6 +32,8 @@ const LoginScreen = props => {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
   const {setUser} = useContext(UserContext);
+
+  //function handling
   const validateMobileNumber = (number: string) => {
     const regex = /^[0-9]{10}$/;
     return regex?.test(number);

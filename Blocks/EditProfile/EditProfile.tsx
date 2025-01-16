@@ -1,3 +1,4 @@
+//@ts-nocheck
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
@@ -19,6 +20,8 @@ import Loader from '../../Component/Loader';
 const EditProfilePage = () => {
   const {user, getUserDetail, userDetail} = useContext(UserContext);
   console.log('userDetail', userDetail);
+
+  //usestate management
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [gender, setGender] = useState('');
@@ -32,6 +35,13 @@ const EditProfilePage = () => {
     firstName: '',
     email: '',
   });
+
+  //useEffect
+  useEffect(() => {
+    fetchUserProfile();
+  }, [user]);
+
+//function handling
   const fetchUserProfile = async () => {
     const requestId = user?.id;
     const userId = user?.id;
@@ -64,13 +74,13 @@ const EditProfilePage = () => {
       setErrorMessage('An error occurred. Please try again.');
     }
   };
-  useEffect(() => {
-    fetchUserProfile();
-  }, [user]);
+
 
   const validateMobileNumber = (number: number) => /^[0-9]{10}$/.test(number);
   const validateEmail = (mail: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
+
+
   const handleSaveProfile = async () => {
     let errors = {mobileNumber: '', fullName: '', email: ''};
 
@@ -124,56 +134,55 @@ const EditProfilePage = () => {
       'Image upload functionality can be added here!',
     );
   };
+
   const getInitial = () => {
     return firstName ? firstName?.charAt(0).toUpperCase() : '';
   };
+  
   const navigation = useNavigation();
+
+
   return (
     <>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Icon
-              name="arrow-left"
-              size={24}
-              color="#fff"
-              onPress={() => navigation.navigate('Account', {firstName})}
-            />
-            <Text style={styles.headerTitle}>Edit Profile</Text>
-          </View>
-
-          <View style={styles.headerIcons}>
-            {/* <Icon name="magnify" size={24} color="#fff" /> */}
-            <Icon
-              name="cart"
-              size={24}
-              color="#fff"
-              onPress={() => navigation.navigate('Cart')}
-            />
-          </View>
-        </View>
-        <View>
-          {loading ? (
-            <View style={styles.loaderContainer}>
-              <Loader />
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+               <Icon
+                  name="arrow-left"
+                  size={24}
+                  color="#fff"
+                  onPress={() => navigation.navigate('Account', {firstName})}
+                />
+                   <Text style={styles.headerTitle}>Edit Profile</Text>
             </View>
-          ) : (
-            <View style={{padding: 20}}>
-              <View style={styles.imageContainer}>
-                {/* <Image source={{uri: profileImage}} style={styles.profileImage} /> */}
-                <View style={styles.profilePhoto}>
-                  {firstName ? (
-                    <Text style={styles.initialText}>
-                      {getInitial(firstName)}
-                    </Text>
+
+            <View style={styles.headerIcons}>
+               <Icon
+                name="cart"
+                size={24}
+                color="#fff"
+                onPress={() => navigation.navigate('Cart')}
+              />
+            </View>
+          </View>
+          <View>
+               {loading ? (
+                    <View style={styles.loaderContainer}>
+                        <Loader />
+                    </View>
+                ) : (
+                    <View style={{padding: 20}}>
+                        <View style={styles.imageContainer}>
+                            <View style={styles.profilePhoto}>
+                               {firstName ? (
+                                 <Text style={styles.initialText}>
+                                         {getInitial(firstName)}
+                                 </Text>
                   ) : (
                     <Text style={styles.initialText}>?</Text>
-                  )}
-                </View>
-                {/* <TouchableOpacity style={styles.editIcon} onPress={handleImageEdit}>
-      <Icon name="camera" size={20} color="#fff" />
-    </TouchableOpacity> */}
+                               )}
               </View>
+          </View>
               <Text style={styles.userName}>{`${firstName} ${lastName}`}</Text>
               <Text style={styles.userPhone}>{phone}</Text>
               <View style={styles.inputContainer}>
@@ -189,36 +198,6 @@ const EditProfilePage = () => {
                     {errorMessage?.firstName}
                   </Text>
                 ) : null}
-                {/* <Text style={styles.label}>Last Name</Text>
-  <TextInput
-    style={styles.input}
-    value={lastName}
-    onChangeText={setLastName}
-    placeholder="Enter Last Name"
-  /> */}
-
-                {/* <Text style={styles.label}>Gender</Text>
-  <View style={styles.radioContainer}>
-    <TouchableOpacity
-      style={styles.radioButton}
-      onPress={() => setGender('male')}>
-      <View
-        style={gender === 'male' ? styles.radioSelected : styles.radio}
-      />
-      <Text style={styles.radioText}>Male</Text>
-    </TouchableOpacity>
-    <TouchableOpacity
-      style={styles.radioButton}
-      onPress={() => setGender('female')}>
-      <View
-        style={
-          gender === 'female' ? styles.radioSelected : styles.radio
-        }
-      />
-      <Text style={styles.radioText}>Female</Text>
-    </TouchableOpacity>
-  </View> */}
-
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                   style={styles.input}
@@ -230,13 +209,6 @@ const EditProfilePage = () => {
                 {errorMessage?.email ? (
                   <Text style={styles.errorText}>{errorMessage?.email}</Text>
                 ) : null}
-                {/* <Text style={styles.label}>Birth Date</Text>
-  <TextInput
-    style={styles.input}
-    value={birthDate}
-    onChangeText={setBirthDate}
-    placeholder="YYYY-MM-DD"
-  /> */}
 
                 <Text style={styles.label}>Mobile</Text>
                 <TextInput
@@ -259,6 +231,7 @@ const EditProfilePage = () => {
           )}
         </View>
       </View>
+      
       <View style={{alignItems: 'center'}}>
         {showToast && (
           <ToastMessage
@@ -302,7 +275,6 @@ const styles = StyleSheet.create({
   },
   loaderContainer: {
     position: 'absolute',
-    // bottom: 400,
     left: 0,
     right: 0,
     justifyContent: 'center',

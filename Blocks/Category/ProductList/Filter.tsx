@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, {useState} from 'react';
 import {
   View,
@@ -11,7 +12,10 @@ import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const FilterPage = ({route, navigation}) => {
+
   const {productsData, applyFilter} = route.params;
+
+  //state management
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [minPrice, setMinPrice] = useState(0);

@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, { useState} from 'react';
 import {
   View,
@@ -6,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import {MaterialIcons} from 'react-native-vector-icons/MaterialCommunityIcons'; // For the star icon (could use other icon libraries too)
+import {MaterialIcons} from 'react-native-vector-icons/MaterialCommunityIcons'; 
 
 
 const CustomerReviews = ({reviews}) => {

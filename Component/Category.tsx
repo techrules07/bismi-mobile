@@ -24,6 +24,7 @@ import Loader from './Loader';
 import {UserContext} from '../Context/UserContext';
 
 const Category = props => {
+  //usestate management
   const [selectedSection, setSelectedSection] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
@@ -32,14 +33,16 @@ const Category = props => {
   let userInfo = userContext?.user;
   console.log(UserContext, 'from category');
 
+  //useEffect
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  //function handling
   const handleSidebarClick = async (categoryId, userId) => {
     setSelectedSection(categoryId);
     getProducts(categoryId, userId);
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -113,6 +116,8 @@ const Category = props => {
     }
   };
   console.log('categories', productContext?.categories);
+
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>

@@ -6,10 +6,8 @@ import {
   TextInput,
   Dimensions,
   TouchableOpacity,
-  TouchableHighlight,
   StyleSheet,
   ScrollView,
-  StatusBar,
 } from 'react-native';
 import Logo from '../assets/logo-bismi.png';
 import Search from '../assets/search.png';
@@ -21,26 +19,13 @@ import themeConfig from '../assets/themes/themeConfig';
 
 const HomeScreen = props => {
   const productContext = useContext(pContext);
+
+  //useState
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const width = Dimensions?.get('window').width;
-  const handleSearch = text => {
-    if (typeof text === 'string') {
-      setSearchQuery(text);
-    }
-  };
-  let filteredProducts = [];
-  if (searchQuery) {
-    let search_query = searchQuery?.toLowerCase()?.trim();
-    filteredProducts = Array.isArray(productContext?.categories)
-      ? productContext?.categories?.filter(product =>
-          product?.categoryName?.toLowerCase()?.includes(search_query),
-        )
-      : [];
-  }
-  const productsToDisplay = searchQuery
-    ? filteredProducts
-    : productContext?.categories || [];
+
+  //useEffect
   useEffect(() => {
     async function fetchData() {
       try {
@@ -77,6 +62,26 @@ const HomeScreen = props => {
 
     fetchData();
   }, []);
+
+  //function handling
+  const handleSearch = text => {
+    if (typeof text === 'string') {
+      setSearchQuery(text);
+    }
+  };
+  let filteredProducts = [];
+  if (searchQuery) {
+    let search_query = searchQuery?.toLowerCase()?.trim();
+    filteredProducts = Array.isArray(productContext?.categories)
+      ? productContext?.categories?.filter(product =>
+          product?.categoryName?.toLowerCase()?.includes(search_query),
+        )
+      : [];
+  }
+  const productsToDisplay = searchQuery
+    ? filteredProducts
+    : productContext?.categories || [];
+
 
   return (
     <View style={{flex: 1, backgroundColor: themeConfig.appPrimary}}>
@@ -288,7 +293,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     color: themeConfig.appPrimary,
-    // width: 100,
   },
   roundedImage: {
     width: 100,
@@ -317,7 +321,6 @@ const styles = StyleSheet.create({
   },
   gridText: {
     fontSize: 12,
-    // marginTop: 8,
     color: themeConfig.appPrimary,
     padding: 4,
     textAlign: 'center',
@@ -326,7 +329,6 @@ const styles = StyleSheet.create({
   },
   loaderContainer: {
     position: 'absolute',
-    // bottom: 400,
     left: 0,
     right: 0,
     justifyContent: 'center',
