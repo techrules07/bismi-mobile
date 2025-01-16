@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Button,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -24,11 +25,15 @@ const Account = props => {
     logout();
   };
   const getInitial = () => {
-    return userDetail?.name ? userDetail?.name.charAt(0).toUpperCase() : '';
+    return userDetail?.name
+      ? userDetail?.name.charAt(0).toUpperCase()
+      : user?.name
+      ? user?.name.charAt(0).toUpperCase()
+      : '';
   };
 
   return user ? (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.profileCard}>
         <View style={styles.profileHeader}></View>
         <View style={styles.profileContent}>
@@ -37,16 +42,14 @@ const Account = props => {
             style={styles.profilePhoto}
           /> */}
           <View style={styles.profilePhoto}>
-            {user?.name ? (
-              <Text style={styles.initialText}>
-                {getInitial(userDetail?.name)}
-              </Text>
+            {userDetail?.name || user?.name ? (
+              <Text style={styles.initialText}>{getInitial()}</Text>
             ) : (
               <Text style={styles.initialText}>?</Text>
             )}
           </View>
           <View>
-            <Text style={styles.profileName}>{userDetail?.name}</Text>
+            <Text style={styles.profileName}>{userDetail?.name || user?.name}</Text>
             <Text style={styles.profiler}>(Member)</Text>
           </View>
         </View>
@@ -200,7 +203,7 @@ const Account = props => {
           </View>
         </View>
       </View>
-    </View>
+    </ScrollView>
   ) : (
     <LoginScreen />
   );
