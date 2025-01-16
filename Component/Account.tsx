@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Image,
@@ -13,16 +13,18 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {UserContext} from '../Context/UserContext';
 import {useNavigation} from '@react-navigation/native';
 import LoginScreen from './Login';
+import UserAdapter from '../Networking/UserPageService';
 
 const Account = props => {
   const navigation = useNavigation();
-  const {user, logout} = useContext(UserContext);
-  console.log('user', user);
+  const {user, logout, userDetail} = useContext(UserContext);
+  console.log('userDetail', userDetail);
+  const [errorMessage, setErrorMessage] = useState('');
   const handleLogout = () => {
     logout();
   };
   const getInitial = () => {
-    return user?.name ? user?.name.charAt(0).toUpperCase() : '';
+    return userDetail?.name ? userDetail?.name.charAt(0).toUpperCase() : '';
   };
 
   return user ? (
@@ -36,13 +38,15 @@ const Account = props => {
           /> */}
           <View style={styles.profilePhoto}>
             {user?.name ? (
-              <Text style={styles.initialText}>{getInitial(user?.name)}</Text>
+              <Text style={styles.initialText}>
+                {getInitial(userDetail?.name)}
+              </Text>
             ) : (
               <Text style={styles.initialText}>?</Text>
             )}
           </View>
           <View>
-            <Text style={styles.profileName}>{user?.name}</Text>
+            <Text style={styles.profileName}>{userDetail?.name}</Text>
             <Text style={styles.profiler}>(Member)</Text>
           </View>
         </View>
@@ -100,6 +104,23 @@ const Account = props => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Account Settings</Text>
           <View style={styles.cardContent}>
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => props.navigation.navigate('EditProfile')}>
+              <View style={styles.textContain}>
+                <View style={{marginTop: 3}}>
+                  <MaterialCommunityIcons
+                    name="account-edit-outline"
+                    size={16}
+                  />
+                </View>
+                <Text style={styles.list}>Edit Profile</Text>
+              </View>
+              <View>
+                <MaterialIcons name="keyboard-arrow-right" size={16} />
+              </View>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.textContainer}
               onPress={() => props.navigation.navigate('Payment')}>

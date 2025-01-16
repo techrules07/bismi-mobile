@@ -144,7 +144,10 @@ const LoginScreen = props => {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Mobile</Text>
         <TextInput
-          style={[styles.input, errorMessage?.mobile ? styles.errorInput : null]}
+          style={[
+            styles.input,
+            errorMessage?.mobile ? styles.errorInput : null,
+          ]}
           placeholder="Enter your mobile number"
           value={mobileNumber}
           onChangeText={setMobileNumber}
@@ -192,12 +195,12 @@ const LoginScreen = props => {
         <Text
           style={styles.linkText}
           onPress={() => {
-            if (page === 'modal_layout') {
-              setShowRegister(true);
-              setShowSignIn(false);
-            } else {
-              navigation.navigate('SignUp');
-            }
+            // if (page === 'modal_layout') {
+            //   setShowRegister(true);
+            //   setShowSignIn(false);
+            // } else {
+            //   navigation.navigate('SignUp');
+            // }
           }}>
           Register
         </Text>
