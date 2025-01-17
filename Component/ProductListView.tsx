@@ -871,22 +871,20 @@ const styles = StyleSheet.create({
   card: {
     width: 180,
     marginRight: 10,
-    borderRadius: 10,
+    borderRadius: 5,
     backgroundColor: '#fff',
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     shadowOffset: {width: 0, height: 2},
+    marginBottom:15
   },
   cardImage: {
     width: '100%',
     height: 150,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-  },
-  productInfo: {
-    padding: 5,
   },
   cardTitle: {
     fontSize: 14,
@@ -897,13 +895,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#703F07',
-    padding: 5,
+    marginLeft: 10,
   },
   productInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
+    marginLeft:10
   },
 
   addToCartButton: {
