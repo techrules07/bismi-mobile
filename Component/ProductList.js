@@ -194,7 +194,7 @@ const ProductList = () => {
                         </Text>
                         <Text style={styles.discount}>20% OFF</Text>
                       </View>
-                      <Image source={Heart} style={styles.heartIcon} />
+                      {/* <Image source={Heart} style={styles.heartIcon} /> */}
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -264,16 +264,19 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 5,
     marginHorizontal: 5,
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     shadowOffset: {width: 0, height: 2},
+    maxWidth: '48%',
+    overflow: 'hidden',
+    marginVertical: 2,
   },
   image: {
-    height: 150,
+    height: 120,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     resizeMode: 'cover',
@@ -283,14 +286,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: '#000000',
     fontSize: 14,
-    padding:4
+    paddingLeft:4
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    marginTop: 8,
+    marginBottom: 8,
   },
   price: {
     fontWeight: '600',
@@ -310,23 +313,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 10,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    margin: 5,
-    flex: 1,
-    maxWidth: '48%',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  image: {
-    width: '100%',
-    height: 200,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
+
+
   headerIcons: {flexDirection: 'row', gap: 15},
   headerTitle: {
     fontSize: 20,
