@@ -40,6 +40,7 @@ const ProductDetails = ({
   similarItem,
   onSelectSimilarItem,
 }) => {
+  console.log("selectedItem",selectedItem)
   const shouldRenderReviews = true;
   const navigation = useNavigation();
   const [rating, setRating] = useState(0);
@@ -444,12 +445,13 @@ const ProductDetails = ({
         <View style={styles.ratingBox}>
           <Icon name="star" size={26} color={'gray'} />
           <Text style={styles.ratingText}>
-            {productContext &&
+            {selectedItem?.rating}
+            {/* {productContext &&
             productContext?.ratings &&
             productContext?.ratings?.length > 0
               ? productContext?.ratings[productContext?.ratings?.length - 1]
                   ?.rating || 0.0
-              : 0.0}
+              : 0.0} */}
           </Text>
         </View>
 
@@ -459,10 +461,10 @@ const ProductDetails = ({
             Brand: {selectedItem?.brandName}
           </Text>
           <Text style={styles.detailsText}>
-            Material: {selectedItem?.subCatName}
+            Category: {selectedItem?.subCategoryName}
           </Text>
           <Text style={styles.detailsText}>
-            Product: {selectedItem?.product}
+            Product: {selectedItem?.productName}
           </Text>
           <Text style={styles.detailsText}>
             Color: {selectedItem?.colorName}
