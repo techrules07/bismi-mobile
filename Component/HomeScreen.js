@@ -278,11 +278,12 @@ const HomeScreen = props => {
 };
 const styles = StyleSheet.create({
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
     color: themeConfig.appPrimary,
     paddingHorizontal: 16,
+    marginLeft:8
   },
   horizontalScroll: {marginVertical: 4, marginBottom: 16},
   recentItem: {marginLeft: 16, alignItems: 'center'},

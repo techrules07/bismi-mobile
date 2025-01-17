@@ -324,10 +324,11 @@ const styles = StyleSheet.create({
   },
   mainContent: {flex: 1, padding: 10},
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 10,
     color: '#703F07',
+    marginLeft:10
   },
   horizontalScroll: {
     paddingHorizontal: 10,
@@ -338,11 +339,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDE0D4',
     borderRadius: 6,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     shadowOffset: {width: 0, height: 2},
+    marginVertical: 2,
+    marginBottom:100
   },
   gridImage: {
     width: '100%',
