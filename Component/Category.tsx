@@ -329,10 +329,12 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     color: '#703F07',
   },
-
+  horizontalScroll: {
+    paddingHorizontal: 10,
+  },
   gridItem: {
     width: 150,
-    marginRight: 14,
+    marginRight: 10,
     backgroundColor: '#EDE0D4',
     borderRadius: 6,
     overflow: 'hidden',
@@ -364,7 +366,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#703F07',
   },
-  recentItem: {padding: 10, alignItems: 'center'},
+  recentItem: {marginRight: 10, alignItems: 'center'},
   recentImage: {width: 80, height: 80, borderRadius: 8},
   recentText: {
     marginTop: 5,
