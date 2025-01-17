@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   Modal,
   Pressable,
+  FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -40,9 +41,11 @@ const ProductDetails = ({
   similarItem,
   onSelectSimilarItem,
 }) => {
-  console.log("selectedItem",selectedItem)
+  console.log('selectedItem', selectedItem);
   const shouldRenderReviews = true;
   const navigation = useNavigation();
+
+  //state management
   const [rating, setRating] = useState(0);
   const productContext = useContext(pContext);
   const {user, logout} = useContext(UserContext);
@@ -68,6 +71,9 @@ const ProductDetails = ({
     useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [editingItemId, setEditingItemId] = useState(null);
+
+  //useEffect
   useEffect(() => {
     const requestId = selectedItem?.productId;
     const userId = user?.id;
@@ -262,7 +268,6 @@ const ProductDetails = ({
     setShowAllReviews(true);
     setVisibleReviews(productContext?.ratings?.length || 0);
   };
-  const [editingItemId, setEditingItemId] = useState(null);
 
   const handleDelete = async item => {
     const requestId = item?.id;
@@ -596,30 +601,43 @@ const ProductDetails = ({
             </View>
           )}
         <Text style={styles.sectionTitle}>Similar Products:</Text>
-        <ScrollView
+        <FlatList
+          data={similarItem}
+          keyExtractor={(item, index) => index.toString()}
           horizontal
-          style={styles.similarItemsContainer}
-          showsHorizontalScrollIndicator={false}>
-          {similarItem?.map((item, index) => (
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.similarItemsContainer}
+          renderItem={({item}) => (
             <TouchableOpacity
-              key={index}
               onPress={() => {
                 onSelectSimilarItem(item);
                 scrollToTop();
               }}>
               <View style={styles.card}>
                 <Image
-                  source={{uri: item?.productImage || item?.productImages?.[0]}}
+                  source={{
+                    uri:
+                      item?.productImage ||
+                      item?.productImages?.[0] ||
+                      'https://via.placeholder.com/150',
+                  }}
                   style={styles.cardImage}
                 />
                 <View style={styles.productInfo}>
-                  <Text style={styles.cardTitle}>{item?.productName}</Text>
+                  <Text
+                    style={styles.cardTitle}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {item?.productName}
+                  </Text>
                 </View>
-                <Text style={styles.cardPrice}>Rs. {item?.price}</Text>
+                <Text style={styles.cardPrice}>
+                  Rs. {item?.price?.toLocaleString('en-IN')}
+                </Text>
               </View>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          )}
+        />
       </ScrollView>
       <Modal
         animationType="slide"
@@ -791,7 +809,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 4,
   },
-  icon: {},
   price: {
     color: 'black',
     fontSize: 18,
@@ -846,22 +863,41 @@ const styles = StyleSheet.create({
     color: 'gray',
     marginRight: 12,
   },
+
   similarItemsContainer: {
-    paddingVertical: 15,
-    flexDirection: 'row',
-    gap: 15,
+    paddingHorizontal: 10,
+    paddingTop: 10,
   },
   card: {
     width: 180,
-    marginLeft: 10,
-    borderWidth: 0,
-    borderRadius: 0,
-    gap: 10,
+    marginRight: 10,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: {width: 0, height: 2},
   },
   cardImage: {
     width: '100%',
     height: 150,
-    marginBottom: 5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  productInfo: {
+    padding: 5,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  cardPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#703F07',
+    padding: 5,
   },
   productInfo: {
     flexDirection: 'row',
@@ -869,17 +905,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black',
-    width: 140,
-  },
-  cardPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black',
-  },
+
   addToCartButton: {
     backgroundColor: '#703F07',
     borderRadius: 30,

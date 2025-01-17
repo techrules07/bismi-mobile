@@ -22,6 +22,7 @@ import {pContext} from '../Context/ProductContext';
 import {useNavigation} from '@react-navigation/native';
 import Loader from './Loader';
 import {UserContext} from '../Context/UserContext';
+import themeConfig from '../assets/themes/themeConfig';
 
 const Category = props => {
   //usestate management
@@ -117,7 +118,6 @@ const Category = props => {
   };
   console.log('categories', productContext?.categories);
 
-  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -239,32 +239,31 @@ const Category = props => {
                 ))}
               </ScrollView>
               <Text style={styles.sectionTitle}>Premium Category</Text>
-              <View style={styles.grid}>
-                <ScrollView
-                  horizontal
-                  style={styles.horizontalScroll}
-                  showsHorizontalScrollIndicator={false}>
-                  {productContext?.premiumProducts?.map(store => (
-                    <View key={store.id} style={styles.gridItem}>
-                      <Image
-                        source={{uri: store?.mainImageUrl}}
-                        style={styles.gridImage}
-                      />
-                      <View style={styles.gridText}>
-                        <View style={{flexDirection: 'row'}}>
-                          <Text style={{fontWeight: 'bold', color: 'black'}}>
-                            {store?.subCategoryName}
-                          </Text>
-                        </View>
-
-                        <Text style={{color: 'black'}}>
-                          ₹{store?.unitPrice}
-                        </Text>
-                      </View>
+              <ScrollView
+                horizontal
+                style={styles.horizontalScroll}
+                showsHorizontalScrollIndicator={false}>
+                {productContext?.premiumProducts?.map(store => (
+                  <View key={store.id} style={styles.gridItem}>
+                    <Image
+                      source={{
+                        uri:
+                          store?.mainImageUrl ||
+                          'https://via.placeholder.com/150',
+                      }}
+                      style={styles.gridImage}
+                    />
+                    <View style={styles.gridText}>
+                      <Text style={styles.gridTitle}>
+                        {store?.subCategoryName}
+                      </Text>
+                      <Text style={styles.gridPrice}>
+                        ₹{store?.unitPrice?.toLocaleString('en-IN')}
+                      </Text>
                     </View>
-                  ))}
-                </ScrollView>
-              </View>
+                  </View>
+                ))}
+              </ScrollView>
             </ScrollView>
           )}
         </View>
@@ -330,35 +329,57 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     color: '#703F07',
   },
-  grid: {flexDirection: 'row', flexWrap: 'wrap'},
+  horizontalScroll: {
+    paddingHorizontal: 10,
+  },
   gridItem: {
-    width: '30%',
-
-    margin: '1.5%',
+    width: 150,
+    marginRight: 10,
     backgroundColor: '#EDE0D4',
-    borderRadius: 8,
-    elevation: 2,
+    borderRadius: 6,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: {width: 0, height: 2},
   },
   gridImage: {
     width: '100%',
-    height: 60,
-    resizeMode: 'cover',
+    height: 120,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
-  gridText: {fontSize: 12, marginTop: 8, height: 45, marginLeft: 10},
-  horizontalScroll: {marginVertical: 10},
+  gridText: {
+    padding: 10,
+    alignItems: 'center',
+  },
+  gridTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  gridPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#703F07',
+  },
   recentItem: {marginRight: 10, alignItems: 'center'},
   recentImage: {width: 80, height: 80, borderRadius: 8},
   recentText: {
     marginTop: 5,
     fontSize: 12,
     textAlign: 'center',
+    fontWeight: 'bold',
     color: 'black',
     width: 100,
   },
   roundedImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
   roundedImages: {
     width: 50,

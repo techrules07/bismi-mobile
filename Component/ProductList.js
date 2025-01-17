@@ -40,7 +40,18 @@ const ProductList = () => {
       );
     }
   };
+  const groupProducts = products => {
+    const grouped = [];
+    for (let i = 0; i < products.length; i += 2) {
+      grouped.push(products.slice(i, i + 2));
+    }
+    return grouped;
+  };
 
+  const productsToRenders = filterProductRange
+    ? filteredData
+    : productContext?.productList;
+  const groupedProducts = groupProducts(productsToRenders || []);
   useEffect(() => {
     if (categoryId) {
       productContext?.updateProductList([]);
@@ -154,74 +165,41 @@ const ProductList = () => {
         <View style={{paddingLeft: 5, paddingRight: 5}}>
           {filtered_products?.length > 0 ? (
             <FlatList
-              data={productContext.productList}
-              keyExtractor={item => item.id}
-              numColumns={3}
-              renderItem={({item}) => {
-                return (
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      padding: 8,
-                    }}
-                    onPress={() =>
-                      navigation.navigate('ProductListView', {
-                        selectedItem: item,
-                        similarItem: productContext?.productList?.filter(
-                          otherItem => otherItem?.id !== item?.id,
-                        ),
-                      })
-                    }>
-                    <Image
-                      source={{uri: item?.mainImage}}
-                      style={{height: 180}}
-                    />
-                    <Text
-                      style={{fontWeight: 700, marginTop: 8, color: '#000000'}}
-                      numberOfLines={1}>
-                      {item.product}
-                    </Text>
-                    <View style={{display: 'flex', flexDirection: 'row'}}>
-                      <View style={{display: 'flex', flexDirection: 'column'}}>
-                        <View
-                          style={{flexDirection: 'row', alignItems: 'center'}}>
-                          <Text
-                            style={{
-                              fontWeight: 600,
-                              fontSize: 12,
-                              color: '#000000',
-                            }}>
-                            &#8377;{item?.priceWithGst}
-                          </Text>
-                          {/* <Text
-                            style={{
-                              fontSize: 8,
-                              fontWeight: 500,
-                              color: '#4E4E4E',
-                              marginLeft: 8,
-                              textDecorationLine: 'line-through',
-                            }}>
-                            &#8377;1200
-                          </Text> */}
-                          <Text
-                            style={{
-                              fontSize: 8,
-                              fontWeight: 500,
-                              color: '#CC2727',
-                              marginLeft: 8,
-                              textDecorationLine: 'line-through',
-                            }}>
-                            20% OFF
-                          </Text>
-                        </View>
+              data={groupedProducts}
+              keyExtractor={(item, index) => `row-${index}`}
+              renderItem={({item}) => (
+                <View style={styles.row}>
+                  {item.map(product => (
+                    <TouchableOpacity
+                      key={product.id}
+                      style={styles.card}
+                      onPress={() =>
+                        navigation.navigate('ProductListView', {
+                          selectedItem: product,
+                          similarItem: productContext?.productList?.filter(
+                            otherItem => otherItem?.id !== product?.id,
+                          ),
+                        })
+                      }>
+                      <Image
+                        source={{uri: product?.mainImage}}
+                        style={styles.image}
+                      />
+                      <Text style={styles.productName} numberOfLines={1}>
+                        {product.product}
+                      </Text>
+                      <View style={styles.priceContainer}>
+                        <Text style={styles.price}>
+                          &#8377;{product?.priceWithGst}
+                        </Text>
+                        <Text style={styles.discount}>20% OFF</Text>
                       </View>
-                      <Image source={Heart} style={{width: 50, height: 50}} />
-                    </View>
-                  </TouchableOpacity>
-                );
-              }}
+                      <Image source={Heart} style={styles.heartIcon} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              contentContainerStyle={styles.listContainer}
             />
           ) : filterProductRange ? (
             <View style={{flex: 1, margin: 12}}>
@@ -274,6 +252,80 @@ const styles = StyleSheet.create({
     backgroundColor: '#703F07',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+  },
+  listContainer: {
+    padding: 10,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  card: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginHorizontal: 5,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: {width: 0, height: 2},
+  },
+  image: {
+    height: 150,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    resizeMode: 'cover',
+  },
+  productName: {
+    fontWeight: '700',
+    marginTop: 8,
+    color: '#000000',
+    fontSize: 14,
+    padding:4
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    marginTop: 8,
+  },
+  price: {
+    fontWeight: '600',
+    fontSize: 12,
+    color: '#000000',
+  },
+  discount: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#CC2727',
+    textDecorationLine: 'line-through',
+  },
+  heartIcon: {
+    width: 20,
+    height: 20,
+    marginTop: 10,
+    alignSelf: 'flex-end',
+    marginRight: 10,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    margin: 5,
+    flex: 1,
+    maxWidth: '48%',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   headerIcons: {flexDirection: 'row', gap: 15},
   headerTitle: {
