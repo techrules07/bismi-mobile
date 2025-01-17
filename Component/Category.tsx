@@ -202,7 +202,7 @@ const Category = props => {
                       source={{uri: item?.mainImage}}
                       style={styles.recentImage}
                     />
-                    <Text style={styles.recentText} numberOfLines={1}>
+                    <Text style={styles.recentText} >
                       {item?.product}
                     </Text>
                   </TouchableOpacity>
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     color: '#703F07',
   },
   recentItem: {marginRight: 10, alignItems: 'center'},
-  recentImage: {width: 80, height: 80, borderRadius: 8},
+  recentImage: {width: 100, height: 100, borderRadius: 8},
   recentText: {
     marginTop: 5,
     fontSize: 12,
