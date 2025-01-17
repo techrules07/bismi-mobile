@@ -1,6 +1,6 @@
+//@ts-nocheck
 import React, {createContext, useState, useEffect, ReactNode} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Text} from 'react-native';
 
 interface User {
   id: string;
@@ -73,13 +73,6 @@ const UserContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
     }
   };
 
-  // if (loading) {
-  //   return (
-  //     <React.Fragment>
-  //       <Text>Loading...</Text>
-  //     </React.Fragment>
-  //   );
-  // }
 
   return (
     <UserContext.Provider

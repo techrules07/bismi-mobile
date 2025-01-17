@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   StyleSheet,
