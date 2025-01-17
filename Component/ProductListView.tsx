@@ -626,7 +626,7 @@ const ProductDetails = ({
                 <View style={styles.productInfo}>
                   <Text
                     style={styles.cardTitle}
-                    numberOfLines={1}
+                    // numberOfLines={1}
                     ellipsizeMode="tail">
                     {item?.productName}
                   </Text>
@@ -869,6 +869,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   card: {
+    flex:1,
     width: 180,
     marginRight: 10,
     borderRadius: 5,
@@ -890,12 +891,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
+    marginTop:8
   },
   cardPrice: {
     fontSize: 14,
     fontWeight: '600',
     color: '#703F07',
     marginLeft: 10,
+    marginBottom:8
   },
   productInfo: {
     flexDirection: 'row',
