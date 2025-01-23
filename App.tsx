@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
@@ -26,6 +26,7 @@ import AppNavigator from './Component/TopBar';
 import {UserContextProvider} from './Context/UserContext';
 import {CouponProvider} from './Context/CouponContext';
 import {ThemeContext} from './Context/ThemeContext';
+import Orientation from 'react-native-orientation-locker'; 
 
 function AppComponent(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -33,6 +34,14 @@ function AppComponent(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  useEffect(() => {
+    
+    Orientation.lockToPortrait();
+
+    return () => {
+      Orientation.unlockAllOrientations();
+    };
+  }, []);
 
   return (
     <SafeAreaView style={{display: 'flex', flex: 1}}>
